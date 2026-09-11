@@ -1,0 +1,8 @@
+{
+  "name": "CloudStream TR",
+  "description": "CloudStream Turkish Repository — Revival of Turkish providers with modern upstream architecture, active link resolution, and automated builds.",
+  "manifestVersion": 1,
+  "pluginLists": [
+    "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/plugins.json"
+  ]
+}

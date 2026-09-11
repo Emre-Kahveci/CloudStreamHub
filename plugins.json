@@ -1,0 +1,45 @@
+[
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=kultfilmler.net",
+        "fileHash": "sha256-8d8d70e60df6e385c7fabf17f04dd136d731668eae2326c6eb3e767b1192fc78",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 17187,
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "CloudStreamTR",
+            "kraptor"
+        ],
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "version": 32,
+        "internalName": "KultFilmler",
+        "description": "K\u00fclt Filmler - Klasik ve k\u00fclt film ar\u015fivi",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/KultFilmler.cs3",
+        "name": "KultFilmler"
+    },
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=yesilcamtv.com.tr",
+        "fileHash": "sha256-d715c63411341b4646a4b602ed254d88124906d80f8d6c58b3ed54dba05ed156",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 14273,
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "CloudStreamTR",
+            "kraptor"
+        ],
+        "tvTypes": [
+            "Movie"
+        ],
+        "version": 10,
+        "internalName": "YesilCamTv",
+        "description": "Ye\u015fil\u00e7am klasik T\u00fcrk sinemas\u0131 filmleri ve ar\u015fiv",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/YesilCamTv.cs3",
+        "name": "YesilCamTv"
+    }
+]
