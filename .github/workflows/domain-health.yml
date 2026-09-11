@@ -1,0 +1,30 @@
+name: Domain Health Check
+
+on:
+  schedule:
+    - cron: '0 4,16 * * *' # Twice daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-domains:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Tooling Dependencies
+        run: |
+          pip install -r tools/requirements.txt
+
+      - name: Run Domain Health Checker
+        run: |
+          python tools/domain_health.py --report-path reports/domain-health.json

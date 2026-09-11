@@ -1,0 +1,30 @@
+name: Provider Health Smoke Test
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Daily at 02:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Tooling Dependencies
+        run: |
+          pip install -r tools/requirements.txt
+
+      - name: Run Provider Health Checks
+        run: |
+          python tools/provider_health.py --report-path reports/provider-health.json

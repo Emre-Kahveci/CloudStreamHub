@@ -1,0 +1,92 @@
+name: Build and Publish
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+  workflow_dispatch:
+
+concurrency:
+  group: "build-publish"
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          path: "src"
+
+      - name: Checkout or Bootstrap Builds Branch
+        uses: actions/checkout@v4
+        with:
+          ref: "builds"
+          path: "builds"
+        continue-on-error: true
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Tooling Dependencies
+        run: |
+          pip install -r src/tools/requirements.txt
+
+      - name: Build Plugins & Generate plugins.json
+        run: |
+          cd src
+          chmod +x gradlew
+          ./gradlew make makePluginsJson
+          ./gradlew ensureJarCompatibility || true
+
+      - name: Validate Generated Artifacts Integrity
+        run: |
+          cd src
+          python tools/validate_repo.py --verify-artifacts
+
+      - name: Stage Artifacts Atomically
+        run: |
+          mkdir -p staging
+          cp src/build/plugins.json staging/
+          cp src/repo.json staging/
+          find src -name "*.cs3" -exec cp {} staging/ \;
+          find src -name "*.jar" -exec cp {} staging/ \; || true
+
+      - name: Publish to builds Branch
+        run: |
+          if [ ! -d "builds/.git" ]; then
+            echo "Initializing orphan builds branch..."
+            git clone "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" builds
+            cd builds
+            git checkout --orphan builds
+            git rm -rf . || true
+          else
+            cd builds
+            git rm -rf *.cs3 *.jar plugins.json repo.json || true
+          fi
+
+          cp -r ../staging/* .
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Automated build: ${{ github.sha }}" || exit 0
+          git push origin builds --force
