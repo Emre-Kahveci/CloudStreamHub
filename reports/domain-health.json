@@ -1,0 +1,92 @@
+﻿[
+    {
+        "provider":  "KultFilmler",
+        "canonical":  "https://kultfilmler.net",
+        "finalUrl":  null,
+        "httpsValid":  false,
+        "hostAllowed":  false,
+        "markerFound":  false,
+        "status":  "network_error",
+        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
+    },
+    {
+        "provider":  "YesilCamTv",
+        "canonical":  "https://yesilcamtv.com.tr",
+        "finalUrl":  null,
+        "httpsValid":  false,
+        "hostAllowed":  false,
+        "markerFound":  false,
+        "status":  "network_error",
+        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
+    },
+    {
+        "provider":  "AnimeciX",
+        "canonical":  "https://animecix.tv",
+        "finalUrl":  null,
+        "httpsValid":  false,
+        "hostAllowed":  false,
+        "markerFound":  false,
+        "status":  "network_error",
+        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
+    },
+    {
+        "provider":  "Animeler",
+        "canonical":  "https://animeler.pw",
+        "finalUrl":  null,
+        "httpsValid":  false,
+        "hostAllowed":  false,
+        "markerFound":  false,
+        "status":  "network_error",
+        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
+    },
+    {
+        "provider":  "Dizilla",
+        "canonical":  "https://dizilla.now",
+        "finalUrl":  null,
+        "httpsValid":  false,
+        "hostAllowed":  false,
+        "markerFound":  false,
+        "status":  "network_error",
+        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
+    },
+    {
+        "provider":  "DiziBox",
+        "canonical":  "https://www.dizibox.live",
+        "finalUrl":  null,
+        "httpsValid":  false,
+        "hostAllowed":  false,
+        "markerFound":  false,
+        "status":  "network_error",
+        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
+    },
+    {
+        "provider":  "FilmModu",
+        "canonical":  "https://www.filmmodu.one",
+        "finalUrl":  null,
+        "httpsValid":  false,
+        "hostAllowed":  false,
+        "markerFound":  false,
+        "status":  "network_error",
+        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
+    },
+    {
+        "provider":  "HDFilmCehennemi",
+        "canonical":  "https://www.hdfilmcehennemi.nl",
+        "finalUrl":  null,
+        "httpsValid":  false,
+        "hostAllowed":  false,
+        "markerFound":  false,
+        "status":  "network_error",
+        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
+    },
+    {
+        "provider":  "TrtDizi",
+        "canonical":  "https://www.trt1.com.tr",
+        "finalUrl":  null,
+        "httpsValid":  false,
+        "hostAllowed":  false,
+        "markerFound":  false,
+        "status":  "network_error",
+        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
+    }
+]
