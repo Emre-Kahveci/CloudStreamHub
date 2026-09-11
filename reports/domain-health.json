@@ -1,92 +1,119 @@
-﻿[
-    {
-        "provider":  "KultFilmler",
-        "canonical":  "https://kultfilmler.net",
-        "finalUrl":  null,
-        "httpsValid":  false,
-        "hostAllowed":  false,
-        "markerFound":  false,
-        "status":  "network_error",
-        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
-    },
-    {
-        "provider":  "YesilCamTv",
-        "canonical":  "https://yesilcamtv.com.tr",
-        "finalUrl":  null,
-        "httpsValid":  false,
-        "hostAllowed":  false,
-        "markerFound":  false,
-        "status":  "network_error",
-        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
-    },
-    {
-        "provider":  "AnimeciX",
-        "canonical":  "https://animecix.tv",
-        "finalUrl":  null,
-        "httpsValid":  false,
-        "hostAllowed":  false,
-        "markerFound":  false,
-        "status":  "network_error",
-        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
-    },
-    {
-        "provider":  "Animeler",
-        "canonical":  "https://animeler.pw",
-        "finalUrl":  null,
-        "httpsValid":  false,
-        "hostAllowed":  false,
-        "markerFound":  false,
-        "status":  "network_error",
-        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
-    },
-    {
-        "provider":  "Dizilla",
-        "canonical":  "https://dizilla.now",
-        "finalUrl":  null,
-        "httpsValid":  false,
-        "hostAllowed":  false,
-        "markerFound":  false,
-        "status":  "network_error",
-        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
-    },
-    {
-        "provider":  "DiziBox",
-        "canonical":  "https://www.dizibox.live",
-        "finalUrl":  null,
-        "httpsValid":  false,
-        "hostAllowed":  false,
-        "markerFound":  false,
-        "status":  "network_error",
-        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
-    },
-    {
-        "provider":  "FilmModu",
-        "canonical":  "https://www.filmmodu.one",
-        "finalUrl":  null,
-        "httpsValid":  false,
-        "hostAllowed":  false,
-        "markerFound":  false,
-        "status":  "network_error",
-        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
-    },
-    {
-        "provider":  "HDFilmCehennemi",
-        "canonical":  "https://www.hdfilmcehennemi.nl",
-        "finalUrl":  null,
-        "httpsValid":  false,
-        "hostAllowed":  false,
-        "markerFound":  false,
-        "status":  "network_error",
-        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
-    },
-    {
-        "provider":  "TrtDizi",
-        "canonical":  "https://www.trt1.com.tr",
-        "finalUrl":  null,
-        "httpsValid":  false,
-        "hostAllowed":  false,
-        "markerFound":  false,
-        "status":  "network_error",
-        "error":  "Unable to find type [System.Net.Http.HttpClientHandler]."
-    }
+[
+  {
+    "provider": "KultFilmler",
+    "canonical": "https://kultfilmler.net",
+    "finalUrl": "https://kultfilmler.net",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://kultfilmler.net"
+    ],
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "YesilCamTv",
+    "canonical": "https://yesilcamtv.com.tr",
+    "finalUrl": "https://yesilcamtv.com.tr",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://yesilcamtv.com.tr"
+    ],
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "AnimeciX",
+    "canonical": "https://animecix.tv",
+    "finalUrl": null,
+    "httpsValid": false,
+    "hostAllowed": false,
+    "markerFound": false,
+    "redirectChain": [
+      "https://animecix.tv"
+    ],
+    "status": "http_403",
+    "error": "HTTP error 403"
+  },
+  {
+    "provider": "Animeler",
+    "canonical": "https://animeler.pw",
+    "finalUrl": "https://animeler.pw",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://animeler.pw"
+    ],
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "Dizilla",
+    "canonical": "https://dizilla.now",
+    "finalUrl": "https://dizilla.now",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://dizilla.now"
+    ],
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "DiziBox",
+    "canonical": "https://www.dizibox.live",
+    "finalUrl": "https://www.dizibox.live",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://www.dizibox.live"
+    ],
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "FilmModu",
+    "canonical": "https://www.filmmodu.one",
+    "finalUrl": "https://www.filmmodu.one",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://www.filmmodu.one"
+    ],
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "HDFilmCehennemi",
+    "canonical": "https://www.hdfilmcehennemi.nl",
+    "finalUrl": "https://www.hdfilmcehennemi.nl",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://www.hdfilmcehennemi.nl"
+    ],
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "TrtDizi",
+    "canonical": "https://www.trt1.com.tr",
+    "finalUrl": "https://www.trt1.com.tr",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://www.trt1.com.tr"
+    ],
+    "status": "healthy",
+    "error": null
+  }
 ]

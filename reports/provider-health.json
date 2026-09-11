@@ -1,0 +1,15 @@
+[
+  {
+    "provider": "YesilCamTv",
+    "checkedAt": "2026-09-11T23:00:01.797272+00:00",
+    "domain": "https://yesilcamtv.com.tr",
+    "configuration": "pass",
+    "domainReachable": "pass",
+    "homepage": "pass",
+    "search": "untested",
+    "load": "untested",
+    "playback": "untested",
+    "durationMs": 511,
+    "errorType": null
+  }
+]
