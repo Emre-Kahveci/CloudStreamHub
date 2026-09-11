@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.cloudstream.tr.kultfilmler.KultFilmlerParserTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-09-11T19:08:28" hostname="EMRE" time="1.255">
+  <properties/>
+  <testcase name="testParseLoadMetadata" classname="com.cloudstream.tr.kultfilmler.KultFilmlerParserTest" time="1.243"/>
+  <testcase name="testParseSearchElement" classname="com.cloudstream.tr.kultfilmler.KultFilmlerParserTest" time="0.01"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

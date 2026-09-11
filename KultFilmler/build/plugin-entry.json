@@ -1,0 +1,22 @@
+{
+    "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=kultfilmler.net",
+    "fileHash": "sha256-8d8d70e60df6e385c7fabf17f04dd136d731668eae2326c6eb3e767b1192fc78",
+    "apiVersion": 1,
+    "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+    "fileSize": 17187,
+    "status": 1,
+    "language": "tr",
+    "authors": [
+        "CloudStreamTR",
+        "kraptor"
+    ],
+    "tvTypes": [
+        "Movie",
+        "TvSeries"
+    ],
+    "version": 32,
+    "internalName": "KultFilmler",
+    "description": "K\u00fclt Filmler - Klasik ve k\u00fclt film ar\u015fivi",
+    "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/KultFilmler.cs3",
+    "name": "KultFilmler"
+}
