@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaVersion": 1,
+  "providers": [
+    {
+      "name": "KultFilmler",
+      "module": "KultFilmler",
+      "enabled": true,
+      "language": "tr",
+      "types": ["Movie"],
+      "domainKey": "KultFilmler",
+      "healthTier": "full"
+    },
+    {
+      "name": "YesilCamTv",
+      "module": "YesilCamTv",
+      "enabled": true,
+      "language": "tr",
+      "types": ["Movie"],
+      "domainKey": "YesilCamTv",
+      "healthTier": "full"
+    },
+    {
+      "name": "TrtDizi",
+      "module": "TrtDizi",
+      "enabled": true,
+      "language": "tr",
+      "types": ["TvSeries", "Live"],
+      "domainKey": "TrtDizi",
+      "healthTier": "full"
+    }
+  ]
+}
