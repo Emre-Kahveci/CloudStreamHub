@@ -70,7 +70,7 @@ jobs:
           mkdir -p staging
           cp src/repo.json staging/
           cp src/build/plugins.json staging/
-          find src/build -maxdepth 1 -name "*.cs3" -exec cp {} staging/ \;
+          find src -name "*.cs3" -exec cp {} staging/ \;
 
       - name: Verify Staging Completeness
         run: |
