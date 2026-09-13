@@ -30,6 +30,9 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+cache/
+cache/*.db
+.scrapling/
 
 # Environment / credentials / signing material
 .env
@@ -51,6 +54,8 @@ secrets*.json
 *.tmp
 *.temp
 reports/temp/
+reports/probe_*.json
+reports/probes/
 
 # OS metadata
 .DS_Store

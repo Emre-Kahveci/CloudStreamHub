@@ -22,9 +22,9 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Tooling Dependencies
+      - name: Install Tooling & Browser Dependencies
         run: |
-          pip install -r tools/requirements.txt
+          python tools/install_scrapling.py
 
       - name: Validate Repository Schema & Config
         run: |

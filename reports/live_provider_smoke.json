@@ -1,22 +1,27 @@
 {
-  "testedAt": "2026-09-13T20:26:37.783392+00:00",
+  "testedAt": "2026-09-13T22:49:48.317061+00:00",
   "providers": [
     {
       "provider": "AnimeciX",
       "module": "AnimeciX",
       "homepage": {
-        "status": "AUTOMATION_BLOCKED",
-        "reason": "Cloudflare challenge"
+        "status": "FAIL",
+        "itemCount": 0,
+        "reason": "0 valid content items discovered"
       },
       "detail": {
-        "status": "AUTOMATION_BLOCKED",
-        "reason": "Cloudflare challenge"
+        "status": "PASS",
+        "title": "AnimeciX - Türkçe Anime Bilgi ve Paylaşım Platform",
+        "episodeDiscoveryMode": "NONE",
+        "episodesCount": 0
       },
-      "playback": {
-        "status": "AUTOMATION_BLOCKED"
+      "playerDiscovery": {
+        "status": "PLAYER_NOT_FOUND",
+        "targetUrl": "https://animecix.tv/titles/naruto"
       },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
-      "overall": "AUTOMATION_BLOCKED",
+      "overall": "PARTIAL_PASS",
       "details": []
     },
     {
@@ -24,16 +29,18 @@
       "module": "BelgeselX",
       "homepage": {
         "status": "PASS",
-        "itemCount": 44
+        "itemCount": 15,
+        "sample": "BARBARLARIN YÃKSELÄ°ÅÄ°\nDireniÅ Part 111"
       },
       "detail": {
-        "status": "PASS",
-        "title": "Unknown"
-      },
-      "playback": {
         "status": "FAIL",
-        "reason": "No iframe or player found"
+        "title": "404 — Sayfa Bulunamadı | Belgeselx",
+        "reason": "SOFT_404_PAGE"
       },
+      "playerDiscovery": {
+        "status": "PLAYER_NOT_FOUND"
+      },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
       "overall": "PARTIAL_PASS",
       "details": []
@@ -43,19 +50,24 @@
       "module": "DiziPal",
       "homepage": {
         "status": "PASS",
-        "itemCount": 0,
-        "note": "Page 200 but 0 cards matched generic selector"
+        "itemCount": 15,
+        "sample": "Dublaj & Altyazı\n\n\r\n                                            Lanterns"
       },
       "detail": {
         "status": "PASS",
-        "title": ""
+        "title": "Silo izle - Dizipal",
+        "episodeDiscoveryMode": "STRICT_CONFIG",
+        "episodesCount": 30
       },
-      "playback": {
-        "status": "FAIL",
-        "reason": "No iframe or player found"
+      "playerDiscovery": {
+        "status": "PLAYER_DISCOVERED",
+        "iframes": 1,
+        "hasPlayer": true,
+        "targetUrl": "https://dizipal1430.com/bolum/silo-1-sezon-1-bolum"
       },
-      "subtitle": "HARDSUB/DUBLAJ",
-      "overall": "PARTIAL_PASS",
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
+      "subtitle": "DUBBED",
+      "overall": "PASS",
       "details": []
     },
     {
@@ -63,18 +75,23 @@
       "module": "FilmMakinesi",
       "homepage": {
         "status": "PASS",
-        "itemCount": 44
+        "itemCount": 15,
+        "sample": "Forgotten Island23 Eylül"
       },
       "detail": {
         "status": "PASS",
-        "title": ""
+        "title": "Forgotten Island 2026 Filmi 1080p Full HD izle",
+        "episodeDiscoveryMode": "NONE",
+        "episodesCount": 0
       },
-      "playback": {
-        "status": "PASS",
+      "playerDiscovery": {
+        "status": "PLAYER_DISCOVERED",
         "iframes": 2,
-        "hasPlayer": true
+        "hasPlayer": true,
+        "targetUrl": "https://filmmakinesi.to/film/forgotten-island-2026/"
       },
-      "subtitle": "HARDSUB/DUBLAJ",
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
+      "subtitle": "DUBBED",
       "overall": "PASS",
       "details": []
     },
@@ -83,18 +100,23 @@
       "module": "HDFilmCehennemi",
       "homepage": {
         "status": "PASS",
-        "itemCount": 32
+        "itemCount": 15,
+        "sample": "Örümcek Adam Yepyeni Bir Gün - Spider Man Brand New Day"
       },
       "detail": {
         "status": "PASS",
-        "title": "Örümcek Adam Yepyeni Bir Gün - Spider Man Brand Ne"
+        "title": "Örümcek Adam Yepyeni Bir Gün - Spider Man Brand Ne",
+        "episodeDiscoveryMode": "GENERIC_FALLBACK",
+        "episodesCount": 1
       },
-      "playback": {
-        "status": "PASS",
+      "playerDiscovery": {
+        "status": "PLAYER_DISCOVERED",
         "iframes": 1,
-        "hasPlayer": true
+        "hasPlayer": true,
+        "targetUrl": "https://www.hdfilmcehennemi.nl/spider-man-brand-new-day/"
       },
-      "subtitle": "HARDSUB/DUBLAJ",
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
+      "subtitle": "DUBBED",
       "overall": "PASS",
       "details": []
     },
@@ -103,17 +125,22 @@
       "module": "KultFilmler",
       "homepage": {
         "status": "PASS",
-        "itemCount": 47
+        "itemCount": 15,
+        "sample": "Türkçe Altyazı1998\n\n\n\nSoldier – AskerAksiyon · Bilim Kurgu\n6.1IMDB"
       },
       "detail": {
         "status": "PASS",
-        "title": ""
+        "title": "Soldier - Asker İzle HD İzle - Kült Filmler",
+        "episodeDiscoveryMode": "NONE",
+        "episodesCount": 0
       },
-      "playback": {
-        "status": "PASS",
+      "playerDiscovery": {
+        "status": "PLAYER_DISCOVERED",
         "iframes": 1,
-        "hasPlayer": true
+        "hasPlayer": true,
+        "targetUrl": "https://kultfilmler.net/soldier-asker/"
       },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
       "overall": "PASS",
       "details": []
@@ -123,18 +150,24 @@
       "module": "TurkAnime",
       "homepage": {
         "status": "PASS",
-        "itemCount": 22
+        "itemCount": 9,
+        "sample": "Shiguang Dailiren III 12 izle"
       },
       "detail": {
         "status": "PASS",
-        "title": "Unknown"
+        "title": "Death Note izle | Konusu, Bölümleri ve Karakterler",
+        "episodeDiscoveryMode": "STRICT_CONFIG",
+        "episodesCount": 37
       },
-      "playback": {
-        "status": "FAIL",
-        "reason": "No iframe or player found"
+      "playerDiscovery": {
+        "status": "PLAYER_DISCOVERED",
+        "iframes": 1,
+        "hasPlayer": true,
+        "targetUrl": "https://www.turkanime.tv/ajax/videosec&b=RWNnQitnNXlXM3hYdEMvQUROS2Irdz09OjpoY0lsUU53UHloaXlvOGdF&f=L2d6ZFVLa1BzT08yaVY0K3BCNkhkdz09OjpYRUdOVk0wWko0NVcwQkE4"
       },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
-      "overall": "PARTIAL_PASS",
+      "overall": "PASS",
       "details": []
     },
     {
@@ -142,18 +175,23 @@
       "module": "YesilCamTv",
       "homepage": {
         "status": "PASS",
-        "itemCount": 41
+        "itemCount": 15,
+        "sample": "Sahte Kabadayı"
       },
       "detail": {
         "status": "PASS",
-        "title": ""
+        "title": "Sahte Kabadayı | YESILCAM TV",
+        "episodeDiscoveryMode": "NONE",
+        "episodesCount": 0
       },
-      "playback": {
-        "status": "PASS",
+      "playerDiscovery": {
+        "status": "PLAYER_DISCOVERED",
         "iframes": 1,
-        "hasPlayer": false
+        "hasPlayer": false,
+        "targetUrl": "https://yesilcamtv.com.tr/sahte-kabadayi-izle/"
       },
-      "subtitle": "HARDSUB/DUBLAJ",
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
+      "subtitle": "NONE",
       "overall": "PASS",
       "details": []
     }
