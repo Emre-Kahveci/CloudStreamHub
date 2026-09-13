@@ -1,0 +1,25 @@
+# Stable line endings across Windows and Linux CI.
+* text=auto
+*.kt text eol=lf
+*.kts text eol=lf
+*.gradle text eol=lf
+*.properties text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+*.sh text eol=lf
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+
+# Binary artifacts
+*.jar binary
+*.cs3 binary
+*.apk binary
+*.aab binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary

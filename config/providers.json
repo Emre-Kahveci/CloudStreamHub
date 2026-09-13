@@ -3,31 +3,150 @@
   "schemaVersion": 1,
   "providers": [
     {
+      "name": "AnimeciX",
+      "module": "AnimeciX",
+      "enabled": true,
+      "language": "tr",
+      "types": [
+        "Anime"
+      ],
+      "domainKey": "AnimeciX",
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "Naruto",
+        "knownDetail": "https://animecix.tv/titles/naruto",
+        "expectedType": "Anime"
+      }
+    },
+    {
+      "name": "BelgeselX",
+      "module": "BelgeselX",
+      "enabled": true,
+      "language": "tr",
+      "types": [
+        "Documentary"
+      ],
+      "domainKey": "BelgeselX",
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "dunya",
+        "knownDetail": "https://belgeselx.com/belgesel/gezegenimiz",
+        "expectedType": "Documentary"
+      }
+    },
+    {
+      "name": "DiziPal",
+      "module": "DiziPal",
+      "enabled": true,
+      "language": "tr",
+      "types": [
+        "Movie",
+        "TvSeries"
+      ],
+      "domainKey": "DiziPal",
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "Breaking Bad",
+        "knownDetail": "https://dizipal1430.com/dizi/breaking-bad",
+        "expectedType": "TvSeries"
+      }
+    },
+    {
+      "name": "FilmMakinesi",
+      "module": "FilmMakinesi",
+      "enabled": true,
+      "language": "tr",
+      "types": [
+        "Movie",
+        "TvSeries"
+      ],
+      "domainKey": "FilmMakinesi",
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "Inception",
+        "knownDetail": "https://filmmakinesi.to/film/inception",
+        "expectedType": "Movie"
+      }
+    },
+    {
+      "name": "HDFilmCehennemi",
+      "module": "HDFilmCehennemi",
+      "enabled": true,
+      "language": "tr",
+      "types": [
+        "Movie",
+        "TvSeries"
+      ],
+      "domainKey": "HDFilmCehennemi",
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "Matrix",
+        "knownDetail": "https://www.hdfilmcehennemi.nl/film/matrix-1",
+        "expectedType": "Movie"
+      }
+    },
+    {
       "name": "KultFilmler",
       "module": "KultFilmler",
       "enabled": true,
       "language": "tr",
-      "types": ["Movie"],
+      "types": [
+        "Movie",
+        "TvSeries"
+      ],
       "domainKey": "KultFilmler",
-      "healthTier": "full"
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "Baba",
+        "knownDetail": "https://kultfilmler.net/baba-the-godfather-izle/",
+        "expectedType": "Movie"
+      }
+    },
+    {
+      "name": "TurkAnime",
+      "module": "TurkAnime",
+      "enabled": true,
+      "language": "tr",
+      "types": [
+        "Anime",
+        "AnimeMovie"
+      ],
+      "domainKey": "TurkAnime",
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "Death Note",
+        "knownDetail": "https://www.turkanime.tv/anime/death-note",
+        "expectedType": "Anime"
+      }
     },
     {
       "name": "YesilCamTv",
       "module": "YesilCamTv",
       "enabled": true,
       "language": "tr",
-      "types": ["Movie"],
+      "types": [
+        "Movie"
+      ],
       "domainKey": "YesilCamTv",
-      "healthTier": "full"
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "Tosun Pasa",
+        "knownDetail": "https://yesilcamtv.com.tr/tosun-pasa-1976.html",
+        "expectedType": "Movie"
+      }
     },
     {
       "name": "TrtDizi",
       "module": "TrtDizi",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
-      "types": ["TvSeries", "Live"],
+      "types": [
+        "TvSeries",
+        "Live"
+      ],
       "domainKey": "TrtDizi",
-      "healthTier": "full"
+      "healthTier": "unsupported",
+      "notes": "Module not yet implemented; disabled to prevent phantom health check failures"
     }
   ]
 }

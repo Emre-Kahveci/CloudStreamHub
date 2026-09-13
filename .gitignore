@@ -1,19 +1,62 @@
+# IDE / editor
 *.iml
-.gradle
+/.idea/
+.vscode/
+
+# Gradle / Kotlin local caches
+.gradle/
+.kotlin/
+**/.gradle/
+
+# Android / local SDK configuration
 /local.properties
-/.idea
-.DS_Store
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# Build outputs
 build/
 **/build/
-/captures
-.externalNativeBuild
-.cxx
 *.apk
+*.aab
 *.cs3
 *.jar
+# Gradle Wrapper JAR is part of the project and MUST be versioned
+!gradle/wrapper/gradle-wrapper.jar
+
+# Python tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Environment / credentials / signing material
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+google-services.json
+service-account*.json
+credentials*.json
+secrets*.json
+
+# Logs / temp files
+*.log
+*.tmp
+*.temp
+reports/temp/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Legacy/generated forensic scratch data
 legacy_plugins_raw.json
 legacy_plugins_decoded.json
-__pycache__/
-*.pyc
-.pytest_cache/
-reports/temp/
