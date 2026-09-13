@@ -9,6 +9,7 @@
     "redirectChain": [
       "https://kultfilmler.net"
     ],
+    "candidateHost": null,
     "status": "healthy",
     "error": null
   },
@@ -22,21 +23,23 @@
     "redirectChain": [
       "https://yesilcamtv.com.tr"
     ],
+    "candidateHost": null,
     "status": "healthy",
     "error": null
   },
   {
     "provider": "AnimeciX",
     "canonical": "https://animecix.tv",
-    "finalUrl": null,
-    "httpsValid": false,
-    "hostAllowed": false,
+    "finalUrl": "https://animecix.tv",
+    "httpsValid": true,
+    "hostAllowed": true,
     "markerFound": false,
     "redirectChain": [
       "https://animecix.tv"
     ],
-    "status": "http_403",
-    "error": "HTTP error 403"
+    "candidateHost": null,
+    "status": "cloudflare_challenge",
+    "error": "Cloudflare challenge active (requires browser/OkHttp client)"
   },
   {
     "provider": "Animeler",
@@ -48,6 +51,7 @@
     "redirectChain": [
       "https://animeler.pw"
     ],
+    "candidateHost": null,
     "status": "healthy",
     "error": null
   },
@@ -61,6 +65,7 @@
     "redirectChain": [
       "https://dizilla.now"
     ],
+    "candidateHost": null,
     "status": "healthy",
     "error": null
   },
@@ -74,6 +79,7 @@
     "redirectChain": [
       "https://www.dizibox.live"
     ],
+    "candidateHost": null,
     "status": "healthy",
     "error": null
   },
@@ -87,6 +93,7 @@
     "redirectChain": [
       "https://www.filmmodu.one"
     ],
+    "candidateHost": null,
     "status": "healthy",
     "error": null
   },
@@ -100,6 +107,7 @@
     "redirectChain": [
       "https://www.hdfilmcehennemi.nl"
     ],
+    "candidateHost": null,
     "status": "healthy",
     "error": null
   },
@@ -113,6 +121,63 @@
     "redirectChain": [
       "https://www.trt1.com.tr"
     ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "DiziPal",
+    "canonical": "https://dizipal1430.com",
+    "finalUrl": "https://dizipal1430.com",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://dizipal1430.com"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "TurkAnime",
+    "canonical": "https://www.turkanime.tv",
+    "finalUrl": "https://www.turkanime.tv",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://www.turkanime.tv"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "BelgeselX",
+    "canonical": "https://belgeselx.com",
+    "finalUrl": "https://belgeselx.com",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://belgeselx.com"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "FilmMakinesi",
+    "canonical": "https://filmmakinesi.to",
+    "finalUrl": "https://filmmakinesi.to",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://filmmakinesi.to"
+    ],
+    "candidateHost": null,
     "status": "healthy",
     "error": null
   }

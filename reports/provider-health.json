@@ -1,15 +1,175 @@
 [
   {
+    "provider": "AnimeciX",
+    "checkedAt": "2026-09-13T16:01:07.722344+00:00",
+    "canonical": "https://animecix.tv",
+    "finalUrl": "https://animecix.tv",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "cloudflare_challenge",
+      "L2_homepage": "skipped",
+      "L3_search": "skipped",
+      "L4_load": "skipped",
+      "L5_playback": "skipped"
+    },
+    "overallStatus": "degraded",
+    "diagnostic": {
+      "L1": "Cloudflare Challenge Active (Mobile App bypass active, direct bot probe 403)"
+    },
+    "durationMs": 244
+  },
+  {
+    "provider": "BelgeselX",
+    "checkedAt": "2026-09-13T16:01:07.966709+00:00",
+    "canonical": "https://belgeselx.com",
+    "finalUrl": "https://belgeselx.com",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "fail",
+      "L3_search": "fail",
+      "L4_load": "fail",
+      "L5_playback": "fail"
+    },
+    "overallStatus": "degraded",
+    "diagnostic": {
+      "L2": "NO_HOMEPAGE_ITEMS_PARSED",
+      "L3": "Search returned HTTP 404 or no match",
+      "L4": "Load returned HTTP 200",
+      "L5": "No player or iframe discovered"
+    },
+    "durationMs": 3334
+  },
+  {
+    "provider": "DiziPal",
+    "checkedAt": "2026-09-13T16:01:11.300932+00:00",
+    "canonical": "https://dizipal1430.com",
+    "finalUrl": "https://dizipal1430.com",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "fail",
+      "L3_search": "fail",
+      "L4_load": "fail",
+      "L5_playback": "skipped"
+    },
+    "overallStatus": "degraded",
+    "diagnostic": {
+      "L2": "NO_HOMEPAGE_ITEMS_PARSED",
+      "L3": "Search returned HTTP 404 or no match",
+      "L4": "Load returned HTTP 404",
+      "L5": "Detail HTTP 404"
+    },
+    "durationMs": 5217
+  },
+  {
+    "provider": "FilmMakinesi",
+    "checkedAt": "2026-09-13T16:01:16.518906+00:00",
+    "canonical": "https://filmmakinesi.to",
+    "finalUrl": "https://filmmakinesi.to",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "fail",
+      "L3_search": "fail",
+      "L4_load": "fail",
+      "L5_playback": "skipped"
+    },
+    "overallStatus": "degraded",
+    "diagnostic": {
+      "L2": "NO_HOMEPAGE_ITEMS_PARSED",
+      "L3": "Search returned HTTP 404 or no match",
+      "L4": "Load returned HTTP 404",
+      "L5": "Detail HTTP 404"
+    },
+    "durationMs": 4003
+  },
+  {
+    "provider": "HDFilmCehennemi",
+    "checkedAt": "2026-09-13T16:01:20.522357+00:00",
+    "canonical": "https://www.hdfilmcehennemi.nl",
+    "finalUrl": "https://www.hdfilmcehennemi.nl",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "pass",
+      "L3_search": "pass",
+      "L4_load": "fail",
+      "L5_playback": "skipped"
+    },
+    "overallStatus": "degraded",
+    "diagnostic": {
+      "L2": "Found 3 items. Top: Örümcek Adam Yepyeni Bir Gün - Spider Man Brand New Day",
+      "L3": "Found 5 results",
+      "L4": "Load returned HTTP 404",
+      "L5": "Detail HTTP 404"
+    },
+    "durationMs": 2549
+  },
+  {
+    "provider": "KultFilmler",
+    "checkedAt": "2026-09-13T16:01:23.072392+00:00",
+    "canonical": "https://kultfilmler.net",
+    "finalUrl": "https://kultfilmler.net",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "fail",
+      "L3_search": "pass",
+      "L4_load": "fail",
+      "L5_playback": "skipped"
+    },
+    "overallStatus": "degraded",
+    "diagnostic": {
+      "L2": "NO_HOMEPAGE_ITEMS_PARSED",
+      "L3": "Found 20 search results",
+      "L4": "Load returned HTTP 404",
+      "L5": "Detail HTTP 404"
+    },
+    "durationMs": 1747
+  },
+  {
+    "provider": "TurkAnime",
+    "checkedAt": "2026-09-13T16:01:24.820135+00:00",
+    "canonical": "https://www.turkanime.tv",
+    "finalUrl": "https://www.turkanime.tv",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "pass",
+      "L3_search": "fail",
+      "L4_load": "pass",
+      "L5_playback": "pass"
+    },
+    "overallStatus": "degraded",
+    "diagnostic": {
+      "L2": "Found 3 items. Top: Türk Anime izle",
+      "L3": "Search HTTP 200 or empty response",
+      "L4": "Loaded: Death Note izle | Konusu, Bölümleri ve K",
+      "L5": "Discovered 0 iframes, script player present: True"
+    },
+    "durationMs": 2983
+  },
+  {
     "provider": "YesilCamTv",
-    "checkedAt": "2026-09-11T23:00:01.797272+00:00",
-    "domain": "https://yesilcamtv.com.tr",
-    "configuration": "pass",
-    "domainReachable": "pass",
-    "homepage": "pass",
-    "search": "untested",
-    "load": "untested",
-    "playback": "untested",
-    "durationMs": 511,
-    "errorType": null
+    "checkedAt": "2026-09-13T16:01:27.804094+00:00",
+    "canonical": "https://yesilcamtv.com.tr",
+    "finalUrl": "https://yesilcamtv.com.tr",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "pass",
+      "L3_search": "pass",
+      "L4_load": "fail",
+      "L5_playback": "skipped"
+    },
+    "overallStatus": "degraded",
+    "diagnostic": {
+      "L2": "Found 3 items. Top: Sahte Kabadayı",
+      "L3": "Found 2 search results",
+      "L4": "Load returned HTTP 404",
+      "L5": "Detail HTTP 404"
+    },
+    "durationMs": 1701
   }
 ]

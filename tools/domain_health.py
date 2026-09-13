@@ -2,12 +2,12 @@
 """
 domain_health.py
 
-Performs health and security checks on provider domains:
-- Follows HTTP redirects safely (max 5 hops)
+Performs health, redirect, and security checks on provider domains:
+- Follows HTTP/HTTPS redirects safely (max 5 hops)
 - Verifies HTTPS protocol
 - Checks destination host against allowedHosts allowlist in config/domains.json
 - Verifies presence of expected content integrity markers
-- Flags hijacked/parked/phishing domains
+- Flags hijacked/parked/unauthorized redirects and records candidate new hosts
 - Generates structured JSON report
 """
 
@@ -40,6 +40,7 @@ def check_domain(name, info):
         "hostAllowed": False,
         "markerFound": False,
         "redirectChain": [],
+        "candidateHost": None,
         "status": "unknown",
         "error": None
     }
@@ -50,20 +51,24 @@ def check_domain(name, info):
 
     current_url = canonical
     hops = 0
-    ctx = ssl.create_default_context()
 
     try:
         while hops < MAX_HOPS:
             result["redirectChain"].append(current_url)
-            req = urllib.request.Request(current_url, headers={"User-Agent": USER_AGENT})
+            req = urllib.request.Request(current_url, headers={
+                "User-Agent": USER_AGENT,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+            })
             opener = urllib.request.build_opener(NoRedirectHandler)
             try:
-                with opener.open(req, timeout=10) as response:
+                with opener.open(req, timeout=12) as response:
                     final_url = current_url
                     result["finalUrl"] = final_url
                     result["httpsValid"] = final_url.startswith("https://")
                     parsed_host = urlparse(final_url).netloc.lower().split(":")[0]
                     result["hostAllowed"] = parsed_host in allowed_hosts
+                    if not result["hostAllowed"]:
+                        result["candidateHost"] = parsed_host
 
                     # Read first 64KB for markers
                     body = response.read(65536).decode("utf-8", errors="ignore")
@@ -81,6 +86,7 @@ def check_domain(name, info):
                     else:
                         result["status"] = "degraded"
                     return result
+
             except urllib.error.HTTPError as e:
                 if e.code in (301, 302, 307, 308):
                     new_loc = e.headers.get("Location")
@@ -93,12 +99,30 @@ def check_domain(name, info):
                         new_loc = f"{parsed_cur.scheme}://{parsed_cur.netloc}{new_loc}"
                     current_url = new_loc
                     hops += 1
+                elif e.code == 403:
+                    # Check if Cloudflare challenge
+                    err_body = e.read(16384).decode("utf-8", errors="ignore")
+                    result["finalUrl"] = current_url
+                    result["httpsValid"] = current_url.startswith("https://")
+                    parsed_host = urlparse(current_url).netloc.lower().split(":")[0]
+                    result["hostAllowed"] = parsed_host in allowed_hosts
+                    if "cloudflare" in err_body.lower() or "cf-ray" in str(e.headers).lower():
+                        result["status"] = "cloudflare_challenge"
+                        result["error"] = "Cloudflare challenge active (requires browser/OkHttp client)"
+                    else:
+                        result["status"] = "http_403"
+                        result["error"] = "HTTP 403 Forbidden"
+                    return result
                 else:
+                    result["finalUrl"] = current_url
                     result["status"] = f"http_{e.code}"
                     result["error"] = f"HTTP error {e.code}"
                     return result
+
         result["status"] = "redirect_loop"
+        result["error"] = f"Exceeded max redirects ({MAX_HOPS})"
         return result
+
     except Exception as e:
         result["status"] = "network_error"
         result["error"] = str(e)

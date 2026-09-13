@@ -1,19 +1,19 @@
-name: Provider Health Smoke Test
+name: Provider Health Monitoring
 
 on:
   schedule:
-    - cron: '0 2 * * *' # Daily at 02:00 UTC
+    - cron: "17 0,6,12,18 * * *"
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   issues: write
 
 jobs:
-  smoke-test:
+  health-check:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Source
+      - name: Checkout Source Code
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -25,6 +25,34 @@ jobs:
         run: |
           pip install -r tools/requirements.txt
 
-      - name: Run Provider Health Checks
+      - name: Validate Repository Schema & Config
         run: |
-          python tools/provider_health.py --report-path reports/provider-health.json
+          python tools/validate_repo.py
+
+      - name: Check Domain Health & Redirects
+        run: |
+          python tools/domain_health.py
+
+      - name: Inspect Provider Health (Tiers L0-L5)
+        run: |
+          python tools/provider_health.py
+
+      - name: Generate Health Summary Matrix
+        run: |
+          python tools/report_health_summary.py
+
+      - name: Manage Health Issues & Deduplication
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          python tools/manage_health_issues.py
+
+      - name: Upload Health Reports Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: health-reports
+          path: reports/
+          retention-days: 7
