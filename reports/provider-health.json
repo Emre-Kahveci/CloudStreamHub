@@ -1,7 +1,7 @@
 [
   {
     "provider": "AnimeciX",
-    "checkedAt": "2026-09-13T22:40:46.099034+00:00",
+    "checkedAt": "2026-09-13T22:49:13.372330+00:00",
     "canonical": "https://animecix.tv",
     "finalUrl": "https://animecix.tv/",
     "tierResults": {
@@ -19,12 +19,12 @@
       "L4": "Loaded: AnimeciX - Türkçe Anime Bilgi ve Paylaşı (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] No player iframe, video tag, or player script discovered at https://animecix.tv/titles/naruto"
     },
-    "durationMs": 1402,
+    "durationMs": 1418,
     "candidateHost": null
   },
   {
     "provider": "BelgeselX",
-    "checkedAt": "2026-09-13T22:40:47.501958+00:00",
+    "checkedAt": "2026-09-13T22:49:14.790686+00:00",
     "canonical": "https://belgeselx.com",
     "finalUrl": "https://belgeselx.com/",
     "tierResults": {
@@ -37,17 +37,17 @@
     },
     "overallStatus": "degraded",
     "diagnostic": {
-      "L2": "Found 15 items. Top: BARBARLARIN YÃKSELÄ°ÅÄ°\nDireniÅ Part 110",
+      "L2": "Found 15 items. Top: BARBARLARIN YÃKSELÄ°ÅÄ°\nDireniÅ Part 111",
       "L3": "Found 44 content results. Top: BARBARLARIN YÃKSELÄ°ÅÄ°\nDireniÅ Part ",
       "L4": "SOFT_404_PAGE: 404 — Sayfa Bulunamadı | Belgeselx",
       "L5": "[NONE] No target content body available to inspect at https://belgeselx.com/belgesel/gezegenimiz"
     },
-    "durationMs": 2255,
+    "durationMs": 2724,
     "candidateHost": null
   },
   {
     "provider": "DiziPal",
-    "checkedAt": "2026-09-13T22:40:49.758011+00:00",
+    "checkedAt": "2026-09-13T22:49:17.514956+00:00",
     "canonical": "https://dizipal1430.com",
     "finalUrl": "https://dizipal1430.com/",
     "tierResults": {
@@ -65,12 +65,12 @@
       "L4": "Loaded: Silo izle - Dizipal (Episodes: 30, Mode: STRICT_CONFIG)",
       "L5": "[STRICT_CONFIG] Discovered 1 iframes, 0 videos at https://dizipal1430.com/bolum/silo-1-sezon-1-bolum"
     },
-    "durationMs": 1487,
+    "durationMs": 1158,
     "candidateHost": null
   },
   {
     "provider": "FilmMakinesi",
-    "checkedAt": "2026-09-13T22:40:51.245190+00:00",
+    "checkedAt": "2026-09-13T22:49:18.673516+00:00",
     "canonical": "https://filmmakinesi.to",
     "finalUrl": "https://filmmakinesi.to/",
     "tierResults": {
@@ -88,12 +88,12 @@
       "L4": "Loaded: Forgotten Island 2026 Filmi 1080p Full H (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 2 iframes, 5 videos at https://filmmakinesi.to/film/forgotten-island-2026/"
     },
-    "durationMs": 873,
+    "durationMs": 804,
     "candidateHost": null
   },
   {
     "provider": "HDFilmCehennemi",
-    "checkedAt": "2026-09-13T22:40:52.119209+00:00",
+    "checkedAt": "2026-09-13T22:49:19.478314+00:00",
     "canonical": "https://www.hdfilmcehennemi.nl",
     "finalUrl": "https://www.hdfilmcehennemi.nl/",
     "tierResults": {
@@ -111,12 +111,12 @@
       "L4": "Loaded: Örümcek Adam Yepyeni Bir Gün - Spider Ma (Episodes: 1, Mode: GENERIC_FALLBACK)",
       "L5": "[GENERIC_FALLBACK] Discovered 1 iframes, 0 videos at https://www.hdfilmcehennemi.nl/spider-man-brand-new-day/"
     },
-    "durationMs": 1040,
+    "durationMs": 1105,
     "candidateHost": null
   },
   {
     "provider": "KultFilmler",
-    "checkedAt": "2026-09-13T22:40:53.160225+00:00",
+    "checkedAt": "2026-09-13T22:49:20.584265+00:00",
     "canonical": "https://kultfilmler.net",
     "finalUrl": "https://kultfilmler.net/",
     "tierResults": {
@@ -134,12 +134,12 @@
       "L4": "Loaded: Soldier - Asker İzle HD İzle - Kült Film (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 1 iframes, 0 videos at https://kultfilmler.net/soldier-asker/"
     },
-    "durationMs": 941,
+    "durationMs": 872,
     "candidateHost": null
   },
   {
     "provider": "TurkAnime",
-    "checkedAt": "2026-09-13T22:40:54.101585+00:00",
+    "checkedAt": "2026-09-13T22:49:21.456668+00:00",
     "canonical": "https://www.turkanime.tv",
     "finalUrl": "https://www.turkanime.tv/",
     "tierResults": {
@@ -155,14 +155,14 @@
       "L2": "Found 9 items. Top: Shiguang Dailiren III 12 izle",
       "L3": "Found 16 search matches. Top: Re:Zero kara Hajimeru Iseka...",
       "L4": "Loaded: Death Note izle | Konusu, Bölümleri ve K (Episodes: 37, Mode: STRICT_CONFIG)",
-      "L5": "[STRICT_CONFIG] Discovered 1 iframes, 0 videos at https://www.turkanime.tv/ajax/videosec&b=R0p1WmFVbXk5Z2RXaFk3Qjk3T1J1QT09OjpZOHd2bjB1Uk5nWDBUNHlU&f=TUdMTkJPVjFjak1yUXdYM2F3VDNIZz09Ojo4NEQ5c3VrVmJSS3JtSmlZ"
+      "L5": "[STRICT_CONFIG] Discovered 1 iframes, 0 videos at https://www.turkanime.tv/ajax/videosec&b=RldLcEhsNGYvQWlFdktORmgyOGJGdz09OjpNSlFfSExVVmpRaWRVWmZE&f=RmZRMU9MMVVoeGF2bGhLZDVuSHA4QT09OjpsWE9uTEdEMVd3WjdGS2tp"
     },
-    "durationMs": 2325,
+    "durationMs": 2438,
     "candidateHost": null
   },
   {
     "provider": "YesilCamTv",
-    "checkedAt": "2026-09-13T22:40:56.427185+00:00",
+    "checkedAt": "2026-09-13T22:49:23.895916+00:00",
     "canonical": "https://yesilcamtv.com.tr",
     "finalUrl": "https://yesilcamtv.com.tr/",
     "tierResults": {
@@ -180,7 +180,7 @@
       "L4": "Loaded: Sahte Kabadayı | YESILCAM TV (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 1 iframes, 0 videos at https://yesilcamtv.com.tr/sahte-kabadayi-izle/"
     },
-    "durationMs": 956,
+    "durationMs": 1019,
     "candidateHost": null
   }
 ]

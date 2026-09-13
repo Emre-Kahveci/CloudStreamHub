@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-09-13T22:41:28.244954+00:00",
+  "testedAt": "2026-09-13T22:49:48.317061+00:00",
   "providers": [
     {
       "provider": "AnimeciX",
@@ -30,7 +30,7 @@
       "homepage": {
         "status": "PASS",
         "itemCount": 15,
-        "sample": "BARBARLARIN YÃKSELÄ°ÅÄ°\nDireniÅ Part 110"
+        "sample": "BARBARLARIN YÃKSELÄ°ÅÄ°\nDireniÅ Part 111"
       },
       "detail": {
         "status": "FAIL",
@@ -163,7 +163,7 @@
         "status": "PLAYER_DISCOVERED",
         "iframes": 1,
         "hasPlayer": true,
-        "targetUrl": "https://www.turkanime.tv/ajax/videosec&b=VnZsR01hV2s0UEMyaFd2QkpESGVRdz09Ojp5M25zSFl1V2luQlJDMkNG&f=WE1ZT1RJekZwQ1lDNmRhY1RnN2JpUT09Ojp2UVUwR0F4c0ctdFFUOTF1"
+        "targetUrl": "https://www.turkanime.tv/ajax/videosec&b=RWNnQitnNXlXM3hYdEMvQUROS2Irdz09OjpoY0lsUU53UHloaXlvOGdF&f=L2d6ZFVLa1BzT08yaVY0K3BCNkhkdz09OjpYRUdOVk0wWko0NVcwQkE4"
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",

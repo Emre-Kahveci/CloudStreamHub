@@ -64,37 +64,36 @@ python -m pytest tools/tests
 - test_sanitize_headers / test_sanitize_media_url / test_sanitize_query_params / test_sanitize_body: PASS
 ```
 
-### 2.2 Sağlayıcı Sağlık Denetimi (`tools/provider_health.py` & `report_health_summary.py`)
-```text
+### 2.2 Sağlayıcı Sağlık Denetimi (`reports/provider-health.json`)
+
 | Provider | L0 Config | L1 Domain | L2 Homepage | L3 Search | L4 Load | L5 Player Discovery | Overall Status |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **AnimeciX** | PASS | PASS | FAIL | FAIL | PASS | PLAYER_NOT_FOUND | DEGRADED |
-| **BelgeselX** | PASS | FAIL | SKIPPED | SKIPPED | SKIPPED | SKIPPED | FAILED |
-| **DiziPal** | PASS | PASS | FAIL | FAIL | PASS | PLAYER_NOT_FOUND | DEGRADED |
-| **FilmMakinesi** | PASS | PASS | PASS | FAIL | PASS | PLAYER_DISCOVERED | HEALTHY |
-| **HDFilmCehennemi** | PASS | PASS | PASS | FAIL | PASS | PLAYER_DISCOVERED | HEALTHY |
-| **KultFilmler** | PASS | PASS | PASS | PASS | PASS | PLAYER_DISCOVERED | HEALTHY |
-| **TurkAnime** | PASS | PASS | PASS | FAIL | PASS | PLAYER_NOT_FOUND | DEGRADED |
-| **YesilCamTv** | PASS | PASS | PASS | FAIL | PASS | PLAYER_DISCOVERED | HEALTHY |
-```
+| **AnimeciX** | PASS | PASS | FAIL | PASS | PASS | PLAYER_NOT_FOUND | **DEGRADED** |
+| **BelgeselX** | PASS | PASS | PASS | PASS | FAIL | PLAYER_NOT_FOUND | **DEGRADED** |
+| **DiziPal** | PASS | PASS | PASS | PASS | PASS | PLAYER_DISCOVERED | **HEALTHY** |
+| **FilmMakinesi** | PASS | PASS | PASS | PASS | PASS | PLAYER_DISCOVERED | **HEALTHY** |
+| **HDFilmCehennemi** | PASS | PASS | PASS | PASS | PASS | PLAYER_DISCOVERED | **HEALTHY** |
+| **KultFilmler** | PASS | PASS | PASS | PASS | PASS | PLAYER_DISCOVERED | **HEALTHY** |
+| **TurkAnime** | PASS | PASS | PASS | PASS | PASS | PLAYER_DISCOVERED | **HEALTHY** |
+| **YesilCamTv** | PASS | PASS | PASS | PASS | PASS | PLAYER_DISCOVERED | **HEALTHY** |
+
+*Önemli Sağlayıcı Değerlendirmeleri:*
+- **AnimeciX**: Gerçek Android runtime testi `PASS` durumundadır. Monitoring altyapısında `DEGRADED` çıkmasının sebebi, sitenin SPA/API tabanlı olması ve statik DOM kazıma ile içerik kartlarının gelmemesidir. Search API `/secure/search/{query}` ve detail load `PASS` durumundadır.
+- **BelgeselX**: L1 domain ve UTF-8 / Windows-1254 decode hatası tamamen çözülmüştür (`L1 PASS`). Ancak smoke test için yapılandırılmış olan `https://belgeselx.com/belgesel/gezegenimiz` adresi upstream üzerinde soft 404 sayfasına düştüğünden `L4 FAIL` ve `L5 PLAYER_NOT_FOUND` alarak `DEGRADED` olarak raporlanmıştır. Bu durum monitoring hatası olmayıp `stale knownDetail` kaynaklıdır.
 
 ### 2.3 Canlı Smoke Testi (`tools/live_provider_smoke.py`)
 - BelgeselX'in HTTP 200 ile döndüğü "404 - Sayfa Bulunamadı" sayfası `Detail: FAIL (SOFT_404_PAGE)` olarak yakalandı.
-- DiziPal ve AnimeciX için 0 içerik kartı durumu dürüstçe `Home: FAIL` olarak kaydedildi.
-- FilmMakinesi, HDFilmCehennemi, KultFilmler ve YesilCamTv başarıyla `PASS` aldı.
+- DiziPal, FilmMakinesi, HDFilmCehennemi, KultFilmler, TurkAnime ve YesilCamTv başarıyla `PASS` aldı.
 
-### 2.4 Canlı XHR ve Probe Kanıtı (`reports/probe_sample.json`)
-- URL: `https://kultfilmler.net/`
-- Mod: `DYNAMIC (Browser: True)`
-- Yakalanan XHR/Script sayısı: `91`
-- Örnek maskelenmiş uç noktalar:
-  - `https://challenges.cloudflare.com/turnstile/v0/api.js`
-  - `https://protrafficinspector.com/stats`
-  - `https://kultfilmler.net/wp-content/themes/kultfilmler/assets/js/theme.js`
-- İframe keşfi: `https://vidpapi.xyz/video/063e26c670d07bb7c4d30e6fc69fe056`
+### 2.4 Sanitize Edilmiş Probe Özet Kanıtı (`reports/PROBE_VALIDATION_SUMMARY.md`)
+- Ham probe JSON dosyaları (`reports/probe_*.json`) binlerce satır geçici ağ izi içerdiği için `.gitignore` kapsamına alınarak kaynak yönetiminden çıkarılmıştır.
+- `XhrRedactor` katmanı `x-e-h`, `x-*-token`, `x-*-auth`, `x-*-key`, `api-key` başlıklarını ve `siteToken`, `accessToken`, `refreshToken`, `csrfToken`, `authToken`, `apiToken`, `clientSecret` gibi hassas gövde alanlarını maskeleme kabiliyetine kavuşturulmuştur.
+- Doğrulanan probe özetleri:
+  - **AnimeciX**: STEALTH modu, Chromium tarayıcı, 73 sanitized network isteği (5 XHR, 68 Script), challenge gözlenmedi.
+  - **KultFilmler**: DYNAMIC modu, Chromium tarayıcı, 42 sanitized network isteği (13 XHR, 6 Fetch, 23 Script), stream embed iframe başarıyla keşfedildi (`PLAYER_DISCOVERED`).
 
 ### 2.5 Android / Gradle Testleri & Repo Doğrulaması
-- `./gradlew test`: **BUILD SUCCESSFUL in 23s** (240 task UP-TO-DATE, sıfır regresyon).
+- `./gradlew test`: **BUILD SUCCESSFUL** (240 task UP-TO-DATE, sıfır regresyon, tüm Kotlin provider kodları dondurulmuş).
 - `python tools/validate_repo.py`: **SUCCESS** (0 hata, 8 aktif provider doğrulandı).
 
 ---

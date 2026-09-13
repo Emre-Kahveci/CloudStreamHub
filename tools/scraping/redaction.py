@@ -9,6 +9,32 @@ import re
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
+SAFE_HEADER_KEYS = {
+    "user-agent",
+    "accept",
+    "accept-encoding",
+    "accept-language",
+    "accept-charset",
+    "content-type",
+    "content-length",
+    "origin",
+    "referer",
+    "host",
+    "connection",
+    "cache-control",
+    "upgrade-insecure-requests",
+    "sec-ch-ua",
+    "sec-ch-ua-mobile",
+    "sec-ch-ua-platform",
+    "sec-fetch-dest",
+    "sec-fetch-mode",
+    "sec-fetch-site",
+    "sec-fetch-user",
+    "x-requested-with",
+    "pragma",
+    "dnt",
+}
+
 SENSITIVE_HEADER_KEYS = {
     "authorization",
     "cookie",
@@ -17,13 +43,28 @@ SENSITIVE_HEADER_KEYS = {
     "x-auth-token",
     "x-api-key",
     "cf-access-token",
-    "token"
+    "token",
+    "x-e-h",
+    "api-key",
+    "apikey",
 }
+
+# Matches x-*-token, x-*-auth, x-*-key, x-e-h, api-key, authorization-like custom keys
+AUTH_LIKE_HEADER_PATTERN = re.compile(
+    r"^(x-.*-(token|auth|key)|x-e-h|.*api[-_]?key.*|.*authorization.*|.*cookie.*|.*token.*)$",
+    re.IGNORECASE
+)
 
 SENSITIVE_PARAM_PATTERNS = [
     re.compile(r"^(token|auth|sig|signature|key|expires|secret|pass|passwd|password|jwt)$", re.IGNORECASE),
     re.compile(r".*(token|signature|secret|auth).*", re.IGNORECASE)
 ]
+
+# Body JSON field key matcher: field name contains token, secret, password, credential, authorization, apikey/api_key, or key
+SENSITIVE_BODY_KEY_PATTERN = re.compile(
+    r'("(?=[^"]*(?:token|secret|password|credential|authorization|api[-_]?key|(?<![a-zA-Z0-9])key(?![a-zA-Z0-9])))[^"]*"\s*:\s*)"[^"]*"',
+    re.IGNORECASE
+)
 
 JWT_REGEX = re.compile(r"eyJ[a-zA-Z0-9_-]{10,}\.eyJ[a-zA-Z0-9_-]{10,}\.[a-zA-Z0-9_-]{10,}")
 BEARER_REGEX = re.compile(r"Bearer\s+[a-zA-Z0-9_\-\.=]+", re.IGNORECASE)
@@ -34,8 +75,18 @@ class XhrRedactor:
     @staticmethod
     def sanitize_header_value(key: str, value: str) -> str:
         key_lower = key.lower().strip()
-        if key_lower in SENSITIVE_HEADER_KEYS or any(s in key_lower for s in ("auth", "token", "cookie", "key")):
+        # Safe headers are never redacted by key name
+        if key_lower in SAFE_HEADER_KEYS:
+            if JWT_REGEX.search(value) or BEARER_REGEX.search(value):
+                return "<REDACTED_TOKEN>"
+            return value
+
+        # Explicit sensitive keys or auth-like pattern match
+        if (key_lower in SENSITIVE_HEADER_KEYS or
+            AUTH_LIKE_HEADER_PATTERN.match(key_lower) or
+            any(s in key_lower for s in ("auth", "token", "cookie", "key"))):
             return "<REDACTED>"
+
         # Also redact if value itself looks like a Bearer token or JWT
         if JWT_REGEX.search(value) or BEARER_REGEX.search(value):
             return "<REDACTED_TOKEN>"
@@ -88,13 +139,8 @@ class XhrRedactor:
         # Redact JWTs and Bearer tokens in raw string payloads
         sanitized = JWT_REGEX.sub("<REDACTED_JWT>", body)
         sanitized = BEARER_REGEX.sub("Bearer <REDACTED>", sanitized)
-        # Redact passwords/keys in JSON-like fields
-        sanitized = re.sub(
-            r'("(?:password|secret|token|apiKey|key|auth)"\s*:\s*)"[^"]+"',
-            r'\1"<REDACTED>"',
-            sanitized,
-            flags=re.IGNORECASE
-        )
+        # Redact passwords, secrets, tokens, credentials, keys in JSON-like fields
+        sanitized = SENSITIVE_BODY_KEY_PATTERN.sub(r'\1"<REDACTED>"', sanitized)
         return sanitized
 
     @staticmethod

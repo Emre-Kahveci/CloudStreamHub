@@ -54,6 +54,8 @@ secrets*.json
 *.tmp
 *.temp
 reports/temp/
+reports/probe_*.json
+reports/probes/
 
 # OS metadata
 .DS_Store

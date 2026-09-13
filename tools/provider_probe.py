@@ -12,6 +12,8 @@ Features:
 
 Usage:
   python tools/provider_probe.py <url> [--mode auto|http|dynamic|stealth] [--capture-xhr] [--probe-detail] [--output <path>]
+
+Note: Probe JSON files are generated diagnostic artifacts and should not be committed.
 """
 
 import os
@@ -219,7 +221,7 @@ def main():
     parser.add_argument("--capture-xhr", action="store_true", help="Intercept and sanitize background XHR/fetch requests (forces browser)")
     parser.add_argument("--no-detail", action="store_true", help="Do not follow first content card to detail page")
     parser.add_argument("--timeout", type=int, default=20, help="Request timeout in seconds")
-    parser.add_argument("--output", help="Optional path to write JSON report")
+    parser.add_argument("--output", help="Optional path to write JSON report (Warning: probe JSON files are generated diagnostic artifacts and should not be committed)")
     args = parser.parse_args()
 
     probe_result = probe_page(
@@ -305,6 +307,7 @@ def main():
         with open(args.output, "w", encoding="utf-8") as f:
             json.dump(probe_result, f, indent=2, ensure_ascii=False)
         print(f"\nSaved structured JSON probe report to: {args.output}")
+        print("[WARNING] Probe JSON files are generated diagnostic artifacts and should not be committed.")
 
 if __name__ == "__main__":
     main()
