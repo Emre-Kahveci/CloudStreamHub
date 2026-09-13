@@ -28,7 +28,7 @@ Adversarial review sonrasında tespit edilen tüm kusurlar başarıyla giderilmi
    - `provider_health.py` içindeki devasa `if name == "HDFilmCehennemi"` zinciri kaldırılarak yapılandırma odaklı GET/POST_JSON/POST_FORM stratejisine geçildi.
 5. **Canlı XHR Yakalama Doğrulandı**:
    - `--capture-xhr` talep edildiğinde HTTP modu atlanarak doğrudan arka plan isteklerini dinleyen DYNAMIC/STEALTH tarayıcı katmanına geçilmesi sağlandı.
-   - `KultFilmler` üzerinde yapılan canlı testte **91 adet sanitized XHR/script isteği** yakalanarak kanıtlandı (`reports/probe_sample.json`).
+   - `KultFilmler` üzerinde yapılan canlı testte **42 captured network requests** yakalanarak kanıtlandı (`reports/probe_sample.json`).
 6. **Güvenlik Politikaları Sertleştirildi**:
    - İzin verilen hostlar (`allowedHosts`) varsayılan olarak **tam eşleşme (exact match)** kuralına bağlandı; subdomain kabulü için `allowSubdomains: true` opt-in şartı getirildi.
    - Sağlayıcı sağlık kontrolünde boş allowlist doğrudan `CONFIG_ERROR` olarak işaretlenir.
@@ -46,7 +46,7 @@ Adversarial review sonrasında tespit edilen tüm kusurlar başarıyla giderilmi
 ### 2.1 Python Birim Testleri (`pytest tools/tests`)
 ```text
 python -m pytest tools/tests
-======================= 20 passed, 2 warnings in 0.63s ========================
+======================= 30 passed, 2 warnings in 0.63s ========================
 - test_adaptive_drift_lifecycle: PASS
 - test_is_cloudflare_challenge / test_is_bot_blocked: PASS
 - test_verify_redirect_safety_exact_and_subdomain: PASS
