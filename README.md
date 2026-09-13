@@ -36,6 +36,12 @@ https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/repo.json
 |---|---|---|---|---|---|---|
 | **Kült Filmler** | `KultFilmler` | **32** | 31 | Film, Dizi | [kultfilmler.net](https://kultfilmler.net) | `1 (Aktif)` |
 | **Yeşilçam TV** | `YesilCamTv` | **10** | 9 | Film | [yesilcamtv.com.tr](https://yesilcamtv.com.tr) | `1 (Aktif)` |
+| **DiziPal** | `DiziPal` | **90** | 89 | Dizi, Film | [dizipal1430.com](https://dizipal1430.com) | `1 (Aktif)` |
+| **Türk Anime TV** | `TurkAnime` | **90** | 34 | Anime | [turkanime.tv](https://www.turkanime.tv) | `1 (Aktif)` |
+| **AnimeciX** | `AnimeciX` | **90** | 88 | Anime | [animecix.tv](https://animecix.tv) | `1 (Aktif)` |
+| **BelgeselX** | `BelgeselX` | **90** | 41 | Belgesel | [belgeselx.com](https://belgeselx.com) | `1 (Aktif)` |
+| **HDFilmCehennemi** | `HDFilmCehennemi` | **90** | 97 | Film, Dizi | [hdfilmcehennemi.nl](https://www.hdfilmcehennemi.nl) | `1 (Aktif)` |
+| **FilmMakinesi** | `FilmMakinesi` | **90** | 70 | Film, Dizi | [filmmakinesi.to](https://filmmakinesi.to) | `1 (Aktif)` |
 
 > Tam 67 legacy eklentinin durum dökümü ve canlandırma matrisi için [docs/LEGACY_INVENTORY.md](docs/LEGACY_INVENTORY.md) ve [legacy/migration-matrix.json](legacy/migration-matrix.json) dosyalarını inceleyebilirsiniz.
 

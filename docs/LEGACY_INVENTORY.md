@@ -13,7 +13,7 @@ Bu dokuman, eski `Kraptor123/cs-kraptor` repository'sinden cikarilan **67 adet**
 
 | # | Eklenti Adi | Internal Name | Legacy Surum | Legacy Status | Dil | Turler | Bilinen Domain | Migration Durumu | Notlar |
 |---|-------------|---------------|--------------|---------------|-----|--------|----------------|------------------|--------|
-| 1 | **AnimeciX** | `AnimeciX` | 88 | 1 | tr | Anime | https://animecix.tv | `eligible` | Public domain identified, eligible for migration |
+| 1 | **AnimeciX** | `AnimeciX` | 88 | 1 | tr | Anime | https://animecix.tv | `implemented` | Batch 01 revived: Native REST API + TauVideo extractor |
 | 2 | **Animeler** | `Animeler` | 41 | 1 | tr | Anime | https://animeler.pw | `eligible` | Public domain identified, eligible for migration |
 | 3 | **Animely** | `Animely` | 4 | 1 | tr | Anime, AnimeMovie, OVA | https://animecim.tv | `eligible` | Public domain identified, eligible for migration |
 | 4 | **AnimPow** | `AnimPow` | 7 | 1 | tr | Anime | https://animpow.com | `eligible` | Public domain identified, eligible for migration |
@@ -22,7 +22,7 @@ Bu dokuman, eski `Kraptor123/cs-kraptor` repository'sinden cikarilan **67 adet**
 | 7 | **AsyaFanatiklerim** | `AsyaFanatiklerim` | 22 | 1 | tr | AsianDrama | https://asyafanatiklerim.com | `eligible` | Public domain identified, eligible for migration |
 | 8 | **AsyaMinik** | `AsyaMinik` | 17 | 0 | tr | AsianDrama | https://asyaminik.com | `deprecated` | Marked status=0 (Down) in legacy builds repository |
 | 9 | **AsyaWatch** | `AsyaWatch` | 41 | 1 | tr | AsianDrama | https://asyawatch.com | `eligible` | Public domain identified, eligible for migration |
-| 10 | **BelgeselX** | `BelgeselX` | 41 | 1 | tr | Documentary | https://belgeselx.com | `eligible` | Public domain identified, eligible for migration |
+| 10 | **BelgeselX** | `BelgeselX` | 41 | 1 | tr | Documentary | https://belgeselx.com | `implemented` | Batch 01 revived: Google CSE search + multi-source player |
 | 11 | **CizgiMax** | `CizgiMax` | 36 | 1 | tr | Cartoon | https://cizgimax.online | `eligible` | Public domain identified, eligible for migration |
 | 12 | **CizgiveDizi** | `CizgiveDizi` | 50 | 1 | tr | Cartoon | https://cizgivedizi.com | `eligible` | Public domain identified, eligible for migration |
 | 13 | **Ddizi** | `Ddizi` | 19 | 1 | tr | TvSeries | https://www.ddizi.im | `eligible` | Public domain identified, eligible for migration |
@@ -35,7 +35,7 @@ Bu dokuman, eski `Kraptor123/cs-kraptor` repository'sinden cikarilan **67 adet**
 | 20 | **DiziLife** | `DiziLife` | 58 | 1 | tr | Movie, TvSeries | https://dizi74.life | `eligible` | Public domain identified, eligible for migration |
 | 21 | **Dizilla** | `Dizilla` | 111 | 1 | tr | TvSeries | https://dizilla.now | `eligible` | Public domain identified, eligible for migration |
 | 22 | **DiziMom** | `DiziMom` | 61 | 1 | tr | TvSeries | https://www.dizimom.diy | `eligible` | Public domain identified, eligible for migration |
-| 23 | **DiziPal** | `DiziPal` | 89 | 1 | tr | Movie, TvSeries | https://dizipal.bid | `eligible` | Public domain identified, eligible for migration |
+| 23 | **DiziPal** | `DiziPal` | 89 | 1 | tr | Movie, TvSeries | https://dizipal1430.com | `implemented` | Batch 01 revived: Search API + Videoplay HLS stream extractor |
 | 24 | **DiziPalOrijinal** | `DiziPalOrijinal` | 45 | 1 | tr | TvSeries | https://dizipal1580.com | `eligible` | Public domain identified, eligible for migration |
 | 25 | **Dizipod** | `Dizipod` | 12 | 1 | tr | Movie, TvSeries, AsianDrama | https://dizipod.com | `eligible` | Public domain identified, eligible for migration |
 | 26 | **DiziYo** | `DiziYo` | 74 | 1 | tr | TvSeries | https://www.diziyo.so | `eligible` | Public domain identified, eligible for migration |
@@ -43,12 +43,12 @@ Bu dokuman, eski `Kraptor123/cs-kraptor` repository'sinden cikarilan **67 adet**
 | 28 | **DramaDizilerim** | `DramaDizilerim` | 3 | 1 | tr | AsianDrama | https://dramadizilerim.com | `eligible` | Public domain identified, eligible for migration |
 | 29 | **FilmEkseni** | `FilmEkseni` | 50 | 1 | tr | Movie | https://filmekseni.vip | `eligible` | Public domain identified, eligible for migration |
 | 30 | **FilmHane** | `FilmHane` | 43 | 1 | tr | Movie | https://www.filmhane.shop | `eligible` | Public domain identified, eligible for migration |
-| 31 | **FilmMakinesi** | `FilmMakinesi` | 70 | 1 | tr | Movie, TvSeries | https://filmmakinesi.to | `eligible` | Public domain identified, eligible for migration |
+| 31 | **FilmMakinesi** | `FilmMakinesi` | 70 | 1 | tr | Movie, TvSeries | https://filmmakinesi.to | `implemented` | Batch 01 revived: Movie/Series parser + CloseLoad dynamic extractor |
 | 32 | **FilmModu** | `FilmModu` | 41 | 1 | tr | Movie | https://www.filmmodu.one | `eligible` | Public domain identified, eligible for migration |
 | 33 | **Filmzal** | `Filmzal` | 16 | 1 | az | Movie | https://filmzal.me | `eligible` | Public domain identified, eligible for migration |
 | 34 | **FullHDFilmizlesene** | `FullHDFilmizlesene` | 72 | 1 | tr | Movie | https://www.fullhdfilmizlesene.now | `eligible` | Public domain identified, eligible for migration |
 | 35 | **GinikoCanli** | `GinikoCanli` | 15 | 1 | tr | Live | https://www.giniko.com | `eligible` | Public domain identified, eligible for migration |
-| 36 | **HDFilmCehennemi** | `HDFilmCehennemi` | 97 | 1 | tr | Movie, TvSeries | https://www.hdfilmcehennemi.nl | `eligible` | Public domain identified, eligible for migration |
+| 36 | **HDFilmCehennemi** | `HDFilmCehennemi` | 97 | 1 | tr | Movie, TvSeries | https://www.hdfilmcehennemi.nl | `implemented` | Batch 01 revived: Fetch search + Rapidrame dynamic extractor |
 | 37 | **HDFilmDelisi** | `HDFilmDelisi` | 18 | 1 | tr | Movie | https://hdfilmdelisi.one | `eligible` | Public domain identified, eligible for migration |
 | 38 | **HDFilmizle** | `HDFilmizle` | 25 | 1 | tr | Movie | https://www.hdfilmizle.vip | `eligible` | Public domain identified, eligible for migration |
 | 39 | **InatBox** | `InatBox` | 57 | 2 | tr | Movie, TvSeries, Live | - | `blocked` | IPTV private backend / subscription bypass / reverse engineered token |
@@ -69,7 +69,7 @@ Bu dokuman, eski `Kraptor123/cs-kraptor` repository'sinden cikarilan **67 adet**
 | 54 | **SineWix** | `SineWix` | 33 | 1 | tr | Movie, TvSeries, Anime, AsianDrama, Cartoon | - | `blocked` | App-only encrypted API without public endpoints |
 | 55 | **Sinezy** | `Sinezy` | 40 | 1 | tr | Movie | https://sinezy.to | `eligible` | Public domain identified, eligible for migration |
 | 56 | **TrAnimeIzle** | `TrAnimeIzle` | 15 | 1 | tr | Anime | https://www.tranimeizle.io | `eligible` | Public domain identified, eligible for migration |
-| 57 | **TurkAnime** | `TurkAnime` | 34 | 1 | tr | Anime, AnimeMovie | https://turkanime.co | `eligible` | Public domain identified, eligible for migration |
+| 57 | **TurkAnime** | `TurkAnime` | 34 | 1 | tr | Anime, AnimeMovie | https://www.turkanime.tv | `implemented` | Batch 01 revived: EVP AES CBC decryptor + episode scraper |
 | 58 | **Turkdizileri** | `Turkdizileri` | 33 | 1 | tr | Movie | https://turkdizileri.tv | `eligible` | Public domain identified, eligible for migration |
 | 59 | **TvDiziler** | `TvDiziler` | 18 | 1 | tr | TvSeries | https://tvdiziler.tv | `eligible` | Public domain identified, eligible for migration |
 | 60 | **WebDramaTurkey** | `WebDramaTurkey` | 39 | 1 | tr | AsianDrama | https://webdramaturkey2.com | `eligible` | Public domain identified, eligible for migration |

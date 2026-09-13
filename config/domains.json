@@ -127,6 +127,62 @@
       ],
       "lastChecked": null,
       "status": "active"
+    },
+    "DiziPal": {
+      "canonical": "https://dizipal1430.com",
+      "allowedHosts": [
+        "dizipal1430.com",
+        "www.dizipal1430.com",
+        "dizipal.com"
+      ],
+      "expectedMarkers": [
+        "DiziPal",
+        "dizipal"
+      ],
+      "lastChecked": null,
+      "status": "active"
+    },
+    "TurkAnime": {
+      "canonical": "https://www.turkanime.tv",
+      "allowedHosts": [
+        "turkanime.tv",
+        "www.turkanime.tv",
+        "turkanime.co"
+      ],
+      "expectedMarkers": [
+        "TurkAnime",
+        "Türkanime",
+        "turkanime"
+      ],
+      "lastChecked": null,
+      "status": "active"
+    },
+    "BelgeselX": {
+      "canonical": "https://belgeselx.com",
+      "allowedHosts": [
+        "belgeselx.com",
+        "www.belgeselx.com"
+      ],
+      "expectedMarkers": [
+        "BelgeselX",
+        "belgeselx"
+      ],
+      "lastChecked": null,
+      "status": "active"
+    },
+    "FilmMakinesi": {
+      "canonical": "https://filmmakinesi.to",
+      "allowedHosts": [
+        "filmmakinesi.to",
+        "www.filmmakinesi.to",
+        "filmmakinesi.co"
+      ],
+      "expectedMarkers": [
+        "FilmMakinesi",
+        "filmmakinesi"
+      ],
+      "lastChecked": null,
+      "status": "active"
     }
   }
 }
