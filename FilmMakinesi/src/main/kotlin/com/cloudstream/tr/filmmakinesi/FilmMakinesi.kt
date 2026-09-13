@@ -158,6 +158,11 @@ class FilmMakinesi : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
+        var found = false
+        val wrappedCallback: (ExtractorLink) -> Unit = { link ->
+            found = true
+            callback(link)
+        }
         val doc = app.get(data, headers = mapOf("User-Agent" to userAgent, "Referer" to "${mainUrl}/")).document
 
         val iframes = mutableListOf<String>()
@@ -171,13 +176,17 @@ class FilmMakinesi : MainAPI() {
         val closeloadExtractor = CloseLoadExtractor()
 
         for (iframeUrl in iframes.distinct()) {
+            if (iframeUrl.contains("youtube.com") || iframeUrl.contains("youtu.be")) {
+                // Trailer iframe, skip
+                continue
+            }
             if (iframeUrl.contains("closeload.filmmakinesi.to") || iframeUrl.contains("closeload")) {
-                closeloadExtractor.getUrl(iframeUrl, data, subtitleCallback, callback)
+                closeloadExtractor.getUrl(iframeUrl, data, subtitleCallback, wrappedCallback)
             } else {
-                loadExtractor(iframeUrl, data, subtitleCallback, callback)
+                loadExtractor(iframeUrl, data, subtitleCallback, wrappedCallback)
             }
         }
 
-        return true
+        return found
     }
 }

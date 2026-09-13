@@ -46,8 +46,8 @@
       "domainKey": "DiziPal",
       "healthTier": "full",
       "smokeTest": {
-        "searchQuery": "Breaking Bad",
-        "knownDetail": "https://dizipal1430.com/dizi/breaking-bad",
+        "searchQuery": "Silo",
+        "knownDetail": "https://dizipal1430.com/dizi/silo",
         "expectedType": "TvSeries"
       }
     },
@@ -63,8 +63,8 @@
       "domainKey": "FilmMakinesi",
       "healthTier": "full",
       "smokeTest": {
-        "searchQuery": "Inception",
-        "knownDetail": "https://filmmakinesi.to/film/inception",
+        "searchQuery": "Island",
+        "knownDetail": "https://filmmakinesi.to/film/forgotten-island-2026/",
         "expectedType": "Movie"
       }
     },
@@ -80,8 +80,8 @@
       "domainKey": "HDFilmCehennemi",
       "healthTier": "full",
       "smokeTest": {
-        "searchQuery": "Matrix",
-        "knownDetail": "https://www.hdfilmcehennemi.nl/film/matrix-1",
+        "searchQuery": "Spider",
+        "knownDetail": "https://www.hdfilmcehennemi.nl/spider-man-brand-new-day/",
         "expectedType": "Movie"
       }
     },
@@ -97,8 +97,8 @@
       "domainKey": "KultFilmler",
       "healthTier": "full",
       "smokeTest": {
-        "searchQuery": "Baba",
-        "knownDetail": "https://kultfilmler.net/baba-the-godfather-izle/",
+        "searchQuery": "Soldier",
+        "knownDetail": "https://kultfilmler.net/soldier-asker/",
         "expectedType": "Movie"
       }
     },
@@ -130,8 +130,8 @@
       "domainKey": "YesilCamTv",
       "healthTier": "full",
       "smokeTest": {
-        "searchQuery": "Tosun Pasa",
-        "knownDetail": "https://yesilcamtv.com.tr/tosun-pasa-1976.html",
+        "searchQuery": "Kabadayi",
+        "knownDetail": "https://yesilcamtv.com.tr/sahte-kabadayi-izle/",
         "expectedType": "Movie"
       }
     },

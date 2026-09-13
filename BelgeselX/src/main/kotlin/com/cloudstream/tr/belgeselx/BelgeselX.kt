@@ -115,9 +115,15 @@ class BelgeselX : MainAPI() {
     }
 
     suspend fun parseLoadMetadata(doc: Document, url: String): LoadResponse? {
-        val title = doc.selectFirst("h1, meta[property='og:title']")?.let {
+        val rawTitle = doc.selectFirst("h2.px-info-title")?.let {
+            val clone = it.clone()
+            clone.select("span").remove()
+            clone.text().trim()
+        } ?: doc.selectFirst("h1, h2, meta[property='og:title']")?.let {
             if (it.tagName() == "meta") it.attr("content") else it.text().trim()
-        }?.replace(" — belgeselx.com", "")
+        } ?: doc.title().ifBlank { null }
+
+        val title = rawTitle?.replace(" — belgeselx.com", "")
             ?.replace(" – belgeselx.com", "")
             ?.replace(" - belgeselx.com", "")
             ?.replace(" İzle", "")
@@ -159,20 +165,16 @@ class BelgeselX : MainAPI() {
                     }
                 )
             }
-        } else {
-            // single documentary episode fallback
-            episodes.add(
-                newEpisode(url) {
-                    this.name = title
-                    this.season = 1
-                    this.episode = 1
-                }
-            )
-        }
 
-        return newTvSeriesLoadResponse(title, url, TvType.Documentary, episodes) {
-            this.posterUrl = poster
-            this.plot = description
+            return newTvSeriesLoadResponse(title, url, TvType.Documentary, episodes) {
+                this.posterUrl = poster
+                this.plot = description
+            }
+        } else {
+            return newMovieLoadResponse(title, url, TvType.Documentary, url) {
+                this.posterUrl = poster
+                this.plot = description
+            }
         }
     }
 

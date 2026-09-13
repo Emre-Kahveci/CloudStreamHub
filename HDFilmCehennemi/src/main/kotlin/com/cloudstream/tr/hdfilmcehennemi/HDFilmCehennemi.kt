@@ -22,14 +22,20 @@ class HDFilmCehennemi : MainAPI() {
     private val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/yabanci-film-dizi-izle/" to "Son Eklenen Filmler",
-        "${mainUrl}/en-cok-izlenen-filmleri-full-hd-1-izle/" to "Popüler Filmler",
-        "${mainUrl}/dizi-izle-1/" to "Son Eklenen Diziler",
-        "${mainUrl}/tavsiye-edilen-filmleri-izle-1/" to "Tavsiye Filmler"
+        "${mainUrl}/" to "Son Eklenen Filmler",
+        "${mainUrl}/category/film-izle-2/" to "Filmler",
+        "${mainUrl}/yabancidiziizle-5/" to "Diziler",
+        "${mainUrl}/dil/turkce-dublajli-film-izleyin-6/" to "Türkçe Dublaj",
+        "${mainUrl}/dil/turkce-altyazili-filmleri-izleme-sitesi-3/" to "Türkçe Altyazılı"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val url = if (page <= 1) request.data else "${request.data}page/$page/"
+        val url = if (page <= 1) {
+            request.data
+        } else {
+            val base = if (request.data.endsWith("/")) request.data else "${request.data}/"
+            "${base}page/$page/"
+        }
         val doc = app.get(url, headers = mapOf("User-Agent" to userAgent)).document
         val home = parseHomePage(doc)
         return newHomePageResponse(request.name, home, hasNext = home.isNotEmpty())
@@ -128,8 +134,11 @@ class HDFilmCehennemi : MainAPI() {
     }
 
     suspend fun parseLoadMetadata(doc: Document, url: String): LoadResponse? {
-        val title = doc.selectFirst("h1, meta[property='og:title']")?.let {
-            if (it.tagName() == "meta") it.attr("content") else it.text().trim()
+        val title = doc.selectFirst("h1.section-title, h1, meta[property='og:title']")?.let {
+            if (it.tagName() == "meta") it.attr("content") else {
+                it.select("small").remove()
+                it.text().trim()
+            }
         }?.replace(" - HDFilmCehennemi", "")?.replace(" Full HD izle", "")?.trim() ?: return null
 
         val poster = fixUrlNull(doc.selectFirst("meta[property='og:image']")?.attr("content"))
@@ -185,6 +194,11 @@ class HDFilmCehennemi : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
+        var found = false
+        val wrappedCallback: (ExtractorLink) -> Unit = { link ->
+            found = true
+            callback(link)
+        }
         val doc = app.get(data, headers = mapOf("User-Agent" to userAgent)).document
 
         // 1. Direct iframes or rapidrame embeds
@@ -200,12 +214,12 @@ class HDFilmCehennemi : MainAPI() {
 
         for (iframeUrl in iframes.distinct()) {
             if (iframeUrl.contains("rapidrame") || iframeUrl.contains("hdfilmcehennemi.mobi")) {
-                rapidrameExtractor.getUrl(iframeUrl, data, subtitleCallback, callback)
+                rapidrameExtractor.getUrl(iframeUrl, data, subtitleCallback, wrappedCallback)
             } else {
-                loadExtractor(iframeUrl, data, subtitleCallback, callback)
+                loadExtractor(iframeUrl, data, subtitleCallback, wrappedCallback)
             }
         }
 
-        return true
+        return found
     }
 }

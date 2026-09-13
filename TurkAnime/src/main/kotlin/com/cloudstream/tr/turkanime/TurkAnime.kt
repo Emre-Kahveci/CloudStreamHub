@@ -1,6 +1,6 @@
 package com.cloudstream.tr.turkanime
 
-import android.util.Base64
+import java.util.Base64
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
@@ -173,10 +173,10 @@ class TurkAnime : MainAPI() {
     private fun iframe2AesLink(iframe: String): String? {
         return try {
             val aesDataRaw = iframe.substringAfter("embed/#/url/").substringBefore("?status")
-            val aesJson = String(Base64.decode(aesDataRaw, Base64.DEFAULT), Charsets.UTF_8)
+            val aesJson = String(Base64.getDecoder().decode(aesDataRaw), Charsets.UTF_8)
             val payload = AppUtils.tryParseJson<CryptoJsPayload>(aesJson) ?: return null
 
-            val ct = Base64.decode(payload.ct ?: return null, Base64.DEFAULT)
+            val ct = Base64.getDecoder().decode(payload.ct ?: return null)
             val salt = hexStringToByteArray(payload.s ?: return null)
             val passphrase = "710^8A@3@>T2}#zN5xK?kR7KNKb@-A!LzYL5~M1qU0UfdWsZoBm4UUat%}ueUv6E--*hDPPbH7K2bp9^3o41hw,khL:}Kx8080@M".toByteArray(Charsets.UTF_8)
 
@@ -193,51 +193,59 @@ class TurkAnime : MainAPI() {
         }
     }
 
-    private suspend fun iframe2Load(
-        document: Document,
-        iframe: String,
+    private suspend fun resolveIframesAndExtract(
+        doc: Document,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
-    ): Boolean {
-        var loaded = false
-        val buttons = document.select("button[onclick*='ajax/videosec']")
-
-        if (buttons.isNotEmpty()) {
-            for (button in buttons) {
-                val onclick = button.attr("onclick")
-                val subPath = onclick.substringAfter("IndexIcerik('").substringBefore("'")
-                val buttonLink = fixUrlNull(subPath) ?: continue
-
+    ) {
+        val iframes = doc.select("iframe").mapNotNull { fixUrlNull(it.attr("src")) }
+        for (rawFrame in iframes) {
+            val frameLink = if (rawFrame.contains("embed/#/url/")) iframe2AesLink(rawFrame) else rawFrame
+            if (frameLink != null) {
                 try {
-                    val subDoc = app.get(
-                        buttonLink,
-                        headers = mapOf(
-                            "X-Requested-With" to "XMLHttpRequest",
-                            "Referer" to "${mainUrl}/"
-                        )
-                    ).document
-
-                    val subFrame = fixUrlNull(subDoc.selectFirst("iframe")?.attr("src")) ?: continue
-                    val subLink = if (subFrame.contains("embed/#/url/")) iframe2AesLink(subFrame) else subFrame
-                    if (subLink != null) {
-                        if (loadExtractor(subLink, "${mainUrl}/", subtitleCallback, callback)) {
-                            loaded = true
-                        }
-                    }
-                } catch (e: Exception) {
-                    // skip failing button
-                }
-            }
-        } else if (iframe.isNotBlank()) {
-            val link = if (iframe.contains("embed/#/url/")) iframe2AesLink(iframe) else iframe
-            if (link != null) {
-                if (loadExtractor(link, "${mainUrl}/", subtitleCallback, callback)) {
-                    loaded = true
-                }
+                    loadExtractor(frameLink, "${mainUrl}/", subtitleCallback, callback)
+                } catch (_: Exception) {}
             }
         }
+    }
 
-        return loaded
+    private suspend fun processVideosecUrl(
+        url: String,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        try {
+            val doc = app.get(
+                url,
+                headers = mapOf(
+                    "X-Requested-With" to "XMLHttpRequest",
+                    "Referer" to "${mainUrl}/"
+                )
+            ).document
+
+            // 1. Direct iframes in this response
+            resolveIframesAndExtract(doc, subtitleCallback, callback)
+
+            // 2. Secondary/nested buttons (e.g. video hosts under fansub selection)
+            val nestedButtons = doc.select("button[onclick*='ajax/videosec']")
+            for (nestedBtn in nestedButtons) {
+                val onclick = nestedBtn.attr("onclick")
+                val subPath = onclick.substringAfter("IndexIcerik('").substringBefore("'")
+                val nestedUrl = fixUrlNull(subPath) ?: continue
+                if (nestedUrl != url) {
+                    try {
+                        val hostDoc = app.get(
+                            nestedUrl,
+                            headers = mapOf(
+                                "X-Requested-With" to "XMLHttpRequest",
+                                "Referer" to "${mainUrl}/"
+                            )
+                        ).document
+                        resolveIframesAndExtract(hostDoc, subtitleCallback, callback)
+                    } catch (_: Exception) {}
+                }
+            }
+        } catch (_: Exception) {}
     }
 
     override suspend fun loadLinks(
@@ -246,9 +254,26 @@ class TurkAnime : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val document = app.get(data).document
-        val iframe = fixUrlNull(document.selectFirst("iframe")?.attr("src")) ?: ""
+        var found = false
+        val wrappedCallback: (ExtractorLink) -> Unit = { link ->
+            found = true
+            callback(link)
+        }
 
-        return iframe2Load(document, iframe, subtitleCallback, callback)
+        val document = app.get(data).document
+
+        // Direct iframes on page
+        resolveIframesAndExtract(document, subtitleCallback, wrappedCallback)
+
+        // Buttons (fansubs or direct video hosts)
+        val buttons = document.select("button[onclick*='ajax/videosec']")
+        for (button in buttons) {
+            val onclick = button.attr("onclick")
+            val subPath = onclick.substringAfter("IndexIcerik('").substringBefore("'")
+            val buttonLink = fixUrlNull(subPath) ?: continue
+            processVideosecUrl(buttonLink, subtitleCallback, wrappedCallback)
+        }
+
+        return found
     }
 }

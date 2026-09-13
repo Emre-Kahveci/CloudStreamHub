@@ -113,21 +113,25 @@ open class CloseLoadExtractor : ExtractorApi() {
 
         val arrRegex = Pattern.compile("\\[\\s*\"[^\\]]+\"\\s*\\]")
         val arrMatcher = arrRegex.matcher(html)
-        if (!arrMatcher.find()) return
-        val arrStr = arrMatcher.group(0) ?: return
-
-        val streamUrl = decodeCloseLoad(html, arrStr)
-        if (streamUrl.isNotEmpty() && (streamUrl.contains(".m3u8") || streamUrl.contains(".txt") || streamUrl.contains("/hls/"))) {
-            callback(
-                newExtractorLink(
-                    source = name,
-                    name = name,
-                    url = streamUrl,
-                    type = INFER_TYPE
-                ) {
-                    this.referer = url
+        while (arrMatcher.find()) {
+            val arrStr = arrMatcher.group(0) ?: continue
+            if (arrStr.contains(".jpg") || arrStr.contains(".png") || arrStr.contains(".webp")) continue
+            try {
+                val streamUrl = decodeCloseLoad(html, arrStr)
+                if (streamUrl.isNotEmpty() && (streamUrl.contains(".m3u8") || streamUrl.contains(".txt") || streamUrl.contains("/hls/"))) {
+                    callback(
+                        newExtractorLink(
+                            source = name,
+                            name = name,
+                            url = streamUrl,
+                            type = INFER_TYPE
+                        ) {
+                            this.referer = url
+                        }
+                    )
+                    break
                 }
-            )
+            } catch (_: Exception) {}
         }
 
         // Subtitles

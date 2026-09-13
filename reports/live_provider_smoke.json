@@ -1,0 +1,161 @@
+{
+  "testedAt": "2026-09-13T20:26:37.783392+00:00",
+  "providers": [
+    {
+      "provider": "AnimeciX",
+      "module": "AnimeciX",
+      "homepage": {
+        "status": "AUTOMATION_BLOCKED",
+        "reason": "Cloudflare challenge"
+      },
+      "detail": {
+        "status": "AUTOMATION_BLOCKED",
+        "reason": "Cloudflare challenge"
+      },
+      "playback": {
+        "status": "AUTOMATION_BLOCKED"
+      },
+      "subtitle": "NONE",
+      "overall": "AUTOMATION_BLOCKED",
+      "details": []
+    },
+    {
+      "provider": "BelgeselX",
+      "module": "BelgeselX",
+      "homepage": {
+        "status": "PASS",
+        "itemCount": 44
+      },
+      "detail": {
+        "status": "PASS",
+        "title": "Unknown"
+      },
+      "playback": {
+        "status": "FAIL",
+        "reason": "No iframe or player found"
+      },
+      "subtitle": "NONE",
+      "overall": "PARTIAL_PASS",
+      "details": []
+    },
+    {
+      "provider": "DiziPal",
+      "module": "DiziPal",
+      "homepage": {
+        "status": "PASS",
+        "itemCount": 0,
+        "note": "Page 200 but 0 cards matched generic selector"
+      },
+      "detail": {
+        "status": "PASS",
+        "title": ""
+      },
+      "playback": {
+        "status": "FAIL",
+        "reason": "No iframe or player found"
+      },
+      "subtitle": "HARDSUB/DUBLAJ",
+      "overall": "PARTIAL_PASS",
+      "details": []
+    },
+    {
+      "provider": "FilmMakinesi",
+      "module": "FilmMakinesi",
+      "homepage": {
+        "status": "PASS",
+        "itemCount": 44
+      },
+      "detail": {
+        "status": "PASS",
+        "title": ""
+      },
+      "playback": {
+        "status": "PASS",
+        "iframes": 2,
+        "hasPlayer": true
+      },
+      "subtitle": "HARDSUB/DUBLAJ",
+      "overall": "PASS",
+      "details": []
+    },
+    {
+      "provider": "HDFilmCehennemi",
+      "module": "HDFilmCehennemi",
+      "homepage": {
+        "status": "PASS",
+        "itemCount": 32
+      },
+      "detail": {
+        "status": "PASS",
+        "title": "Örümcek Adam Yepyeni Bir Gün - Spider Man Brand Ne"
+      },
+      "playback": {
+        "status": "PASS",
+        "iframes": 1,
+        "hasPlayer": true
+      },
+      "subtitle": "HARDSUB/DUBLAJ",
+      "overall": "PASS",
+      "details": []
+    },
+    {
+      "provider": "KultFilmler",
+      "module": "KultFilmler",
+      "homepage": {
+        "status": "PASS",
+        "itemCount": 47
+      },
+      "detail": {
+        "status": "PASS",
+        "title": ""
+      },
+      "playback": {
+        "status": "PASS",
+        "iframes": 1,
+        "hasPlayer": true
+      },
+      "subtitle": "NONE",
+      "overall": "PASS",
+      "details": []
+    },
+    {
+      "provider": "TurkAnime",
+      "module": "TurkAnime",
+      "homepage": {
+        "status": "PASS",
+        "itemCount": 22
+      },
+      "detail": {
+        "status": "PASS",
+        "title": "Unknown"
+      },
+      "playback": {
+        "status": "FAIL",
+        "reason": "No iframe or player found"
+      },
+      "subtitle": "NONE",
+      "overall": "PARTIAL_PASS",
+      "details": []
+    },
+    {
+      "provider": "YesilCamTv",
+      "module": "YesilCamTv",
+      "homepage": {
+        "status": "PASS",
+        "itemCount": 41
+      },
+      "detail": {
+        "status": "PASS",
+        "title": ""
+      },
+      "playback": {
+        "status": "PASS",
+        "iframes": 1,
+        "hasPlayer": false
+      },
+      "subtitle": "HARDSUB/DUBLAJ",
+      "overall": "PASS",
+      "details": []
+    }
+  ]
+}

@@ -72,15 +72,28 @@ jobs:
           cp src/build/plugins.json staging/
           find src -name "*.cs3" -exec cp {} staging/ \;
 
-      - name: Verify Staging Completeness
+      - name: Verify Staging Invariant (providers.json == plugins.json == *.cs3)
         run: |
-          echo "Staged files:"
-          ls -la staging
-          count=$(ls -1 staging/*.cs3 | wc -l)
-          if [ "$count" -ne 8 ]; then
-            echo "Error: Expected 8 .cs3 artifacts in staging, found $count"
-            exit 1
-          fi
+          python -c '
+          import json, glob, os, sys
+          with open("src/config/providers.json") as f:
+              p_conf = json.load(f)
+          enabled = sorted([p["module"] for p in p_conf.get("providers", []) if p.get("enabled", True)])
+          with open("staging/plugins.json") as f:
+              plugins = json.load(f)
+          plugin_names = sorted([p["internalName"] for p in plugins])
+          cs3_files = sorted([os.path.splitext(os.path.basename(x))[0] for x in glob.glob("staging/*.cs3")])
+          print(f"Enabled in providers.json ({len(enabled)}): {enabled}")
+          print(f"InternalNames in plugins.json ({len(plugin_names)}): {plugin_names}")
+          print(f"Staged .cs3 files ({len(cs3_files)}): {cs3_files}")
+          if enabled != plugin_names:
+              print(f"MISMATCH: enabled ({enabled}) != plugins.json ({plugin_names})")
+              sys.exit(1)
+          if enabled != cs3_files:
+              print(f"MISMATCH: enabled ({enabled}) != staged .cs3 ({cs3_files})")
+              sys.exit(1)
+          print(f"ALL INVARIANTS PASSED: Exactly {len(enabled)} active providers verified across all layers.")
+          '
 
       - name: Checkout or Bootstrap Builds Branch
         uses: actions/checkout@v4
@@ -103,8 +116,9 @@ jobs:
           fi
 
           cp -r ../staging/* .
+          count=$(ls -1 *.cs3 2>/dev/null | wc -l)
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Automated publication: ${{ github.sha }} (8 active providers)" || exit 0
+          git commit -m "Automated publication: ${{ github.sha }} ($count active providers)" || exit 0
           git push origin builds --force
