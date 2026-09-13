@@ -9,11 +9,18 @@ from .detection import (
     is_cloudflare_challenge,
     is_bot_blocked,
     verify_redirect_safety,
-    verify_content_markers
+    verify_content_markers,
+    is_soft_404
 )
 from .redaction import XhrRedactor
 from .adaptive import AdaptiveManager
 from .fetch import ProviderFetcher
+from .discovery import (
+    discover_homepage_cards,
+    parse_detail_page,
+    evaluate_player_discovery,
+    classify_subtitles
+)
 
 __all__ = [
     "FetchMode",
@@ -24,7 +31,12 @@ __all__ = [
     "is_bot_blocked",
     "verify_redirect_safety",
     "verify_content_markers",
+    "is_soft_404",
     "XhrRedactor",
     "AdaptiveManager",
-    "ProviderFetcher"
+    "ProviderFetcher",
+    "discover_homepage_cards",
+    "parse_detail_page",
+    "evaluate_player_discovery",
+    "classify_subtitles"
 ]

@@ -3,19 +3,18 @@
 live_provider_smoke.py
 
 Comprehensive live smoke test verifying active CloudStreamHub providers powered by Scrapling:
-- Homepage: HTTP 200 & DOM parsing with provider-specific fingerprints
-- Detail: Metadata loaded
-- Player Discovery: Evaluates player containers (iframe, embeds) without stream downloading
+- Homepage: PASS IFF >= 1 valid content item discovered; 0 items -> FAIL (or DRIFT_DETECTED if candidate found)
+- Detail: Rejects soft 404 pages (HTTP 200 with 404/not found in title/body)
+- Player Discovery: Evaluates real player containers with episode chaining for TV/Anime
   * Reports PLAYER_DISCOVERED or PLAYER_NOT_FOUND
   * Marks runtimePlayback as UNVERIFIED_BY_AUTOMATION
-- Subtitle: Reports NONE / HARDSUB / VTT truthfully
-- Explicit semantic status: PASS, AUTOMATION_BLOCKED, DRIFT_DETECTED, or FAIL
+- Subtitle: Distinguishes VTT/SRT, DUBBED, HARDSUB, or NONE truthfully
+- Shared semantic engine with provider_health.py (tools.scraping.discovery)
 """
 
 import os
 import sys
 
-# Ensure repository root is on sys.path
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
@@ -24,14 +23,17 @@ import json
 import time
 import argparse
 from datetime import datetime, timezone
-from bs4 import BeautifulSoup
 
 from tools.scraping import (
     ProviderFetcher,
     FetchMode,
     FetchStatus,
     AdaptiveManager,
-    XhrRedactor
+    XhrRedactor,
+    discover_homepage_cards,
+    parse_detail_page,
+    evaluate_player_discovery,
+    classify_subtitles
 )
 
 def test_provider(provider, domains_config, adaptive_mgr):
@@ -41,7 +43,12 @@ def test_provider(provider, domains_config, adaptive_mgr):
     canonical = domain_info.get("canonical")
     allowed_hosts = set(domain_info.get("allowedHosts", []))
     smoke = provider.get("smokeTest", {})
+    monitoring_cfg = provider.get("monitoring", {})
     known_detail = smoke.get("knownDetail")
+
+    pref_fetch = FetchMode(monitoring_cfg.get("preferredFetch", "HTTP"))
+    dyn_fallback = monitoring_cfg.get("dynamicFallback", True)
+    stealth_fallback = monitoring_cfg.get("stealthFallback", True)
 
     res = {
         "provider": name,
@@ -62,8 +69,17 @@ def test_provider(provider, domains_config, adaptive_mgr):
 
     with ProviderFetcher(allowed_hosts=allowed_hosts, canonical=canonical, timeout=15) as fetcher:
         # 1. Homepage Test
-        home_res = fetcher.fetch(canonical, preferred_mode=FetchMode.HTTP, allow_dynamic_fallback=True)
-        if home_res.status == FetchStatus.UNTRUSTED_REDIRECT:
+        home_res = fetcher.fetch(
+            canonical,
+            preferred_mode=pref_fetch,
+            allow_dynamic_fallback=dyn_fallback,
+            allow_stealth_fallback=stealth_fallback
+        )
+        if home_res.status == FetchStatus.CONFIG_ERROR:
+            res["homepage"] = {"status": "CONFIG_ERROR", "error": home_res.error}
+            res["overall"] = "CRITICAL"
+            return res
+        elif home_res.status == FetchStatus.UNTRUSTED_REDIRECT:
             res["homepage"] = {"status": "UNTRUSTED_REDIRECT", "candidate": home_res.candidateHost}
             res["overall"] = "CRITICAL"
             return res
@@ -72,26 +88,11 @@ def test_provider(provider, domains_config, adaptive_mgr):
         elif home_res.status == FetchStatus.BLOCKED:
             res["homepage"] = {"status": "AUTOMATION_BLOCKED", "reason": "WAF / 403 Forbidden"}
         elif home_res.statusCode == 200:
-            soup = BeautifulSoup(home_res.body, "html.parser")
-            selectors = [
-                "a.poster", "a.item", "a.mcard", "a.dcard", "a[href*='/belgesel/']",
-                "div.poster a", ".listmovie a", ".panel a", "article a", ".film-content a",
-                "div.film-box a", "div.menulink a", "div.kutu a"
-            ]
-            items = []
-            for sel in selectors:
-                for tag in soup.select(sel):
-                    href = tag.get("href")
-                    title = tag.get("title") or tag.text.strip()
-                    if href and (title or tag.find("img")):
-                        items.append(href)
-                if items:
-                    break
-
-            if items:
-                res["homepage"] = {"status": "PASS", "itemCount": len(items)}
+            cards = discover_homepage_cards(home_res.body, canonical)
+            if len(cards) > 0:
+                res["homepage"] = {"status": "PASS", "itemCount": len(cards), "sample": cards[0]["title"]}
             else:
-                # Check adaptive drift
+                # 0 cards: Check adaptive drift
                 stat, count, _ = adaptive_mgr.check_css_selector(
                     html_content=home_res.body,
                     selector_str="a.poster, a.mcard",
@@ -101,49 +102,72 @@ def test_provider(provider, domains_config, adaptive_mgr):
                 if stat == "DRIFT_DETECTED" and count > 0:
                     res["homepage"] = {"status": "DRIFT_DETECTED", "itemCount": count}
                 else:
-                    res["homepage"] = {"status": "PASS", "itemCount": 0, "note": "Page 200 but 0 cards matched selector"}
+                    # ZERO ITEMS IS STRICTLY FAIL (NOT PASS!)
+                    res["homepage"] = {"status": "FAIL", "itemCount": 0, "reason": "0 valid content items discovered"}
         else:
             res["homepage"] = {"status": "FAIL", "code": home_res.statusCode}
 
         # 2. Detail & Player Discovery Test
         if known_detail:
-            det_res = fetcher.fetch(known_detail, preferred_mode=FetchMode.HTTP, allow_dynamic_fallback=True)
-            if det_res.status == FetchStatus.CLOUDFLARE or det_res.status == FetchStatus.BLOCKED:
+            det_res = fetcher.fetch(
+                known_detail,
+                preferred_mode=pref_fetch,
+                allow_dynamic_fallback=dyn_fallback,
+                allow_stealth_fallback=stealth_fallback
+            )
+            if det_res.status in (FetchStatus.CLOUDFLARE, FetchStatus.BLOCKED):
                 res["detail"] = {"status": "AUTOMATION_BLOCKED", "reason": "Cloudflare/WAF challenge"}
                 res["playerDiscovery"] = {"status": "AUTOMATION_BLOCKED"}
-            elif det_res.statusCode == 200:
-                dsoup = BeautifulSoup(det_res.body, "html.parser")
-                title_tag = dsoup.select_one("h1, h2, meta[property='og:title'], title")
-                title = title_tag.text.strip() if title_tag else "Unknown"
-                res["detail"] = {"status": "PASS", "title": title[:50]}
-
-                iframes = [ifr.get("src") or ifr.get("data-src") for ifr in dsoup.find_all("iframe") if ifr.get("src") or ifr.get("data-src")]
-                videos = [v.get("src") for v in dsoup.find_all("video") if v.get("src")]
-                has_player = any(k in det_res.body.lower() for k in ["player", "jwplayer", "m3u8", "eval(", "closeload", "rapidrame", "vidpapi"])
-
-                if iframes or videos or has_player:
-                    res["playerDiscovery"] = {"status": "PLAYER_DISCOVERED", "iframes": len(iframes), "hasPlayer": has_player}
-                else:
-                    res["playerDiscovery"] = {"status": "PLAYER_NOT_FOUND", "reason": "No iframe or player found"}
-
-                if ".vtt" in det_res.body.lower() or ".srt" in det_res.body.lower():
-                    res["subtitle"] = "VTT/SRT"
-                elif "dublaj" in title.lower() or "dublaj" in det_res.body.lower():
-                    res["subtitle"] = "HARDSUB/DUBLAJ"
-                else:
-                    res["subtitle"] = "NONE"
             else:
-                res["detail"] = {"status": "FAIL", "code": det_res.statusCode}
-                res["playerDiscovery"] = {"status": "PLAYER_NOT_FOUND"}
+                detail_info = parse_detail_page(det_res.body, det_res.statusCode, known_detail)
+                if detail_info["status"] == "FAIL":
+                    if detail_info.get("isSoft404"):
+                        res["detail"] = {"status": "FAIL", "title": detail_info.get("title"), "reason": "SOFT_404_PAGE"}
+                    else:
+                        res["detail"] = {"status": "FAIL", "reason": detail_info.get("reason")}
+                    res["playerDiscovery"] = {"status": "PLAYER_NOT_FOUND"}
+                else:
+                    res["detail"] = {"status": "PASS", "title": detail_info["title"][:50]}
+                    res["subtitle"] = classify_subtitles(det_res.body, detail_info["title"])
+
+                    # Target chaining for player discovery
+                    player_probe_cfg = monitoring_cfg.get("playerProbe", {})
+                    probe_mode = player_probe_cfg.get("mode", "detail")
+                    target_body = det_res.body
+                    target_url = known_detail
+
+                    if probe_mode == "episode" and detail_info.get("episodeLinks"):
+                        ep_url = detail_info["episodeLinks"][0]
+                        try:
+                            ep_res = fetcher.fetch(ep_url, preferred_mode=pref_fetch, allow_dynamic_fallback=dyn_fallback)
+                            if ep_res.statusCode == 200:
+                                target_body = ep_res.body
+                                target_url = ep_url
+                                ep_sub = classify_subtitles(target_body)
+                                if ep_sub != "NONE":
+                                    res["subtitle"] = ep_sub
+                        except Exception:
+                            pass
+
+                    p_stat, p_info = evaluate_player_discovery(target_body, target_url)
+                    if p_stat == "PLAYER_DISCOVERED":
+                        res["playerDiscovery"] = {
+                            "status": "PLAYER_DISCOVERED",
+                            "iframes": len(p_info["iframes"]),
+                            "hasPlayer": p_info["hasPlayerScript"],
+                            "targetUrl": target_url
+                        }
+                    else:
+                        res["playerDiscovery"] = {"status": "PLAYER_NOT_FOUND", "targetUrl": target_url}
 
     statuses = [res["homepage"]["status"], res["detail"]["status"]]
-    if any(s == "UNTRUSTED_REDIRECT" for s in statuses):
+    if any(s in ("UNTRUSTED_REDIRECT", "CONFIG_ERROR") for s in statuses):
         res["overall"] = "CRITICAL"
     elif any(s == "AUTOMATION_BLOCKED" for s in statuses):
         res["overall"] = "AUTOMATION_BLOCKED"
     elif any(s == "DRIFT_DETECTED" for s in statuses):
         res["overall"] = "DRIFT_DETECTED"
-    elif all(s == "PASS" for s in statuses):
+    elif all(s == "PASS" for s in statuses) and res["playerDiscovery"].get("status") == "PLAYER_DISCOVERED":
         res["overall"] = "PASS"
     elif any(s == "PASS" for s in statuses):
         res["overall"] = "PARTIAL_PASS"

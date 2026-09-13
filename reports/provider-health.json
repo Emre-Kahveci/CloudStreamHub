@@ -1,7 +1,7 @@
 [
   {
     "provider": "AnimeciX",
-    "checkedAt": "2026-09-13T21:59:07.034514+00:00",
+    "checkedAt": "2026-09-13T22:18:31.815381+00:00",
     "canonical": "https://animecix.tv",
     "finalUrl": "https://animecix.tv/",
     "tierResults": {
@@ -15,62 +15,59 @@
     "overallStatus": "degraded",
     "diagnostic": {
       "L2": "NO_HOMEPAGE_ITEMS_PARSED",
-      "L3": "Search returned HTTP 200 or no match",
+      "L3": "Search returned HTTP 200 or no matches",
       "L4": "Loaded: AnimeciX - Türkçe Anime Bilgi ve Paylaşı",
-      "L5": "No player iframe, video tag, or player script discovered"
+      "L5": "No player iframe, video tag, or player script discovered at https://animecix.tv/titles/naruto"
     },
-    "durationMs": 2351,
+    "durationMs": 1291,
     "candidateHost": null
   },
   {
     "provider": "BelgeselX",
-    "checkedAt": "2026-09-13T21:59:09.386632+00:00",
+    "checkedAt": "2026-09-13T22:18:33.107049+00:00",
     "canonical": "https://belgeselx.com",
-    "finalUrl": "https://belgeselx.com/",
+    "finalUrl": "https://belgeselx.com",
     "tierResults": {
       "L0_config": "pass",
-      "L1_domain": "pass",
-      "L2_homepage": "pass",
-      "L3_search": "fail",
-      "L4_load": "fail",
-      "L5_player_discovery": "player_not_found"
+      "L1_domain": "fail (HTTP_None)",
+      "L2_homepage": "skipped",
+      "L3_search": "skipped",
+      "L4_load": "skipped",
+      "L5_player_discovery": "skipped"
     },
-    "overallStatus": "degraded",
+    "overallStatus": "failed",
     "diagnostic": {
-      "L2": "Found 3 items. Top: COSMOS YENİ DÜNYALAR\nCassininin Fedakar5",
-      "L3": "Search returned HTTP 404 or no match",
-      "L4": "Load returned HTTP 200",
-      "L5": "No detail body available to inspect"
+      "L1": "'utf-8' codec can't decode byte 0xc3 in position 55049: invalid continuation byte"
     },
-    "durationMs": 26250,
+    "durationMs": 1147,
     "candidateHost": null
   },
   {
     "provider": "DiziPal",
-    "checkedAt": "2026-09-13T21:59:35.637760+00:00",
+    "checkedAt": "2026-09-13T22:18:34.256742+00:00",
     "canonical": "https://dizipal1430.com",
     "finalUrl": "https://dizipal1430.com/",
     "tierResults": {
       "L0_config": "pass",
       "L1_domain": "pass",
-      "L2_homepage": "pass",
+      "L2_homepage": "fail",
       "L3_search": "fail",
       "L4_load": "pass",
-      "L5_player_discovery": "player_discovered"
+      "L5_player_discovery": "player_not_found"
     },
     "overallStatus": "degraded",
     "diagnostic": {
-      "L2": "Found 3 items. Top: Dublaj & Altyazı\n\n\r\n                    ",
-      "L3": "Search returned HTTP 404 or no match",
-      "L4": "Loaded: Silo",
-      "L5": "Discovered 0 iframes, videos: 0, script player: True"
+      "L2": "NO_HOMEPAGE_ITEMS_PARSED",
+      "L3": "Search returned HTTP 404 or no matches",
+      "L4": "Loaded: Silo izle - Dizipal",
+      "L5": "No player iframe, video tag, or player script discovered at https://dizipal1430.com/bolum/silo-1-sezon-1-bolum"
     },
-    "durationMs": 13941,
+    "durationMs": 2304,
     "candidateHost": null
   },
   {
     "provider": "FilmMakinesi",
-    "checkedAt": "2026-09-13T21:59:49.579251+00:00",
+    "checkedAt": "2026-09-13T22:18:36.561992+00:00",
     "canonical": "https://filmmakinesi.to",
     "finalUrl": "https://filmmakinesi.to/",
     "tierResults": {
@@ -81,19 +78,19 @@
       "L4_load": "pass",
       "L5_player_discovery": "player_discovered"
     },
-    "overallStatus": "degraded",
+    "overallStatus": "healthy",
     "diagnostic": {
-      "L2": "Found 3 items. Top: Aksiyon",
-      "L3": "Search returned HTTP 404 or no match",
-      "L4": "Loaded: Forgotten Island izle (2026)",
-      "L5": "Discovered 2 iframes, videos: 0, script player: True"
+      "L2": "Found 15 items. Top: Forgotten Island23 Eylül",
+      "L3": "Search returned HTTP 404 or no matches",
+      "L4": "Loaded: Forgotten Island 2026 Filmi 1080p Full H",
+      "L5": "Discovered 2 iframes, 5 videos, scriptPlayer=True at https://filmmakinesi.to/film/forgotten-island-2026/"
     },
-    "durationMs": 17011,
+    "durationMs": 1395,
     "candidateHost": null
   },
   {
     "provider": "HDFilmCehennemi",
-    "checkedAt": "2026-09-13T22:00:06.590505+00:00",
+    "checkedAt": "2026-09-13T22:18:37.957677+00:00",
     "canonical": "https://www.hdfilmcehennemi.nl",
     "finalUrl": "https://www.hdfilmcehennemi.nl/",
     "tierResults": {
@@ -104,19 +101,19 @@
       "L4_load": "pass",
       "L5_player_discovery": "player_discovered"
     },
-    "overallStatus": "degraded",
+    "overallStatus": "healthy",
     "diagnostic": {
-      "L2": "Found 3 items. Top: Örümcek Adam Yepyeni Bir Gün - Spider Ma",
+      "L2": "Found 15 items. Top: Örümcek Adam Yepyeni Bir Gün - Spider Man Brand New Day",
       "L3": "Search HTTP 200 or 0 results",
       "L4": "Loaded: Örümcek Adam Yepyeni Bir Gün - Spider Ma",
-      "L5": "Discovered 1 iframes, videos: 0, script player: True"
+      "L5": "Discovered 1 iframes, 0 videos, scriptPlayer=True at https://www.hdfilmcehennemi.nl/spider-man-brand-new-day/"
     },
-    "durationMs": 1332,
+    "durationMs": 1189,
     "candidateHost": null
   },
   {
     "provider": "KultFilmler",
-    "checkedAt": "2026-09-13T22:00:07.923548+00:00",
+    "checkedAt": "2026-09-13T22:18:39.146807+00:00",
     "canonical": "https://kultfilmler.net",
     "finalUrl": "https://kultfilmler.net/",
     "tierResults": {
@@ -129,58 +126,58 @@
     },
     "overallStatus": "healthy",
     "diagnostic": {
-      "L2": "Found 3 items. Top: Türkçe Altyazı1998\n\n\n\nSoldier – AskerAks",
-      "L3": "Found 12 search results",
-      "L4": "Loaded: Soldier – Asker",
-      "L5": "Discovered 1 iframes, videos: 0, script player: True"
+      "L2": "Found 15 items. Top: Türkçe Altyazı1998\n\n\n\nSoldier – AskerAksiyon · Bilim Kurgu\n6.1IMDB",
+      "L3": "Found 6 search results",
+      "L4": "Loaded: Soldier - Asker İzle HD İzle - Kült Film",
+      "L5": "Discovered 1 iframes, 0 videos, scriptPlayer=True at https://kultfilmler.net/soldier-asker/"
     },
-    "durationMs": 1346,
+    "durationMs": 1120,
     "candidateHost": null
   },
   {
     "provider": "TurkAnime",
-    "checkedAt": "2026-09-13T22:00:09.270576+00:00",
+    "checkedAt": "2026-09-13T22:18:40.267304+00:00",
     "canonical": "https://www.turkanime.tv",
     "finalUrl": "https://www.turkanime.tv/",
     "tierResults": {
       "L0_config": "pass",
       "L1_domain": "pass",
       "L2_homepage": "pass",
-      "L3_search": "pass",
+      "L3_search": "fail",
       "L4_load": "pass",
       "L5_player_discovery": "player_not_found"
     },
-    "overallStatus": "healthy",
+    "overallStatus": "degraded",
     "diagnostic": {
-      "L2": "Found 3 items. Top: Re:Zero kara Hajimeru Iseka...",
-      "L3": "Search AJAX returned anime matches",
+      "L2": "Found 15 items. Top: .#0-9",
+      "L3": "Search HTTP 200 or expected keyword not found",
       "L4": "Loaded: Death Note izle | Konusu, Bölümleri ve K",
-      "L5": "No player iframe, video tag, or player script discovered"
+      "L5": "No player iframe, video tag, or player script discovered at https://www.turkanime.tv/yakinda-yeni-sezon-animeleri"
     },
-    "durationMs": 2225,
+    "durationMs": 2254,
     "candidateHost": null
   },
   {
     "provider": "YesilCamTv",
-    "checkedAt": "2026-09-13T22:00:11.496599+00:00",
+    "checkedAt": "2026-09-13T22:18:42.521912+00:00",
     "canonical": "https://yesilcamtv.com.tr",
     "finalUrl": "https://yesilcamtv.com.tr/",
     "tierResults": {
       "L0_config": "pass",
       "L1_domain": "pass",
       "L2_homepage": "pass",
-      "L3_search": "pass",
+      "L3_search": "fail",
       "L4_load": "pass",
       "L5_player_discovery": "player_discovered"
     },
     "overallStatus": "healthy",
     "diagnostic": {
-      "L2": "Found 3 items. Top: Discovered Item",
-      "L3": "Found 2 search results",
-      "L4": "Loaded: Sahte Kabadayı",
-      "L5": "Discovered 1 iframes, videos: 0, script player: True"
+      "L2": "Found 1 items. Top: Belgesel",
+      "L3": "Search returned HTTP 200 or no matches",
+      "L4": "Loaded: Sahte Kabadayı | YESILCAM TV",
+      "L5": "Discovered 1 iframes, 0 videos, scriptPlayer=False at https://yesilcamtv.com.tr/sahte-kabadayi-izle/"
     },
-    "durationMs": 1350,
+    "durationMs": 1124,
     "candidateHost": null
   }
 ]

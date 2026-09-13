@@ -5,14 +5,16 @@ provider_health.py
 Truthful multi-tier provider health inspection powered by Scrapling:
 L0: Configuration (Config schema, root module, gradle build, manifest, Kotlin classes)
 L1: Domain Reachable (DNS/HTTPS, HTTP status, redirect chain, allowedHosts, markers)
-    - Status: PASS, CLOUDFLARE, UNTRUSTED_REDIRECT, FAIL
+    - Status: PASS, CLOUDFLARE, UNTRUSTED_REDIRECT, CONFIG_ERROR, CONTENT_MARKER_MISMATCH, FAIL
 L2: Homepage (DOM smoke probe with Scrapling + adaptive selector drift detection)
     - Status: PASS, DRIFT_DETECTED, FAIL, AUTOMATION_BLOCKED
-L3: Search (Search probe with searchQuery: AJAX/POST/GET results returned)
-    - Status: PASS, FAIL, UNVERIFIED, AUTOMATION_BLOCKED, SKIPPED
-L4: Load (Detail page probe with knownDetail: title & metadata loaded)
+L3: Search (Config-driven search probe: GET / POST_JSON / POST_FORM)
+    - Status: PASS, FAIL, AUTOMATION_BLOCKED, SKIPPED
+L4: Load (Detail page probe with soft 404 detection & adaptive title checking)
     - Status: PASS, DRIFT_DETECTED, FAIL, AUTOMATION_BLOCKED, SKIPPED
-L5: Player Discovery (Discovery of player iframe / embed / stream container without byte download)
+L5: Player Discovery (Evaluates player container discovery with episode chaining)
+    - Movie: Detail -> Player discovery
+    - TvSeries / Anime: Detail -> Episode discovery -> Player discovery
     - Status: PLAYER_DISCOVERED, PLAYER_NOT_FOUND, AUTOMATION_BLOCKED, SKIPPED
     - NOTE: Discovery of player containers NEVER implies CloudStream Android PLAYBACK_PASS!
 
@@ -22,7 +24,6 @@ Tiers that are not executed or not configured report 'skipped' or 'untested', NE
 import os
 import sys
 
-# Ensure repository root is in sys.path
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
@@ -31,6 +32,8 @@ import json
 import time
 import argparse
 import urllib.parse
+from urllib.parse import urljoin, urlparse
+from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime, timezone
 from bs4 import BeautifulSoup
 
@@ -39,7 +42,10 @@ from tools.scraping import (
     FetchMode,
     FetchStatus,
     AdaptiveManager,
-    XhrRedactor
+    XhrRedactor,
+    discover_homepage_cards,
+    parse_detail_page,
+    evaluate_player_discovery
 )
 
 def check_l0_config(provider, repo_root, domains_config):
@@ -64,73 +70,27 @@ def check_l0_config(provider, repo_root, domains_config):
 
     return "pass", None
 
-def check_l2_homepage(name, html_body, canonical, adaptive_mgr: AdaptiveManager):
+def check_l2_homepage(name, html_body, canonical, adaptive_mgr: AdaptiveManager, monitoring_cfg: Dict[str, Any]):
     if not html_body:
         return "fail", "EMPTY_BODY", None
 
-    # Preferred / specific selector fingerprints
-    known_selectors = {
-        "AnimeciX": "a.poster, a.item, div.title-card, a[href*='/titles/']",
-        "BelgeselX": "a[href*='/belgesel/'], div.panel a, .video-item a",
-        "DiziPal": "article a, a.poster, .movie-box a, a[href*='/dizi/'], a[href*='/film/']",
-        "FilmMakinesi": "div.film-box a, .film-content a, a.poster, a[href*='/film/']",
-        "HDFilmCehennemi": "a.poster, div.poster a, .film-content a, a.card",
-        "KultFilmler": "a.mcard, a.dcard, a[href*='-izle/'], article a",
-        "TurkAnime": "div.menulink a, div.kutu a, a[href*='/anime/']",
-        "YesilCamTv": ".film-kutusu a, .video-item a, a[href*='-izle/']"
-    }
-
-    primary_selector = known_selectors.get(name, "a.mcard, a.dcard, a.poster, a.item, article a")
-
-    # Strict check using BeautifulSoup first
-    soup = BeautifulSoup(html_body, "html.parser")
-    items = []
-
-    for sel in [s.strip() for s in primary_selector.split(",")]:
-        for tag in soup.select(sel):
-            href = tag.get("href")
-            title = tag.get("title") or tag.text.strip()
-            if href and (title or tag.find("img")):
-                items.append((title or "Discovered Item", href))
-                if len(items) >= 3:
-                    break
-        if items:
-            break
-
-    if items:
-        # Also register baseline with adaptive manager
+    # Use shared discovery helper
+    cards = discover_homepage_cards(html_body, canonical)
+    if len(cards) > 0:
+        # Register baseline with adaptive manager
         try:
             adaptive_mgr.check_css_selector(
                 html_content=html_body,
-                selector_str=primary_selector.split(",")[0].strip(),
+                selector_str=cards[0].get("selector", "a.poster"),
                 identifier=f"{name}_homepage_card",
                 base_url=canonical
             )
         except Exception:
             pass
-        return "pass", f"Found {len(items)} items. Top: {items[0][0][:40]}", None
+        return "pass", f"Found {len(cards)} items. Top: {cards[0]['title']}", None
 
-    # Fallback to general generic selectors
-    generic_selectors = [
-        "a.mcard", "a.dcard", "a.item", "a.poster", "a[href*='/belgesel/']",
-        "div.panel a", "article a", ".film-content a", ".movie-box a",
-        ".video-item a", "div.film-box a"
-    ]
-    for sel in generic_selectors:
-        for tag in soup.select(sel):
-            href = tag.get("href")
-            title = tag.get("title") or tag.text.strip()
-            if href and (title or tag.find("img")):
-                items.append((title or "Generic Item", href))
-                if len(items) >= 3:
-                    break
-        if items:
-            break
-
-    if items:
-        return "pass", f"Found {len(items)} items via fallback generic selector", None
-
-    # If neither strict nor generic matched, run adaptive selector drift check
+    # If 0 cards discovered, run adaptive selector drift check
+    primary_selector = "a.poster, a.mcard, a.dcard, article a"
     try:
         drift_stat, drift_count, candidates = adaptive_mgr.check_css_selector(
             html_content=html_body,
@@ -145,66 +105,61 @@ def check_l2_homepage(name, html_body, canonical, adaptive_mgr: AdaptiveManager)
 
     return "fail", "NO_HOMEPAGE_ITEMS_PARSED", None
 
-def check_l3_search(name, canonical, smoke_test, fetcher: ProviderFetcher):
+def check_l3_search(name, canonical, smoke_test, monitoring_cfg, fetcher: ProviderFetcher):
     q = smoke_test.get("searchQuery")
     if not q:
         return "skipped", "NO_SEARCH_QUERY_CONFIGURED"
 
+    search_cfg = monitoring_cfg.get("search", {})
+    method = search_cfg.get("method", "GET").upper()
+    path = search_cfg.get("path", "/?s={query}")
+    endpoint = urljoin(canonical, path.replace("{query}", urllib.parse.quote(q)))
+
     try:
-        if name == "HDFilmCehennemi":
-            post_data = json.dumps({"query": q})
-            res = fetcher.fetch(
-                f"{canonical}/search/",
-                preferred_mode=FetchMode.HTTP,
-                method="POST",
-                data=post_data,
-                headers={"Content-Type": "application/json", "X-Requested-With": "fetch"}
-            )
-            if res.status == FetchStatus.CLOUDFLARE or res.status == FetchStatus.BLOCKED:
+        if method == "POST_JSON":
+            payload_template = search_cfg.get("payload", {"query": "{query}"})
+            payload_str = json.dumps(payload_template).replace("{query}", q)
+            headers = search_cfg.get("headers", {"Content-Type": "application/json"})
+            res = fetcher.fetch(endpoint, preferred_mode=FetchMode.HTTP, method="POST", data=payload_str, headers=headers)
+            if res.status in (FetchStatus.CLOUDFLARE, FetchStatus.BLOCKED):
                 return "automation_blocked", f"Search endpoint protected ({res.status.value})"
             if res.statusCode == 200:
                 try:
                     data = json.loads(res.body)
-                    results = data.get("results", [])
+                    json_key = search_cfg.get("jsonKey", "results")
+                    results = data.get(json_key, [])
                     if results:
                         return "pass", f"Found {len(results)} results"
                 except Exception:
                     pass
             return "fail", f"Search HTTP {res.statusCode} or 0 results"
 
-        elif name == "TurkAnime":
-            post_data = urllib.parse.urlencode({"arama": q})
-            res = fetcher.fetch(
-                f"{canonical}/ajax/arama",
-                preferred_mode=FetchMode.HTTP,
-                method="POST",
-                data=post_data,
-                headers={"Content-Type": "application/x-www-form-urlencoded", "X-Requested-With": "XMLHttpRequest"}
-            )
-            if res.status == FetchStatus.CLOUDFLARE or res.status == FetchStatus.BLOCKED:
+        elif method == "POST_FORM":
+            payload_template = search_cfg.get("payload", {"arama": "{query}"})
+            data = {k: v.replace("{query}", q) for k, v in payload_template.items()}
+            form_data = urllib.parse.urlencode(data)
+            headers = search_cfg.get("headers", {"Content-Type": "application/x-www-form-urlencoded"})
+            res = fetcher.fetch(endpoint, preferred_mode=FetchMode.HTTP, method="POST", data=form_data, headers=headers)
+            if res.status in (FetchStatus.CLOUDFLARE, FetchStatus.BLOCKED):
                 return "automation_blocked", f"Search AJAX protected ({res.status.value})"
-            if res.statusCode == 200 and ("/anime/" in res.body or "turkanime" in res.body):
-                return "pass", "Search AJAX returned anime matches"
-            return "fail", f"Search HTTP {res.statusCode} or empty response"
+            keyword = search_cfg.get("expectedKeyword", "/anime/")
+            if res.statusCode == 200 and (keyword in res.body):
+                return "pass", f"Search AJAX returned matches containing '{keyword}'"
+            return "fail", f"Search HTTP {res.statusCode} or expected keyword not found"
 
         else:
-            # Generic query check
-            search_urls = [
-                f"{canonical}/?s={urllib.parse.quote(q)}",
-                f"{canonical}/find?q={urllib.parse.quote(q)}",
-                f"{canonical}/arama?q={urllib.parse.quote(q)}"
-            ]
-            for s_url in search_urls:
-                res = fetcher.fetch(s_url, preferred_mode=FetchMode.HTTP)
-                if res.status == FetchStatus.CLOUDFLARE or res.status == FetchStatus.BLOCKED:
-                    return "automation_blocked", f"Search protected ({res.status.value})"
-                if res.statusCode == 200:
-                    soup = BeautifulSoup(res.body, "html.parser")
-                    results = soup.select("article, .movie-box, .film-box, .video-item, .poster, .film-content, a.mcard, a.dcard")
-                    if results:
-                        return "pass", f"Found {len(results)} search results"
+            # Standard GET search
+            res = fetcher.fetch(endpoint, preferred_mode=FetchMode.HTTP)
+            if res.status in (FetchStatus.CLOUDFLARE, FetchStatus.BLOCKED):
+                return "automation_blocked", f"Search protected ({res.status.value})"
+            if res.statusCode == 200:
+                soup = BeautifulSoup(res.body, "html.parser")
+                selector = search_cfg.get("expectedSelector", "article a, .movie-box, .film-box, .video-item, .poster, a.mcard")
+                results = soup.select(selector)
+                if results:
+                    return "pass", f"Found {len(results)} search results"
 
-            return "fail", f"Search returned HTTP {res.statusCode if 'res' in locals() else 'None'} or no match"
+            return "fail", f"Search returned HTTP {res.statusCode if 'res' in locals() else 'None'} or no matches"
 
     except Exception as e:
         return "fail", str(e)
@@ -212,55 +167,60 @@ def check_l3_search(name, canonical, smoke_test, fetcher: ProviderFetcher):
 def check_l4_load(canonical, smoke_test, fetcher: ProviderFetcher, adaptive_mgr: AdaptiveManager):
     detail_url = smoke_test.get("knownDetail")
     if not detail_url:
-        return "skipped", "NO_DETAIL_URL_CONFIGURED", None
+        return "skipped", "NO_DETAIL_URL_CONFIGURED", None, []
 
     try:
         res = fetcher.fetch(detail_url, preferred_mode=FetchMode.HTTP, allow_dynamic_fallback=True)
-        if res.status == FetchStatus.CLOUDFLARE or res.status == FetchStatus.BLOCKED:
-            return "automation_blocked", f"Detail page protected ({res.status.value})", None
+        if res.status in (FetchStatus.CLOUDFLARE, FetchStatus.BLOCKED):
+            return "automation_blocked", f"Detail page protected ({res.status.value})", None, []
 
-        if res.statusCode == 200:
-            soup = BeautifulSoup(res.body, "html.parser")
-            title_tag = soup.find("h1") or soup.find("title")
-            if title_tag and len(title_tag.text.strip()) > 3:
-                title = title_tag.text.strip()
-                if "404" not in title and "not found" not in title.lower() and "bulunamadı" not in title.lower():
-                    return "pass", f"Loaded: {title[:40]}", res.body
-            
-            # Check adaptive title selector
-            stat, count, candidates = adaptive_mgr.check_css_selector(
-                html_content=res.body,
-                selector_str="h1",
-                identifier=f"{canonical}_detail_title",
-                base_url=canonical
-            )
-            if stat == "DRIFT_DETECTED" and count > 0:
-                return "drift_detected", f"Detail title selector drifted ({count} candidates)", res.body
+        detail_info = parse_detail_page(res.body, res.statusCode, detail_url)
+        if detail_info["status"] == "FAIL":
+            if detail_info.get("isSoft404"):
+                return "fail", f"SOFT_404_PAGE: {detail_info.get('title')}", None, []
+            return "fail", f"Detail load failed ({detail_info.get('reason')})", None, []
 
-        return "fail", f"Load returned HTTP {res.statusCode}", None
+        return "pass", f"Loaded: {detail_info['title'][:40]}", res.body, detail_info.get("episodeLinks", [])
+
     except Exception as e:
-        return "fail", str(e), None
+        return "fail", str(e), None, []
 
-def check_l5_player_discovery(detail_body: str):
+def check_l5_player_discovery(
+    detail_body: str,
+    detail_url: str,
+    episode_links: List[str],
+    monitoring_cfg: Dict[str, Any],
+    fetcher: ProviderFetcher
+):
     """
-    Evaluates presence of streaming player containers, embeds, or iframes.
-    Strictly reports PLAYER_DISCOVERED or PLAYER_NOT_FOUND.
-    NEVER reports playback_pass (playback can only be verified on Android runtime).
+    Evaluates player discovery with target chaining:
+    - If mode == 'episode' and episode_links exist: fetch first episode page and probe player!
+    - Otherwise probe detail page.
     """
-    if not detail_body:
-        return "player_not_found", "No detail body available to inspect"
+    player_probe_cfg = monitoring_cfg.get("playerProbe", {})
+    probe_mode = player_probe_cfg.get("mode", "detail")
 
-    try:
-        soup = BeautifulSoup(detail_body, "html.parser")
-        iframes = [ifr.get("src") or ifr.get("data-src") for ifr in soup.find_all("iframe") if ifr.get("src") or ifr.get("data-src")]
-        videos = [v.get("src") for v in soup.find_all("video") if v.get("src")]
-        has_script_player = any(k in detail_body.lower() for k in ["player", "jwplayer", "m3u8", "eval(", "iframe", "video_url", "closeload", "rapidrame", "vidpapi"])
+    target_body = detail_body
+    target_url = detail_url
 
-        if iframes or videos or has_script_player:
-            return "player_discovered", f"Discovered {len(iframes)} iframes, videos: {len(videos)}, script player: {has_script_player}"
-        return "player_not_found", "No player iframe, video tag, or player script discovered"
-    except Exception as e:
-        return "player_not_found", str(e)
+    if probe_mode == "episode" and episode_links:
+        ep_url = episode_links[0]
+        try:
+            ep_res = fetcher.fetch(ep_url, preferred_mode=FetchMode.HTTP, allow_dynamic_fallback=True)
+            if ep_res.statusCode == 200:
+                target_body = ep_res.body
+                target_url = ep_url
+        except Exception:
+            pass
+
+    if not target_body:
+        return "player_not_found", "No target content body available to inspect"
+
+    stat, info = evaluate_player_discovery(target_body, target_url)
+    if stat == "PLAYER_DISCOVERED":
+        diag = f"Discovered {len(info['iframes'])} iframes, {len(info['videos'])} videos, scriptPlayer={info['hasPlayerScript']} at {target_url}"
+        return "player_discovered", diag
+    return "player_not_found", f"No player iframe, video tag, or player script discovered at {target_url}"
 
 def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: AdaptiveManager):
     name = provider["name"]
@@ -270,6 +230,11 @@ def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: Adaptive
     allowed_hosts = set(domain_info.get("allowedHosts", []))
     expected_markers = domain_info.get("expectedMarkers", [])
     smoke_test = provider.get("smokeTest", {})
+    monitoring_cfg = provider.get("monitoring", {})
+
+    pref_fetch = FetchMode(monitoring_cfg.get("preferredFetch", "HTTP"))
+    dyn_fallback = monitoring_cfg.get("dynamicFallback", True)
+    stealth_fallback = monitoring_cfg.get("stealthFallback", True)
 
     report = {
         "provider": name,
@@ -292,7 +257,7 @@ def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: Adaptive
 
     start_time = time.time()
 
-    # L0: Configuration check
+    # L0
     l0_stat, l0_diag = check_l0_config(provider, repo_root, domains_config)
     report["tierResults"]["L0_config"] = l0_stat
     if l0_diag:
@@ -302,18 +267,28 @@ def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: Adaptive
         report["durationMs"] = int((time.time() - start_time) * 1000)
         return report
 
-    # L1: Domain & Redirect check via ProviderFetcher
+    # Fetcher session reuse context
     with ProviderFetcher(allowed_hosts=allowed_hosts, canonical=canonical, timeout=15) as fetcher:
+        # L1: Domain
         l1_res = fetcher.fetch(
             url=canonical,
-            preferred_mode=FetchMode.HTTP,
-            allow_dynamic_fallback=True,
-            allow_stealth_fallback=True,
+            preferred_mode=pref_fetch,
+            allow_dynamic_fallback=dyn_fallback,
+            allow_stealth_fallback=stealth_fallback,
             expected_markers=expected_markers
         )
 
         report["finalUrl"] = l1_res.finalUrl
         report["candidateHost"] = l1_res.candidateHost
+
+        if l1_res.status == FetchStatus.CONFIG_ERROR:
+            report["tierResults"]["L1_domain"] = "config_error"
+            report["overallStatus"] = "critical"
+            report["diagnostic"]["L1"] = l1_res.error
+            for t in ["L2_homepage", "L3_search", "L4_load", "L5_player_discovery"]:
+                report["tierResults"][t] = "skipped"
+            report["durationMs"] = int((time.time() - start_time) * 1000)
+            return report
 
         if l1_res.status == FetchStatus.UNTRUSTED_REDIRECT:
             report["tierResults"]["L1_domain"] = "untrusted_redirect"
@@ -324,9 +299,17 @@ def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: Adaptive
             report["durationMs"] = int((time.time() - start_time) * 1000)
             return report
 
+        if l1_res.status == FetchStatus.CONTENT_MARKER_MISMATCH:
+            report["tierResults"]["L1_domain"] = "content_marker_mismatch"
+            report["overallStatus"] = "failed"
+            report["diagnostic"]["L1"] = l1_res.error
+            for t in ["L2_homepage", "L3_search", "L4_load", "L5_player_discovery"]:
+                report["tierResults"][t] = "skipped"
+            report["durationMs"] = int((time.time() - start_time) * 1000)
+            return report
+
         if l1_res.status == FetchStatus.CLOUDFLARE or l1_res.cloudflare:
             report["tierResults"]["L1_domain"] = "cloudflare_challenge"
-            report["overallStatus"] = "degraded"
             report["diagnostic"]["L1"] = "Cloudflare Challenge Active"
         elif l1_res.status == FetchStatus.SUCCESS:
             report["tierResults"]["L1_domain"] = "pass"
@@ -339,41 +322,46 @@ def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: Adaptive
             report["durationMs"] = int((time.time() - start_time) * 1000)
             return report
 
-        # L2: Homepage inspection
-        l2_stat, l2_diag, l2_candidates = check_l2_homepage(name, l1_res.body, canonical, adaptive_mgr)
+        # L2: Homepage
+        l2_stat, l2_diag, l2_candidates = check_l2_homepage(name, l1_res.body, canonical, adaptive_mgr, monitoring_cfg)
         report["tierResults"]["L2_homepage"] = l2_stat
         if l2_diag:
             report["diagnostic"]["L2"] = l2_diag
         if l2_candidates:
             report["diagnostic"]["L2_candidates"] = l2_candidates
 
-        # L3: Search inspection
-        l3_stat, l3_diag = check_l3_search(name, canonical, smoke_test, fetcher)
+        # L3: Search
+        l3_stat, l3_diag = check_l3_search(name, canonical, smoke_test, monitoring_cfg, fetcher)
         report["tierResults"]["L3_search"] = l3_stat
         if l3_diag:
             report["diagnostic"]["L3"] = l3_diag
 
-        # L4: Detail Load inspection
-        l4_stat, l4_diag, detail_body = check_l4_load(canonical, smoke_test, fetcher, adaptive_mgr)
+        # L4: Detail Load
+        l4_stat, l4_diag, detail_body, episode_links = check_l4_load(canonical, smoke_test, fetcher, adaptive_mgr)
         report["tierResults"]["L4_load"] = l4_stat
         if l4_diag:
             report["diagnostic"]["L4"] = l4_diag
 
-        # L5: Player Discovery inspection
-        l5_stat, l5_diag = check_l5_player_discovery(detail_body)
+        # L5: Player Discovery with Chaining
+        known_detail_url = smoke_test.get("knownDetail")
+        l5_stat, l5_diag = check_l5_player_discovery(detail_body, known_detail_url, episode_links, monitoring_cfg, fetcher)
         report["tierResults"]["L5_player_discovery"] = l5_stat
         if l5_diag:
             report["diagnostic"]["L5"] = l5_diag
 
     # Overall Status Calculation
     tiers = report["tierResults"]
-    if tiers["L1_domain"] == "untrusted_redirect":
+    if tiers["L1_domain"] in ("untrusted_redirect", "config_error"):
         report["overallStatus"] = "critical"
-    elif any(v.startswith("fail") for v in tiers.values()):
-        report["overallStatus"] = "failed" if tiers["L1_domain"] != "pass" else "degraded"
+    elif tiers["L0_config"] == "fail" or tiers["L1_domain"].startswith("fail") or tiers["L1_domain"] == "content_marker_mismatch":
+        report["overallStatus"] = "failed"
+    elif tiers["L2_homepage"] == "fail" or tiers["L4_load"] == "fail":
+        report["overallStatus"] = "degraded"
+    elif tiers["L5_player_discovery"] == "player_not_found":
+        report["overallStatus"] = "degraded"
     elif any(v == "drift_detected" for v in tiers.values()):
         report["overallStatus"] = "warning"
-    elif any(v == "cloudflare_challenge" or v == "automation_blocked" for v in tiers.values()):
+    elif any(v in ("cloudflare_challenge", "automation_blocked") for v in tiers.values()):
         report["overallStatus"] = "degraded"
     else:
         report["overallStatus"] = "healthy"
@@ -398,8 +386,8 @@ def main():
         domains_config = json.load(f)
 
     adaptive_mgr = AdaptiveManager()
-
     results = []
+
     print(f"[Provider Health] Inspecting {len(providers)} enabled providers across L0-L5 (Scrapling)...")
 
     for p in providers:

@@ -3,26 +3,29 @@
 provider_probe.py
 
 CLI reverse-engineering and site diagnostics tool powered by Scrapling.
-Allows engineers to probe live streaming sites, evaluate anti-bot barriers,
-inspect card/detail/player selectors, capture sanitized XHR streams, and check
-for selector drift.
+Features:
+- Structured discovery pipeline: Homepage -> Detail -> Episode/Player.
+- Deep evidence extraction: Forms, search actions, inputs, pagination, XHR endpoints, iframes, media URLs.
+- When --capture-xhr is requested, forces browser execution with network_idle stability.
+- All captured traffic and URLs are sanitized through XhrRedactor.
+- Permissive allowlist for arbitrary research URLs (is_probe_mode=True).
 
 Usage:
-  python tools/provider_probe.py <url> [--mode auto|http|dynamic|stealth] [--capture-xhr] [--output <path>]
+  python tools/provider_probe.py <url> [--mode auto|http|dynamic|stealth] [--capture-xhr] [--probe-detail] [--output <path>]
 """
 
 import os
 import sys
 
-# Ensure repository root is on sys.path
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
+import re
 import json
 import argparse
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
@@ -31,16 +34,49 @@ from tools.scraping import (
     FetchMode,
     FetchStatus,
     AdaptiveManager,
-    XhrRedactor
+    XhrRedactor,
+    discover_homepage_cards,
+    parse_detail_page,
+    evaluate_player_discovery,
+    classify_subtitles
 )
 
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s")
 logger = logging.getLogger("provider_probe")
 
+def extract_form_heuristics(soup: BeautifulSoup, base_url: str) -> List[Dict[str, Any]]:
+    forms_info = []
+    for form in soup.find_all("form"):
+        action = form.get("action") or ""
+        method = (form.get("method") or "GET").upper()
+        inputs = []
+        for inp in form.find_all(["input", "select"]):
+            name = inp.get("name")
+            itype = inp.get("type", "text")
+            if name:
+                inputs.append({"name": name, "type": itype})
+        abs_action = urljoin(base_url, action)
+        forms_info.append({
+            "action": abs_action,
+            "method": method,
+            "inputs": inputs,
+            "likelySearch": any(k in abs_action.lower() or k in str(inputs).lower() for k in ["search", "ara", "find", "query", "q"])
+        })
+    return forms_info
+
+def extract_pagination_heuristics(soup: BeautifulSoup, base_url: str) -> List[str]:
+    pagination_links = []
+    for a in soup.select("a[href*='sayfa'], a[href*='page'], .pagination a, .pages a, .nav-links a"):
+        href = a.get("href")
+        if href:
+            pagination_links.append(urljoin(base_url, href))
+    return list(dict.fromkeys(pagination_links))[:5]
+
 def probe_page(
     url: str,
     mode: str = "auto",
     capture_xhr: bool = False,
+    probe_detail: bool = True,
     timeout: int = 20
 ) -> Dict[str, Any]:
     fetch_mode_map = {
@@ -53,10 +89,11 @@ def probe_page(
     allow_dyn = mode in ("auto", "dynamic", "stealth")
     allow_stealth = mode in ("auto", "stealth")
 
-    logger.info(f"Probing {url} with preferred mode={preferred.value}, dynamic_fallback={allow_dyn}, stealth_fallback={allow_stealth}...")
+    logger.info(f"Probing {url} (mode={preferred.value}, capture_xhr={capture_xhr})...")
 
-    with ProviderFetcher(timeout=timeout) as fetcher:
-        result = fetcher.fetch(
+    # In probe mode, is_probe_mode=True allows probing arbitrary domains
+    with ProviderFetcher(timeout=timeout, is_probe_mode=True) as fetcher:
+        home_res = fetcher.fetch(
             url=url,
             preferred_mode=preferred,
             allow_dynamic_fallback=allow_dyn,
@@ -64,96 +101,118 @@ def probe_page(
             capture_xhr=capture_xhr
         )
 
-    probe_data: Dict[str, Any] = {
-        "inputUrl": url,
-        "finalUrl": result.finalUrl,
-        "statusCode": result.statusCode,
-        "fetchModeUsed": result.fetchMode.value,
-        "status": result.status.value,
-        "browserUsed": result.browserUsed,
-        "elapsedMs": result.elapsedMs,
-        "cloudflare": result.cloudflare,
-        "blocked": result.blocked,
-        "error": result.error,
-        "cards": [],
-        "detail": {},
-        "iframes": [],
-        "mediaCandidates": [],
-        "subtitles": [],
-        "capturedXhr": result.capturedXhr if capture_xhr else [],
-        "capturedXhrCount": len(result.capturedXhr)
-    }
+        probe_data: Dict[str, Any] = {
+            "inputUrl": url,
+            "finalUrl": home_res.finalUrl,
+            "statusCode": home_res.statusCode,
+            "fetchModeUsed": home_res.fetchMode.value,
+            "status": home_res.status.value,
+            "browserUsed": home_res.browserUsed,
+            "elapsedMs": home_res.elapsedMs,
+            "cloudflare": home_res.cloudflare,
+            "blocked": home_res.blocked,
+            "error": home_res.error,
+            "homepageAnalysis": {
+                "cardsFound": 0,
+                "cards": [],
+                "forms": [],
+                "pagination": []
+            },
+            "detailAnalysis": None,
+            "playerAnalysis": None,
+            "capturedXhrCount": len(home_res.capturedXhr),
+            "capturedXhr": home_res.capturedXhr if capture_xhr else []
+        }
 
-    if not result.body:
-        return probe_data
+        if not home_res.body:
+            return probe_data
 
-    # Parse DOM
-    soup = BeautifulSoup(result.body, "html.parser")
+        home_soup = BeautifulSoup(home_res.body, "html.parser")
+        cards = discover_homepage_cards(home_res.body, home_res.finalUrl)
+        forms = extract_form_heuristics(home_soup, home_res.finalUrl)
+        pagination = extract_pagination_heuristics(home_soup, home_res.finalUrl)
 
-    # 1. Cards / Posters Probe
-    card_selectors = [
-        "a.mcard", "a.dcard", "a.poster", "a.item", "a[href*='/belgesel/']",
-        "div.poster a", "article a", ".film-content a", ".movie-box a",
-        ".video-item a", ".film-kutusu a", "div.film-box a", "a.card"
-    ]
-    discovered_cards = []
-    for sel in card_selectors:
-        for tag in soup.select(sel):
-            href = tag.get("href")
-            title = tag.get("title") or tag.text.strip()
-            img = tag.find("img")
-            poster = (img.get("src") or img.get("data-src")) if img else None
-            if href and (title or poster):
-                abs_href = urljoin(result.finalUrl, href)
-                discovered_cards.append({
-                    "title": title[:60] if title else "Untitled",
-                    "url": abs_href,
-                    "poster": urljoin(result.finalUrl, poster) if poster else None,
-                    "selectorMatched": sel
-                })
-                if len(discovered_cards) >= 10:
-                    break
-        if discovered_cards:
-            break
+        probe_data["homepageAnalysis"] = {
+            "cardsFound": len(cards),
+            "cards": cards[:10],
+            "forms": forms,
+            "pagination": pagination
+        }
 
-    probe_data["cards"] = discovered_cards
+        # 2. Detail Analysis: Follow the first valid card if probe_detail is requested
+        detail_url = None
+        if probe_detail and cards:
+            detail_url = cards[0]["url"]
+        elif probe_detail and ("/film/" in url or "/dizi/" in url or "/anime/" in url or "/titles/" in url or "/belgesel/" in url):
+            detail_url = url
 
-    # 2. Detail Analysis
-    title_tag = soup.find("h1") or soup.find("title")
-    desc_tag = soup.find("meta", attrs={"name": "description"}) or soup.find("div", class_="description") or soup.find("p")
-    episodes = soup.select("a[href*='bolum'], a[href*='episode'], .season-item, .episode-item")
+        if detail_url:
+            logger.info(f"Probing detail page: {detail_url}...")
+            det_res = fetcher.fetch(
+                url=detail_url,
+                preferred_mode=preferred,
+                allow_dynamic_fallback=allow_dyn,
+                allow_stealth_fallback=allow_stealth,
+                capture_xhr=capture_xhr
+            )
+            det_info = parse_detail_page(det_res.body, det_res.statusCode, detail_url)
+            sub_class = classify_subtitles(det_res.body, det_info.get("title"))
 
-    probe_data["detail"] = {
-        "title": title_tag.text.strip() if title_tag else None,
-        "description": (desc_tag.text.strip() if desc_tag else "")[:160],
-        "episodeLinkCount": len(episodes)
-    }
+            probe_data["detailAnalysis"] = {
+                "targetUrl": detail_url,
+                "statusCode": det_res.statusCode,
+                "status": det_info["status"],
+                "title": det_info.get("title"),
+                "isSoft404": det_info.get("isSoft404", False),
+                "episodeLinksCount": len(det_info.get("episodeLinks", [])),
+                "episodeLinks": det_info.get("episodeLinks", [])[:5],
+                "subtitleClassification": sub_class
+            }
 
-    # 3. Iframes / Embeds
-    for ifr in soup.find_all("iframe"):
-        src = ifr.get("src") or ifr.get("data-src") or ifr.get("data-lazy-src")
-        if src:
-            abs_src = urljoin(result.finalUrl, src)
-            probe_data["iframes"].append(XhrRedactor.sanitize_url(abs_src))
+            # 3. Player Analysis: Check detail or episode page
+            target_player_url = detail_url
+            target_player_body = det_res.body
 
-    # 4. Media Stream Candidates (.m3u8, .mpd, mp4) & Subtitles (.vtt, .srt)
-    body_str = result.body
-    import re
-    m3u8_matches = re.findall(r'https?://[^"\'\s<>]+\.(?:m3u8|mp4|mpd)[^"\'\s<>]*', body_str, re.IGNORECASE)
-    for m in m3u8_matches[:5]:
-        probe_data["mediaCandidates"].append(XhrRedactor.sanitize_url(m))
+            # If it has episode links, follow the first episode for player inspection
+            if det_info.get("episodeLinks"):
+                ep_url = det_info["episodeLinks"][0]
+                logger.info(f"Probing episode page for player: {ep_url}...")
+                ep_res = fetcher.fetch(
+                    url=ep_url,
+                    preferred_mode=preferred,
+                    allow_dynamic_fallback=allow_dyn,
+                    allow_stealth_fallback=allow_stealth,
+                    capture_xhr=capture_xhr
+                )
+                if ep_res.statusCode == 200:
+                    target_player_url = ep_url
+                    target_player_body = ep_res.body
 
-    vtt_matches = re.findall(r'https?://[^"\'\s<>]+\.(?:vtt|srt)[^"\'\s<>]*', body_str, re.IGNORECASE)
-    for v in vtt_matches[:5]:
-        probe_data["subtitles"].append(XhrRedactor.sanitize_url(v))
+            p_stat, p_info = evaluate_player_discovery(target_player_body, target_player_url)
+            probe_data["playerAnalysis"] = {
+                "targetUrl": target_player_url,
+                "status": p_stat,
+                "iframesCount": len(p_info["iframes"]),
+                "iframes": p_info["iframes"],
+                "videosCount": len(p_info["videos"]),
+                "videos": p_info["videos"],
+                "mediaUrls": p_info["mediaUrls"],
+                "hasPlayerScript": p_info["hasPlayerScript"]
+            }
+
+            # If XHR capture was on and we probed multiple pages, aggregate XHRs
+            if capture_xhr and det_res.capturedXhr:
+                probe_data["capturedXhr"].extend(det_res.capturedXhr)
+                probe_data["capturedXhrCount"] = len(probe_data["capturedXhr"])
 
     return probe_data
 
 def main():
-    parser = argparse.ArgumentParser(description="CloudStreamHub Provider Reverse Engineering Probe")
+    parser = argparse.ArgumentParser(description="CloudStreamHub Provider Reverse Engineering Probe (Scrapling)")
     parser.add_argument("url", help="Target URL to probe")
     parser.add_argument("--mode", default="auto", choices=["auto", "http", "dynamic", "stealth"], help="Fetch strategy tier")
-    parser.add_argument("--capture-xhr", action="store_true", help="Intercept and sanitize background XHR/fetch requests")
+    parser.add_argument("--capture-xhr", action="store_true", help="Intercept and sanitize background XHR/fetch requests (forces browser)")
+    parser.add_argument("--no-detail", action="store_true", help="Do not follow first content card to detail page")
     parser.add_argument("--timeout", type=int, default=20, help="Request timeout in seconds")
     parser.add_argument("--output", help="Optional path to write JSON report")
     args = parser.parse_args()
@@ -162,12 +221,13 @@ def main():
         url=args.url,
         mode=args.mode,
         capture_xhr=args.capture_xhr,
+        probe_detail=not args.no_detail,
         timeout=args.timeout
     )
 
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 65)
     print(" PROVIDER PROBE RESULTS (Scrapling)")
-    print("=" * 60)
+    print("=" * 65)
     print(f" Input URL:        {probe_result['inputUrl']}")
     print(f" Final URL:        {probe_result['finalUrl']}")
     print(f" Status Code:      {probe_result['statusCode']}")
@@ -179,34 +239,52 @@ def main():
     if probe_result['error']:
         print(f" Error:            {probe_result['error']}")
 
-    print("\n--- Content Discovery ---")
-    print(f" Cards Found:      {len(probe_result['cards'])}")
-    for i, c in enumerate(probe_result['cards'][:3]):
+    print("\n--- Homepage Analysis ---")
+    home = probe_result["homepageAnalysis"]
+    print(f" Cards Found:      {home['cardsFound']}")
+    for i, c in enumerate(home["cards"][:3]):
         print(f"  [{i+1}] {c['title']} -> {c['url']}")
+    print(f" Forms Found:      {len(home['forms'])}")
+    for f in home["forms"]:
+        print(f"  - Action: {f['action']} [{f['method']}] (Search: {f['likelySearch']}, Inputs: {[i['name'] for i in f['inputs']]})")
+    print(f" Pagination Links: {len(home['pagination'])}")
+    for p in home["pagination"]:
+        print(f"  - {p}")
 
-    print(f" Detail Title:     {probe_result['detail'].get('title')}")
-    print(f" Episodes Found:   {probe_result['detail'].get('episodeLinkCount')}")
+    if probe_result.get("detailAnalysis"):
+        print("\n--- Detail Analysis ---")
+        det = probe_result["detailAnalysis"]
+        print(f" Detail URL:       {det['targetUrl']}")
+        print(f" Status:           {det['status']} (HTTP {det['statusCode']})")
+        print(f" Title:            {det['title']}")
+        print(f" Soft 404:         {det['isSoft404']}")
+        print(f" Episodes Found:   {det['episodeLinksCount']}")
+        print(f" Subtitles:        {det['subtitleClassification']}")
 
-    print("\n--- Stream & Player Discovery ---")
-    print(f" Iframes Discovered:        {len(probe_result['iframes'])}")
-    for ifr in probe_result['iframes']:
-        print(f"  - {ifr}")
-    print(f" Direct Media Streams:      {len(probe_result['mediaCandidates'])}")
-    for m in probe_result['mediaCandidates']:
-        print(f"  - {m}")
-    print(f" Subtitles Discovered:      {len(probe_result['subtitles'])}")
-    for s in probe_result['subtitles']:
-        print(f"  - {s}")
+    if probe_result.get("playerAnalysis"):
+        print("\n--- Player & Stream Analysis ---")
+        ply = probe_result["playerAnalysis"]
+        print(f" Target URL:       {ply['targetUrl']}")
+        print(f" Player Status:    {ply['status']}")
+        print(f" Iframes Found:    {ply['iframesCount']}")
+        for ifr in ply["iframes"]:
+            print(f"  - {ifr}")
+        print(f" Videos Found:     {ply['videosCount']}")
+        for v in ply["videos"]:
+            print(f"  - {v}")
+        print(f" Media Streams:    {len(ply['mediaUrls'])}")
+        for m in ply["mediaUrls"]:
+            print(f"  - {m}")
+        print(f" Script Player:    {ply['hasPlayerScript']}")
 
     if args.capture_xhr:
         print(f"\n--- Captured Sanitized XHRs ({probe_result['capturedXhrCount']}) ---")
         for x in probe_result['capturedXhr'][:10]:
             print(f"  [{x.get('method', 'GET')}] {x.get('status', '???')} {x.get('resourceType', 'xhr')} -> {x.get('url')}")
 
-    print("=" * 60)
+    print("=" * 65)
 
     if args.output:
-        import os
         os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
         with open(args.output, "w", encoding="utf-8") as f:
             json.dump(probe_result, f, indent=2, ensure_ascii=False)

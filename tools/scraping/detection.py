@@ -1,9 +1,10 @@
 """
 detection.py
 
-Anti-bot, Cloudflare challenge, redirect security, and content marker detection.
+Anti-bot, Cloudflare challenge, redirect security, soft 404, and content marker detection.
 """
 
+import re
 from typing import Set, Tuple, Optional, List, Dict
 from urllib.parse import urlparse
 
@@ -20,6 +21,20 @@ CLOUDFLARE_INDICATORS = [
 ]
 
 BLOCKED_STATUS_CODES = {403, 429, 503}
+
+SOFT_404_INDICATORS = [
+    "404",
+    "not found",
+    "page not found",
+    "sayfa bulunamadı",
+    "sayfa bulunamadi",
+    "içerik bulunamadı",
+    "icerik bulunamadi",
+    "bulunamadı",
+    "bulunamadi",
+    "böyle bir sayfa yok",
+    "arama sonucu bulunamadı"
+]
 
 def is_cloudflare_challenge(status: Optional[int], body: str, headers: Optional[Dict[str, str]] = None) -> bool:
     """Detects whether a response is an active Cloudflare Turnstile, Managed Challenge, or interstitial."""
@@ -52,10 +67,19 @@ def is_bot_blocked(status: Optional[int], body: str) -> bool:
 def verify_redirect_safety(
     final_url: str,
     allowed_hosts: Set[str],
-    canonical: Optional[str] = None
+    canonical: Optional[str] = None,
+    allow_subdomains: bool = False,
+    is_probe_mode: bool = False
 ) -> Tuple[bool, Optional[str]]:
     """
     Ensures that a request's final redirected URL remains within allowed destination hosts.
+    
+    Fail-closed security rules:
+    - If is_probe_mode=False and allowed_hosts is empty -> (False, "CONFIG_EMPTY_ALLOWLIST")
+    - If allow_subdomains=False -> Host must match exactly in allowed_hosts (or canonical host).
+    - If allow_subdomains=True -> Host may be a subdomain of an allowed host.
+    - If is_probe_mode=True and allowed_hosts is empty -> Permissive for arbitrary CLI exploration.
+    
     Returns (is_allowed, candidate_host).
     """
     if not final_url:
@@ -64,25 +88,26 @@ def verify_redirect_safety(
     parsed = urlparse(final_url)
     host = parsed.netloc.lower().split(":")[0]
 
-    # Normalize allowed hosts (lower and stripped)
     normalized_allowed = {h.lower().strip() for h in allowed_hosts if h}
-
     if canonical:
         can_host = urlparse(canonical).netloc.lower().split(":")[0]
         if can_host:
             normalized_allowed.add(can_host)
 
-    # If no allowlist is configured, redirect safety is permissive
     if not normalized_allowed:
-        return True, None
+        if is_probe_mode:
+            return True, None
+        return False, "CONFIG_EMPTY_ALLOWLIST"
 
+    # Exact host match
     if host in normalized_allowed:
         return True, None
 
-    # Check for subdomains
-    for allowed in normalized_allowed:
-        if host.endswith("." + allowed):
-            return True, None
+    # Opt-in subdomain matching
+    if allow_subdomains:
+        for allowed in normalized_allowed:
+            if host.endswith("." + allowed):
+                return True, None
 
     return False, host
 
@@ -94,3 +119,23 @@ def verify_content_markers(body: str, expected_markers: List[str]) -> bool:
         return False
     body_lower = body.lower()
     return any(marker.lower() in body_lower for marker in expected_markers)
+
+def is_soft_404(status: Optional[int], body: str, title: Optional[str] = None) -> bool:
+    """
+    Detects soft 404 pages (HTTP 200 with 'Page Not Found' or Turkish equivalents in title/h1/body).
+    """
+    if status == 404:
+        return True
+
+    title_lower = (title or "").lower().strip()
+    if title_lower:
+        for ind in SOFT_404_INDICATORS:
+            if ind in title_lower:
+                return True
+
+    body_sample = (body[:5000] if body else "").lower()
+    for ind in SOFT_404_INDICATORS:
+        if ind in body_sample:
+            return True
+
+    return False

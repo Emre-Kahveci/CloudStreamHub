@@ -1,13 +1,13 @@
 {
-  "testedAt": "2026-09-13T22:00:31.802731+00:00",
+  "testedAt": "2026-09-13T22:18:58.803881+00:00",
   "providers": [
     {
       "provider": "AnimeciX",
       "module": "AnimeciX",
       "homepage": {
-        "status": "PASS",
+        "status": "FAIL",
         "itemCount": 0,
-        "note": "Page 200 but 0 cards matched selector"
+        "reason": "0 valid content items discovered"
       },
       "detail": {
         "status": "PASS",
@@ -15,40 +15,40 @@
       },
       "playerDiscovery": {
         "status": "PLAYER_NOT_FOUND",
-        "reason": "No iframe or player found"
+        "targetUrl": "https://animecix.tv/titles/naruto"
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
-      "overall": "PASS",
+      "overall": "PARTIAL_PASS",
       "details": []
     },
     {
       "provider": "BelgeselX",
       "module": "BelgeselX",
       "homepage": {
-        "status": "PASS",
-        "itemCount": 44
+        "status": "FAIL",
+        "code": null
       },
       "detail": {
-        "status": "PASS",
-        "title": "404 — Sayfa Bulunamadı | Belgeselx"
+        "status": "FAIL",
+        "title": "404 — Sayfa Bulunamadı | Belgeselx",
+        "reason": "SOFT_404_PAGE"
       },
       "playerDiscovery": {
-        "status": "PLAYER_NOT_FOUND",
-        "reason": "No iframe or player found"
+        "status": "PLAYER_NOT_FOUND"
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
-      "overall": "PASS",
+      "overall": "FAIL",
       "details": []
     },
     {
       "provider": "DiziPal",
       "module": "DiziPal",
       "homepage": {
-        "status": "PASS",
+        "status": "FAIL",
         "itemCount": 0,
-        "note": "Page 200 but 0 cards matched selector"
+        "reason": "0 valid content items discovered"
       },
       "detail": {
         "status": "PASS",
@@ -56,11 +56,11 @@
       },
       "playerDiscovery": {
         "status": "PLAYER_NOT_FOUND",
-        "reason": "No iframe or player found"
+        "targetUrl": "https://dizipal1430.com/bolum/silo-1-sezon-1-bolum"
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
-      "subtitle": "HARDSUB/DUBLAJ",
-      "overall": "PASS",
+      "subtitle": "DUBBED",
+      "overall": "PARTIAL_PASS",
       "details": []
     },
     {
@@ -68,7 +68,8 @@
       "module": "FilmMakinesi",
       "homepage": {
         "status": "PASS",
-        "itemCount": 42
+        "itemCount": 15,
+        "sample": "Forgotten Island23 Eylül"
       },
       "detail": {
         "status": "PASS",
@@ -77,10 +78,11 @@
       "playerDiscovery": {
         "status": "PLAYER_DISCOVERED",
         "iframes": 2,
-        "hasPlayer": true
+        "hasPlayer": true,
+        "targetUrl": "https://filmmakinesi.to/film/forgotten-island-2026/"
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
-      "subtitle": "HARDSUB/DUBLAJ",
+      "subtitle": "DUBBED",
       "overall": "PASS",
       "details": []
     },
@@ -89,7 +91,8 @@
       "module": "HDFilmCehennemi",
       "homepage": {
         "status": "PASS",
-        "itemCount": 32
+        "itemCount": 15,
+        "sample": "Örümcek Adam Yepyeni Bir Gün - Spider Man Brand New Day"
       },
       "detail": {
         "status": "PASS",
@@ -98,10 +101,11 @@
       "playerDiscovery": {
         "status": "PLAYER_DISCOVERED",
         "iframes": 1,
-        "hasPlayer": true
+        "hasPlayer": true,
+        "targetUrl": "https://www.hdfilmcehennemi.nl/spider-man-brand-new-day/"
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
-      "subtitle": "HARDSUB/DUBLAJ",
+      "subtitle": "DUBBED",
       "overall": "PASS",
       "details": []
     },
@@ -110,7 +114,8 @@
       "module": "KultFilmler",
       "homepage": {
         "status": "PASS",
-        "itemCount": 20
+        "itemCount": 15,
+        "sample": "Türkçe Altyazı1998\n\n\n\nSoldier – AskerAksiyon · Bilim Kurgu\n6.1IMDB"
       },
       "detail": {
         "status": "PASS",
@@ -119,7 +124,8 @@
       "playerDiscovery": {
         "status": "PLAYER_DISCOVERED",
         "iframes": 1,
-        "hasPlayer": true
+        "hasPlayer": true,
+        "targetUrl": "https://kultfilmler.net/soldier-asker/"
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
@@ -131,7 +137,8 @@
       "module": "TurkAnime",
       "homepage": {
         "status": "PASS",
-        "itemCount": 156
+        "itemCount": 15,
+        "sample": ".#0-9"
       },
       "detail": {
         "status": "PASS",
@@ -139,11 +146,11 @@
       },
       "playerDiscovery": {
         "status": "PLAYER_NOT_FOUND",
-        "reason": "No iframe or player found"
+        "targetUrl": "https://www.turkanime.tv/yakinda-yeni-sezon-animeleri"
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
-      "overall": "PASS",
+      "overall": "PARTIAL_PASS",
       "details": []
     },
     {
@@ -151,7 +158,8 @@
       "module": "YesilCamTv",
       "homepage": {
         "status": "PASS",
-        "itemCount": 1
+        "itemCount": 1,
+        "sample": "Belgesel"
       },
       "detail": {
         "status": "PASS",
@@ -160,10 +168,11 @@
       "playerDiscovery": {
         "status": "PLAYER_DISCOVERED",
         "iframes": 1,
-        "hasPlayer": false
+        "hasPlayer": false,
+        "targetUrl": "https://yesilcamtv.com.tr/sahte-kabadayi-izle/"
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
-      "subtitle": "HARDSUB/DUBLAJ",
+      "subtitle": "NONE",
       "overall": "PASS",
       "details": []
     }

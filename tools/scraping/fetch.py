@@ -2,8 +2,8 @@
 fetch.py
 
 3-Tier ProviderFetcher abstraction implementing HTTP -> DYNAMIC -> STEALTH strategy.
-Integrated with Scrapling (Fetcher, DynamicFetcher, StealthyFetcher), redirect safety checks,
-XHR interception, and security redaction.
+Integrated with Scrapling (FetcherSession, DynamicSession, StealthySession), session reuse,
+explicit solve_cloudflare=True escalation, redirect safety checks, XHR interception, and security redaction.
 """
 
 import os
@@ -28,10 +28,15 @@ class ProviderFetcher:
     """
     Central fetch engine for CloudStreamHub monitoring and research.
     
+    Session Reuse:
+    - HTTP Session: Reuses Scrapling FetcherSession across multiple requests.
+    - Dynamic Session: Reuses Scrapling DynamicSession (Playwright browser context).
+    - Stealth Session: Reuses Scrapling StealthySession (Anti-detect browser context).
+    
     Tiers:
-    - HTTP (Tier 1): High speed, curl_cffi with browser impersonation via Scrapling Fetcher.
-    - DYNAMIC (Tier 2): Headless Playwright browser via Scrapling DynamicFetcher for JS hydration.
-    - STEALTH (Tier 3): Anti-detect Playwright browser via Scrapling StealthyFetcher for Cloudflare/WAF bypass.
+    - HTTP (Tier 1): High speed, curl_cffi with browser impersonation via FetcherSession.
+    - DYNAMIC (Tier 2): Headless Playwright browser via DynamicSession for JS hydration.
+    - STEALTH (Tier 3): Anti-detect Playwright browser via StealthySession with solve_cloudflare=True.
     """
 
     def __init__(
@@ -39,40 +44,85 @@ class ProviderFetcher:
         allowed_hosts: Optional[Set[str]] = None,
         canonical: Optional[str] = None,
         timeout: int = 15,
-        user_agent: Optional[str] = None
+        user_agent: Optional[str] = None,
+        allow_subdomains: bool = False,
+        is_probe_mode: bool = False
     ):
         self.allowed_hosts = allowed_hosts or set()
         self.canonical = canonical
         self.timeout = timeout
         self.user_agent = user_agent
+        self.allow_subdomains = allow_subdomains
+        self.is_probe_mode = is_probe_mode
 
-        # Session cache for reuse
-        self._http_session = None
-        self._dynamic_session = None
-        self._stealth_session = None
+        # Session instances for reuse
+        self._http_session_manager = None
+        self._http_client = None
+
+        self._dynamic_session_manager = None
+        self._dynamic_client = None
+
+        self._stealth_session_manager = None
+        self._stealth_client = None
+
+    def _get_http_client(self):
+        if self._http_client is None:
+            try:
+                from scrapling.fetchers import FetcherSession
+                self._http_session_manager = FetcherSession(timeout=self.timeout)
+                self._http_client = self._http_session_manager.__enter__()
+            except Exception as e:
+                logger.warning(f"Could not initialize FetcherSession: {e}")
+                self._http_client = None
+        return self._http_client
+
+    def _get_dynamic_client(self):
+        if self._dynamic_client is None:
+            try:
+                from scrapling.fetchers import DynamicSession
+                self._dynamic_session_manager = DynamicSession(timeout=self.timeout * 1000)
+                self._dynamic_client = self._dynamic_session_manager.__enter__()
+            except Exception as e:
+                logger.warning(f"Could not initialize DynamicSession: {e}")
+                self._dynamic_client = None
+        return self._dynamic_client
+
+    def _get_stealth_client(self):
+        if self._stealth_client is None:
+            try:
+                from scrapling.fetchers import StealthySession
+                self._stealth_session_manager = StealthySession(timeout=self.timeout * 1000)
+                self._stealth_client = self._stealth_session_manager.__enter__()
+            except Exception as e:
+                logger.warning(f"Could not initialize StealthySession: {e}")
+                self._stealth_client = None
+        return self._stealth_client
 
     def close(self):
         """Releases active browser sessions and network resources."""
-        if self._dynamic_session:
+        if self._http_session_manager and self._http_client:
             try:
-                self._dynamic_session.close()
+                self._http_session_manager.__exit__(None, None, None)
             except Exception:
                 pass
-            self._dynamic_session = None
+            self._http_session_manager = None
+            self._http_client = None
 
-        if self._stealth_session:
+        if self._dynamic_session_manager and self._dynamic_client:
             try:
-                self._stealth_session.close()
+                self._dynamic_session_manager.__exit__(None, None, None)
             except Exception:
                 pass
-            self._stealth_session = None
+            self._dynamic_session_manager = None
+            self._dynamic_client = None
 
-        if self._http_session:
+        if self._stealth_session_manager and self._stealth_client:
             try:
-                self._http_session.close()
+                self._stealth_session_manager.__exit__(None, None, None)
             except Exception:
                 pass
-            self._http_session = None
+            self._stealth_session_manager = None
+            self._stealth_client = None
 
     def __enter__(self):
         return self
@@ -93,25 +143,20 @@ class ProviderFetcher:
         headers: Optional[Dict[str, str]] = None
     ) -> FetchResult:
         """
-        Executes request following preferred mode and fallback rules.
+        Executes request following preferred mode, fallback rules, and Cloudflare/XHR requirements.
         """
-        # Mode execution order determination
-        modes_to_try = [preferred_mode]
-        if preferred_mode == FetchMode.HTTP:
-            if allow_dynamic_fallback:
-                modes_to_try.append(FetchMode.DYNAMIC)
-            if allow_stealth_fallback and FetchMode.STEALTH not in modes_to_try:
-                modes_to_try.append(FetchMode.STEALTH)
-        elif preferred_mode == FetchMode.DYNAMIC:
-            if allow_stealth_fallback:
-                modes_to_try.append(FetchMode.STEALTH)
+        # RULE: If capture_xhr=True, HTTP cannot capture background requests; must run in browser
+        if capture_xhr and preferred_mode == FetchMode.HTTP:
+            preferred_mode = FetchMode.DYNAMIC
 
-        last_result = None
+        # Escalation path
+        current_mode = preferred_mode
+        last_result: Optional[FetchResult] = None
 
-        for mode in modes_to_try:
+        while True:
             res = self._fetch_single(
                 url=url,
-                mode=mode,
+                mode=current_mode,
                 capture_xhr=capture_xhr,
                 method=method,
                 data=data,
@@ -119,28 +164,48 @@ class ProviderFetcher:
             )
             last_result = res
 
-            # If untrusted redirect or network error, do not retry other modes
-            if res.status == FetchStatus.UNTRUSTED_REDIRECT:
+            # Untrusted redirect or config error: stop immediately (fail-closed)
+            if res.status in (FetchStatus.UNTRUSTED_REDIRECT, FetchStatus.CONFIG_ERROR):
                 return res
 
-            # Check if markers match if specified
+            # Cloudflare Challenge Detected
+            if res.cloudflare or res.status == FetchStatus.CLOUDFLARE:
+                if current_mode != FetchMode.STEALTH and allow_stealth_fallback:
+                    # ESCALATE DIRECTLY TO STEALTH with solve_cloudflare=True (skip useless dynamic round)
+                    current_mode = FetchMode.STEALTH
+                    continue
+                else:
+                    return res
+
+            # General WAF / Anti-Bot Blocked (403/429)
+            if res.blocked or res.status == FetchStatus.BLOCKED:
+                if current_mode != FetchMode.STEALTH and allow_stealth_fallback:
+                    current_mode = FetchMode.STEALTH
+                    continue
+                elif current_mode == FetchMode.HTTP and allow_dynamic_fallback:
+                    current_mode = FetchMode.DYNAMIC
+                    continue
+                else:
+                    return res
+
+            # Content Markers Validation (Fail-closed)
             if res.status == FetchStatus.SUCCESS and expected_markers:
                 if not verify_content_markers(res.body, expected_markers):
-                    # Content marker missing might indicate a soft-block or JS-rendered shell
-                    if mode != FetchMode.STEALTH and (allow_dynamic_fallback or allow_stealth_fallback):
+                    # Missing markers on HTTP might be a JS shell: try DYNAMIC then STEALTH
+                    if current_mode == FetchMode.HTTP and allow_dynamic_fallback:
+                        current_mode = FetchMode.DYNAMIC
                         continue
+                    elif current_mode == FetchMode.DYNAMIC and allow_stealth_fallback:
+                        current_mode = FetchMode.STEALTH
+                        continue
+                    else:
+                        # All tiers exhausted and markers still missing -> fail-closed!
+                        res.status = FetchStatus.CONTENT_MARKER_MISMATCH
+                        res.error = f"Expected markers missing: {expected_markers}"
+                        return res
 
-            # If success, return immediately
-            if res.status == FetchStatus.SUCCESS and not res.cloudflare and not res.blocked:
-                return res
-
-            # If Cloudflare detected, dynamic alone won't solve it -> continue to stealth if allowed
-            if res.cloudflare and mode != FetchMode.STEALTH and allow_stealth_fallback:
-                continue
-
-            # If blocked (403/WAF), try stealth
-            if res.blocked and mode != FetchMode.STEALTH and allow_stealth_fallback:
-                continue
+            # Normal success or terminal state
+            break
 
         return last_result if last_result else FetchResult(
             requestedUrl=url,
@@ -161,7 +226,6 @@ class ProviderFetcher:
         headers: Optional[Dict[str, str]] = None
     ) -> FetchResult:
         t0 = time.time()
-        captured_list: List[Dict[str, Any]] = []
 
         try:
             if mode == FetchMode.HTTP:
@@ -196,20 +260,26 @@ class ProviderFetcher:
         data: Optional[Any] = None,
         headers: Optional[Dict[str, str]] = None
     ) -> FetchResult:
-        from scrapling import Fetcher
-
-        # Execute HTTP GET/POST with browser impersonation
         req_headers = headers or {}
-        if method.upper() == "POST":
-            resp = Fetcher.post(url, data=data, headers=req_headers, timeout=self.timeout)
+
+        # Use reused FetcherSession client if available, else static Fetcher
+        client = self._get_http_client()
+        if client is not None:
+            if method.upper() == "POST":
+                resp = client.post(url, data=data, headers=req_headers)
+            else:
+                resp = client.get(url, headers=req_headers)
         else:
-            resp = Fetcher.get(url, headers=req_headers, timeout=self.timeout)
+            from scrapling import Fetcher
+            if method.upper() == "POST":
+                resp = Fetcher.post(url, data=data, headers=req_headers, timeout=self.timeout)
+            else:
+                resp = Fetcher.get(url, headers=req_headers, timeout=self.timeout)
 
         elapsed = int((time.time() - t0) * 1000)
         final_url = getattr(resp, "url", url)
         status_code = getattr(resp, "status", None)
-        
-        # In Scrapling Response, body contains raw bytes and html_content contains parsed HTML string
+
         if hasattr(resp, "html_content") and resp.html_content:
             body = resp.html_content
         elif hasattr(resp, "body") and isinstance(resp.body, bytes):
@@ -219,9 +289,25 @@ class ProviderFetcher:
 
         resp_headers = getattr(resp, "headers", {}) or {}
 
-        # 1. Verify redirect safety
-        safe, candidate_host = verify_redirect_safety(final_url, self.allowed_hosts, self.canonical)
-        if not safe and candidate_host:
+        # 1. Verify redirect safety (strict exact match by default)
+        safe, candidate_host = verify_redirect_safety(
+            final_url,
+            self.allowed_hosts,
+            self.canonical,
+            allow_subdomains=self.allow_subdomains,
+            is_probe_mode=self.is_probe_mode
+        )
+        if not safe:
+            if candidate_host == "CONFIG_EMPTY_ALLOWLIST":
+                return FetchResult(
+                    requestedUrl=url,
+                    finalUrl=final_url,
+                    statusCode=status_code,
+                    fetchMode=FetchMode.HTTP,
+                    status=FetchStatus.CONFIG_ERROR,
+                    elapsedMs=elapsed,
+                    error="Allowed hosts configuration is empty"
+                )
             return FetchResult(
                 requestedUrl=url,
                 finalUrl=final_url,
@@ -283,11 +369,7 @@ class ProviderFetcher:
         capture_xhr: bool = False,
         headers: Optional[Dict[str, str]] = None
     ) -> FetchResult:
-        from scrapling import DynamicFetcher, StealthyFetcher
-
-        fetcher_cls = StealthyFetcher if stealth else DynamicFetcher
         mode = FetchMode.STEALTH if stealth else FetchMode.DYNAMIC
-
         captured_raw: List[Dict[str, Any]] = []
 
         def page_setup_hook(page):
@@ -314,7 +396,6 @@ class ProviderFetcher:
 
                 def on_response(resp):
                     try:
-                        # Correlate response status and headers with captured request
                         resp_url = resp.url
                         for item in reversed(captured_raw):
                             if item["url"] == resp_url:
@@ -327,13 +408,23 @@ class ProviderFetcher:
                 page.on("request", on_request)
                 page.on("response", on_response)
 
-        # Execute browser fetch
-        fetch_kwargs = {
+        fetch_kwargs: Dict[str, Any] = {
             "page_setup": page_setup_hook,
-            "timeout": self.timeout * 1000
+            "timeout": self.timeout * 1000,
+            "network_idle": True
         }
+        if stealth:
+            fetch_kwargs["solve_cloudflare"] = True
 
-        resp = fetcher_cls.fetch(url, **fetch_kwargs)
+        # Use reused browser session client if available
+        client = self._get_stealth_client() if stealth else self._get_dynamic_client()
+        if client is not None:
+            resp = client.fetch(url, **fetch_kwargs)
+        else:
+            from scrapling import DynamicFetcher, StealthyFetcher
+            fetcher_cls = StealthyFetcher if stealth else DynamicFetcher
+            resp = fetcher_cls.fetch(url, **fetch_kwargs)
+
         elapsed = int((time.time() - t0) * 1000)
 
         final_url = getattr(resp, "url", url)
@@ -347,13 +438,29 @@ class ProviderFetcher:
             body = str(getattr(resp, "text", "") or "")
 
         resp_headers = getattr(resp, "headers", {}) or {}
-
-        # Sanitize captured XHRs
         sanitized_xhrs = [XhrRedactor.sanitize_captured_xhr(x) for x in captured_raw]
 
         # 1. Verify redirect safety
-        safe, candidate_host = verify_redirect_safety(final_url, self.allowed_hosts, self.canonical)
-        if not safe and candidate_host:
+        safe, candidate_host = verify_redirect_safety(
+            final_url,
+            self.allowed_hosts,
+            self.canonical,
+            allow_subdomains=self.allow_subdomains,
+            is_probe_mode=self.is_probe_mode
+        )
+        if not safe:
+            if candidate_host == "CONFIG_EMPTY_ALLOWLIST":
+                return FetchResult(
+                    requestedUrl=url,
+                    finalUrl=final_url,
+                    statusCode=status_code,
+                    fetchMode=mode,
+                    status=FetchStatus.CONFIG_ERROR,
+                    browserUsed=True,
+                    elapsedMs=elapsed,
+                    capturedXhr=sanitized_xhrs,
+                    error="Allowed hosts configuration is empty"
+                )
             return FetchResult(
                 requestedUrl=url,
                 finalUrl=final_url,

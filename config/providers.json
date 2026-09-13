@@ -16,6 +16,21 @@
         "searchQuery": "Naruto",
         "knownDetail": "https://animecix.tv/titles/naruto",
         "expectedType": "Anime"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": false,
+        "stealthFallback": true,
+        "contentType": "Anime",
+        "playerProbe": {
+          "mode": "episode",
+          "episodeSelector": "a[href*='/titles/'], a[href*='bolum']"
+        },
+        "search": {
+          "method": "GET",
+          "path": "/?s={query}",
+          "expectedSelector": "a.poster, a.item, div.title-card"
+        }
       }
     },
     {
@@ -32,6 +47,20 @@
         "searchQuery": "dunya",
         "knownDetail": "https://belgeselx.com/belgesel/gezegenimiz",
         "expectedType": "Documentary"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": true,
+        "stealthFallback": true,
+        "contentType": "Documentary",
+        "playerProbe": {
+          "mode": "detail"
+        },
+        "search": {
+          "method": "GET",
+          "path": "/?s={query}",
+          "expectedSelector": "a[href*='/belgesel/'], div.panel a, .video-item a"
+        }
       }
     },
     {
@@ -49,6 +78,21 @@
         "searchQuery": "Silo",
         "knownDetail": "https://dizipal1430.com/dizi/silo",
         "expectedType": "TvSeries"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": true,
+        "stealthFallback": true,
+        "contentType": "TvSeries",
+        "playerProbe": {
+          "mode": "episode",
+          "episodeSelector": "a[href*='bolum'], a[href*='sezon'], .episode-item a, a.episode"
+        },
+        "search": {
+          "method": "GET",
+          "path": "/find?q={query}",
+          "expectedSelector": "article a, a.poster, .movie-box a"
+        }
       }
     },
     {
@@ -66,6 +110,20 @@
         "searchQuery": "Island",
         "knownDetail": "https://filmmakinesi.to/film/forgotten-island-2026/",
         "expectedType": "Movie"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": true,
+        "stealthFallback": true,
+        "contentType": "Movie",
+        "playerProbe": {
+          "mode": "detail"
+        },
+        "search": {
+          "method": "GET",
+          "path": "/?s={query}",
+          "expectedSelector": "div.film-box a, .film-content a, a.poster"
+        }
       }
     },
     {
@@ -83,6 +141,27 @@
         "searchQuery": "Spider",
         "knownDetail": "https://www.hdfilmcehennemi.nl/spider-man-brand-new-day/",
         "expectedType": "Movie"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": true,
+        "stealthFallback": true,
+        "contentType": "Movie",
+        "playerProbe": {
+          "mode": "detail"
+        },
+        "search": {
+          "method": "POST_JSON",
+          "path": "/search/",
+          "payload": {
+            "query": "{query}"
+          },
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Requested-With": "fetch"
+          },
+          "jsonKey": "results"
+        }
       }
     },
     {
@@ -100,6 +179,20 @@
         "searchQuery": "Soldier",
         "knownDetail": "https://kultfilmler.net/soldier-asker/",
         "expectedType": "Movie"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": true,
+        "stealthFallback": true,
+        "contentType": "Movie",
+        "playerProbe": {
+          "mode": "detail"
+        },
+        "search": {
+          "method": "GET",
+          "path": "/?s={query}",
+          "expectedSelector": "a.mcard, a.dcard, article a"
+        }
       }
     },
     {
@@ -117,6 +210,28 @@
         "searchQuery": "Death Note",
         "knownDetail": "https://www.turkanime.tv/anime/death-note",
         "expectedType": "Anime"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": true,
+        "stealthFallback": true,
+        "contentType": "Anime",
+        "playerProbe": {
+          "mode": "episode",
+          "episodeSelector": "a[href*='bolum'], a[href*='video/'], #bolumler a"
+        },
+        "search": {
+          "method": "POST_FORM",
+          "path": "/ajax/arama",
+          "payload": {
+            "arama": "{query}"
+          },
+          "headers": {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          "expectedKeyword": "/anime/"
+        }
       }
     },
     {
@@ -133,6 +248,20 @@
         "searchQuery": "Kabadayi",
         "knownDetail": "https://yesilcamtv.com.tr/sahte-kabadayi-izle/",
         "expectedType": "Movie"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": true,
+        "stealthFallback": true,
+        "contentType": "Movie",
+        "playerProbe": {
+          "mode": "detail"
+        },
+        "search": {
+          "method": "GET",
+          "path": "/?s={query}",
+          "expectedSelector": ".film-kutusu a, .video-item a, a[href*='-izle/']"
+        }
       }
     },
     {
