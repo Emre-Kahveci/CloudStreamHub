@@ -74,9 +74,10 @@ def check_l2_homepage(name, html_body, canonical):
 
     # Provider specific selectors
     selectors = [
+        "a.mcard", "a.dcard", "a.item", "a[href*='/belgesel/']", "div.panel a",
         "article a", ".film-content a", ".poster a", ".movie-box a",
         ".video-item a", ".entry-title a", "div.menulink a", "div.kutu a",
-        ".film-kutusu a", "div.film-box a", "a.poster"
+        ".film-kutusu a", "div.film-box a", "a.poster", "a.card"
     ]
 
     for sel in selectors:

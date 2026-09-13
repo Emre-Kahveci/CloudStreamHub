@@ -1,7 +1,7 @@
 [
   {
     "provider": "AnimeciX",
-    "checkedAt": "2026-09-13T16:01:07.722344+00:00",
+    "checkedAt": "2026-09-13T20:25:31.357530+00:00",
     "canonical": "https://animecix.tv",
     "finalUrl": "https://animecix.tv",
     "tierResults": {
@@ -16,11 +16,11 @@
     "diagnostic": {
       "L1": "Cloudflare Challenge Active (Mobile App bypass active, direct bot probe 403)"
     },
-    "durationMs": 244
+    "durationMs": 350
   },
   {
     "provider": "BelgeselX",
-    "checkedAt": "2026-09-13T16:01:07.966709+00:00",
+    "checkedAt": "2026-09-13T20:25:31.707882+00:00",
     "canonical": "https://belgeselx.com",
     "finalUrl": "https://belgeselx.com",
     "tierResults": {
@@ -38,11 +38,11 @@
       "L4": "Load returned HTTP 200",
       "L5": "No player or iframe discovered"
     },
-    "durationMs": 3334
+    "durationMs": 3242
   },
   {
     "provider": "DiziPal",
-    "checkedAt": "2026-09-13T16:01:11.300932+00:00",
+    "checkedAt": "2026-09-13T20:25:34.950458+00:00",
     "canonical": "https://dizipal1430.com",
     "finalUrl": "https://dizipal1430.com",
     "tierResults": {
@@ -50,21 +50,21 @@
       "L1_domain": "pass",
       "L2_homepage": "fail",
       "L3_search": "fail",
-      "L4_load": "fail",
-      "L5_playback": "skipped"
+      "L4_load": "pass",
+      "L5_playback": "pass"
     },
     "overallStatus": "degraded",
     "diagnostic": {
       "L2": "NO_HOMEPAGE_ITEMS_PARSED",
       "L3": "Search returned HTTP 404 or no match",
-      "L4": "Load returned HTTP 404",
-      "L5": "Detail HTTP 404"
+      "L4": "Loaded: Silo izle - Dizipal",
+      "L5": "Discovered 0 iframes, script player present: True"
     },
-    "durationMs": 5217
+    "durationMs": 7048
   },
   {
     "provider": "FilmMakinesi",
-    "checkedAt": "2026-09-13T16:01:16.518906+00:00",
+    "checkedAt": "2026-09-13T20:25:41.999477+00:00",
     "canonical": "https://filmmakinesi.to",
     "finalUrl": "https://filmmakinesi.to",
     "tierResults": {
@@ -72,21 +72,21 @@
       "L1_domain": "pass",
       "L2_homepage": "fail",
       "L3_search": "fail",
-      "L4_load": "fail",
-      "L5_playback": "skipped"
+      "L4_load": "pass",
+      "L5_playback": "pass"
     },
     "overallStatus": "degraded",
     "diagnostic": {
       "L2": "NO_HOMEPAGE_ITEMS_PARSED",
       "L3": "Search returned HTTP 404 or no match",
-      "L4": "Load returned HTTP 404",
-      "L5": "Detail HTTP 404"
+      "L4": "Loaded: Forgotten Island 2026 Filmi 1080p Full H",
+      "L5": "Discovered 2 iframes, script player present: True"
     },
-    "durationMs": 4003
+    "durationMs": 3418
   },
   {
     "provider": "HDFilmCehennemi",
-    "checkedAt": "2026-09-13T16:01:20.522357+00:00",
+    "checkedAt": "2026-09-13T20:25:45.417625+00:00",
     "canonical": "https://www.hdfilmcehennemi.nl",
     "finalUrl": "https://www.hdfilmcehennemi.nl",
     "tierResults": {
@@ -94,21 +94,21 @@
       "L1_domain": "pass",
       "L2_homepage": "pass",
       "L3_search": "pass",
-      "L4_load": "fail",
-      "L5_playback": "skipped"
+      "L4_load": "pass",
+      "L5_playback": "pass"
     },
-    "overallStatus": "degraded",
+    "overallStatus": "healthy",
     "diagnostic": {
       "L2": "Found 3 items. Top: Örümcek Adam Yepyeni Bir Gün - Spider Man Brand New Day",
       "L3": "Found 5 results",
-      "L4": "Load returned HTTP 404",
-      "L5": "Detail HTTP 404"
+      "L4": "Loaded: Örümcek Adam Yepyeni Bir Gün - Spider Ma",
+      "L5": "Discovered 1 iframes, script player present: True"
     },
-    "durationMs": 2549
+    "durationMs": 2448
   },
   {
     "provider": "KultFilmler",
-    "checkedAt": "2026-09-13T16:01:23.072392+00:00",
+    "checkedAt": "2026-09-13T20:25:47.866762+00:00",
     "canonical": "https://kultfilmler.net",
     "finalUrl": "https://kultfilmler.net",
     "tierResults": {
@@ -116,21 +116,21 @@
       "L1_domain": "pass",
       "L2_homepage": "fail",
       "L3_search": "pass",
-      "L4_load": "fail",
-      "L5_playback": "skipped"
+      "L4_load": "pass",
+      "L5_playback": "pass"
     },
     "overallStatus": "degraded",
     "diagnostic": {
       "L2": "NO_HOMEPAGE_ITEMS_PARSED",
-      "L3": "Found 20 search results",
-      "L4": "Load returned HTTP 404",
-      "L5": "Detail HTTP 404"
+      "L3": "Found 6 search results",
+      "L4": "Loaded: Soldier - Asker İzle HD İzle - Kült Film",
+      "L5": "Discovered 1 iframes, script player present: True"
     },
-    "durationMs": 1747
+    "durationMs": 2507
   },
   {
     "provider": "TurkAnime",
-    "checkedAt": "2026-09-13T16:01:24.820135+00:00",
+    "checkedAt": "2026-09-13T20:25:50.374026+00:00",
     "canonical": "https://www.turkanime.tv",
     "finalUrl": "https://www.turkanime.tv",
     "tierResults": {
@@ -148,11 +148,11 @@
       "L4": "Loaded: Death Note izle | Konusu, Bölümleri ve K",
       "L5": "Discovered 0 iframes, script player present: True"
     },
-    "durationMs": 2983
+    "durationMs": 2653
   },
   {
     "provider": "YesilCamTv",
-    "checkedAt": "2026-09-13T16:01:27.804094+00:00",
+    "checkedAt": "2026-09-13T20:25:53.027995+00:00",
     "canonical": "https://yesilcamtv.com.tr",
     "finalUrl": "https://yesilcamtv.com.tr",
     "tierResults": {
@@ -160,16 +160,16 @@
       "L1_domain": "pass",
       "L2_homepage": "pass",
       "L3_search": "pass",
-      "L4_load": "fail",
-      "L5_playback": "skipped"
+      "L4_load": "pass",
+      "L5_playback": "pass"
     },
-    "overallStatus": "degraded",
+    "overallStatus": "healthy",
     "diagnostic": {
       "L2": "Found 3 items. Top: Sahte Kabadayı",
       "L3": "Found 2 search results",
-      "L4": "Load returned HTTP 404",
-      "L5": "Detail HTTP 404"
+      "L4": "Loaded: Sahte Kabadayı | YESILCAM TV",
+      "L5": "Discovered 1 iframes, script player present: True"
     },
-    "durationMs": 1701
+    "durationMs": 1941
   }
 ]
