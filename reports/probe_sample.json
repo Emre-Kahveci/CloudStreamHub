@@ -1,0 +1,84 @@
+{
+  "inputUrl": "https://kultfilmler.net/",
+  "finalUrl": "https://kultfilmler.net/",
+  "statusCode": 200,
+  "fetchModeUsed": "HTTP",
+  "status": "SUCCESS",
+  "browserUsed": false,
+  "elapsedMs": 767,
+  "cloudflare": false,
+  "blocked": false,
+  "error": null,
+  "cards": [
+    {
+      "title": "Türkçe Altyazı1998\n\n\n\nSoldier – AskerAksiyon · Bilim Kurgu\n6",
+      "url": "https://kultfilmler.net/soldier-asker/",
+      "poster": "https://kultfilmler.net/wp-content/uploads/2026/09/asker-izle-200x300.webp",
+      "selectorMatched": "a.mcard"
+    },
+    {
+      "title": "Türkçe Altyazı1971\n\n\n\nTHX 1138Bilim Kurgu · Dram\n6.6IMDB",
+      "url": "https://kultfilmler.net/thx-1138/",
+      "poster": "https://kultfilmler.net/wp-content/uploads/2026/09/THX-1138-izle-200x300.webp",
+      "selectorMatched": "a.mcard"
+    },
+    {
+      "title": "Türkçe Altyazı2026\n\n\n\nBackroomsBilim Kurgu · Gizem\n6.8IMDB",
+      "url": "https://kultfilmler.net/backrooms/",
+      "poster": "https://kultfilmler.net/wp-content/uploads/2026/09/pR7HAA2STN78NN7egkrp9DsKI7c-200x300.jpg",
+      "selectorMatched": "a.mcard"
+    },
+    {
+      "title": "Türkçe Altyazı2026\n\n\n\nThe Invite – DavetDram · Komedi\n7.8IMD",
+      "url": "https://kultfilmler.net/the-invite-davet/",
+      "poster": "https://kultfilmler.net/wp-content/uploads/2026/09/The-Invite-izle-200x300.webp",
+      "selectorMatched": "a.mcard"
+    },
+    {
+      "title": "Türkçe Altyazı2012\n\n\n\nŞimdiki ZamanDram\n6.0IMDB",
+      "url": "https://kultfilmler.net/simdiki-zaman/",
+      "poster": "https://kultfilmler.net/wp-content/uploads/2026/09/w7rfJzincO2IXMUfZM9BoyC8Jxo-212x300.jpg",
+      "selectorMatched": "a.mcard"
+    },
+    {
+      "title": "Türkçe Altyazı1929\n\n\n\nMan with a Movie Camera – Kameralı Ada",
+      "url": "https://kultfilmler.net/man-with-a-movie-camera-kamerali-adam/",
+      "poster": "https://kultfilmler.net/wp-content/uploads/2026/09/1gVzRsu8wJHC3psjjrfJeGe7X99-200x300.jpg",
+      "selectorMatched": "a.mcard"
+    },
+    {
+      "title": "Türkçe Altyazı1956\n\n\n\nThe Searchers – Çöl AslanıWestern\n7.8I",
+      "url": "https://kultfilmler.net/the-searchers-col-aslani/",
+      "poster": "https://kultfilmler.net/wp-content/uploads/2026/09/jLBmgW0epNzJ1N9uzaVCjbyT94v-200x300.jpg",
+      "selectorMatched": "a.mcard"
+    },
+    {
+      "title": "Türkçe Altyazı2023\n\n\n\nThe Teachers’ Lounge – Öğretmenler Oda",
+      "url": "https://kultfilmler.net/the-teachers-lounge-ogretmenler-odasi/",
+      "poster": "https://kultfilmler.net/wp-content/uploads/2026/08/jZSx4oL1u8f4ZTm2HajdBZnqEsE-200x300.jpg",
+      "selectorMatched": "a.mcard"
+    },
+    {
+      "title": "Türkçe Altyazı2006\n\n\n\nThe Ron Clark Story – Zafer BenimDram\n",
+      "url": "https://kultfilmler.net/the-ron-clark-story-zafer-benim/",
+      "poster": "https://kultfilmler.net/wp-content/uploads/2026/08/gSu3GKl3fYt8yFPr8ZYAZWoQNok-225x300.jpg",
+      "selectorMatched": "a.mcard"
+    },
+    {
+      "title": "Türkçe Altyazı2008\n\n\n\nThe Class – SınıfDram\n7.5IMDB",
+      "url": "https://kultfilmler.net/the-class-sinif/",
+      "poster": "https://kultfilmler.net/wp-content/uploads/2026/08/1JOi3C4Qah7O8GBBGLXjIm82p10-200x300.jpg",
+      "selectorMatched": "a.mcard"
+    }
+  ],
+  "detail": {
+    "title": "Kült Filmler — Film ve Dizi İzle",
+    "description": "2022 · Dram",
+    "episodeLinkCount": 0
+  },
+  "iframes": [],
+  "mediaCandidates": [],
+  "subtitles": [],
+  "capturedXhr": [],
+  "capturedXhrCount": 0
+}

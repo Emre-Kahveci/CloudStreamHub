@@ -109,17 +109,40 @@ def main():
         labels = ["provider-health", "automated", name]
         existing = [i for i in open_issues if "provider-health" in [lbl["name"] for lbl in i.get("labels", [])] and name in [lbl["name"] for lbl in i.get("labels", [])]]
 
-        # If provider has failed completely (e.g. L0 or L1 failed):
+        # If provider has failed, drifted, or encountered untrusted redirect:
+        is_untrusted = tiers.get("L1_domain") == "untrusted_redirect" or p.get("overallStatus") == "critical"
         is_critical_fail = tiers.get("L0_config") == "fail" or (tiers.get("L1_domain") and tiers["L1_domain"].startswith("fail"))
+        is_drift = any(v == "drift_detected" for v in tiers.values())
+        is_blocked = any(v in ("cloudflare_challenge", "automation_blocked") for v in tiers.values())
 
-        if is_critical_fail:
+        if is_untrusted:
+            candidate = p.get("candidateHost")
+            body = f"""## [Provider Health] Untrusted Redirect Detected\n\n- **Provider:** {name}\n- **Checked At:** {p.get('checkedAt')}\n- **Canonical Domain:** {p.get('canonical')}\n- **Final URL:** {p.get('finalUrl')}\n- **Candidate Host:** {candidate}\n- **Tier Results:** `{tiers}`\n- **Workflow Run:** {workflow_url}\n\n*Urgent review required: The domain redirected outside allowed destination hosts.*"""
+            untrusted_existing = [i for i in existing if "untrusted-redirect" in [lbl["name"] for lbl in i.get("labels", [])]]
+            if not untrusted_existing:
+                create_issue(f"[Security Alert] {name} — untrusted redirect to {candidate}", body, labels + ["untrusted-redirect", "security"])
+            else:
+                add_comment(untrusted_existing[0]["number"], f"Automated health update: Still redirecting to untrusted host `{candidate}`.\nRun: {workflow_url}")
+
+        elif is_critical_fail:
             failed_tier = "L0_config" if tiers.get("L0_config") == "fail" else "L1_domain"
             err_msg = p.get("diagnostic", {}).get(failed_tier[:2], "Health check failure")
             body = f"""## [Provider Health] Critical Failure Detected\n\n- **Provider:** {name}\n- **Checked At:** {p.get('checkedAt')}\n- **Failed Tier:** {failed_tier}\n- **Canonical Domain:** {p.get('canonical')}\n- **Final URL:** {p.get('finalUrl')}\n- **Diagnostic:** {err_msg}\n- **Tier Results:** `{tiers}`\n- **Workflow Run:** {workflow_url}\n\n*Automated issue opened by Provider Health Monitor.*"""
             if not existing:
-                create_issue(f"[Provider Health] {name} — {failed_tier} regression", body, labels)
+                create_issue(f"[Provider Health] {name} — {failed_tier} regression", body, labels + ["critical"])
             else:
                 add_comment(existing[0]["number"], f"Automated health update: {failed_tier} still failing. Diagnostic: {err_msg}\nRun: {workflow_url}")
+
+        elif is_drift:
+            drift_tiers = [k for k, v in tiers.items() if v == "drift_detected"]
+            candidates = p.get("diagnostic", {}).get("L2_candidates", [])
+            body = f"""## [Selector Drift] Upstream DOM Mutation Detected\n\n- **Provider:** {name}\n- **Checked At:** {p.get('checkedAt')}\n- **Drifted Tier(s):** {drift_tiers}\n- **Canonical Domain:** {p.get('canonical')}\n- **Candidate Elements Found:**\n```json\n{json.dumps(candidates, indent=2)}\n```\n- **Workflow Run:** {workflow_url}\n\n*Note: Adaptive search located candidate elements. Provider Kotlin selectors may need updating.*"""
+            drift_existing = [i for i in existing if "selector-drift" in [lbl["name"] for lbl in i.get("labels", [])]]
+            if not drift_existing:
+                create_issue(f"[Selector Drift] {name} — upstream DOM mutation detected", body, labels + ["selector-drift"])
+            else:
+                add_comment(drift_existing[0]["number"], f"Automated drift update: Candidate elements still active.\nRun: {workflow_url}")
+
         elif overall == "healthy" and existing:
             # Recovery detected!
             close_issue(existing[0]["number"], f"Provider {name} has passed health checks and is now healthy.")

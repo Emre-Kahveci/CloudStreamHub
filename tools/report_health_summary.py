@@ -17,13 +17,26 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
 def format_cell(val):
-    if val == "pass":
+    if not val:
+        return "UNTESTED"
+    val_str = str(val).lower()
+    if val_str == "pass":
         return "PASS"
-    elif val in ("skipped", "untested"):
+    elif val_str in ("skipped", "untested"):
         return "SKIPPED"
-    elif "cloudflare" in str(val).lower():
+    elif "player_discovered" in val_str:
+        return "PLAYER_DISCOVERED"
+    elif "player_not_found" in val_str:
+        return "PLAYER_NOT_FOUND"
+    elif "drift_detected" in val_str:
+        return "DRIFT_DETECTED"
+    elif "cloudflare" in val_str:
         return "CLOUDFLARE"
-    elif "fail" in str(val).lower():
+    elif "automation_blocked" in val_str:
+        return "BLOCKED"
+    elif "untrusted_redirect" in val_str:
+        return "UNTRUSTED_REDIRECT"
+    elif "fail" in val_str:
         return "FAIL"
     else:
         return str(val).upper()
@@ -43,7 +56,7 @@ def main():
     md_lines = [
         "# CloudStreamHub — Provider Health Status Matrix",
         f"Checked at: {now_str}\n",
-        "| Provider | L0 Config | L1 Domain | L2 Homepage | L3 Search | L4 Load | L5 Playback Discovery | Overall Status |",
+        "| Provider | L0 Config | L1 Domain | L2 Homepage | L3 Search | L4 Load | L5 Player Discovery | Overall Status |",
         "| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |"
     ]
 
@@ -55,7 +68,7 @@ def main():
         l2 = format_cell(tiers.get("L2_homepage"))
         l3 = format_cell(tiers.get("L3_search"))
         l4 = format_cell(tiers.get("L4_load"))
-        l5 = format_cell(tiers.get("L5_playback"))
+        l5 = format_cell(tiers.get("L5_player_discovery") or tiers.get("L5_playback"))
 
         overall = r.get("overallStatus", "unknown").upper()
         md_lines.append(f"| **{p_name}** | {l0} | {l1} | {l2} | {l3} | {l4} | {l5} | {overall} |")

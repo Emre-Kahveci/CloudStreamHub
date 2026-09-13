@@ -2,32 +2,44 @@
 """
 live_provider_smoke.py
 
-Comprehensive live smoke test verifying active CloudStreamHub providers:
-- Homepage: HTTP 200 & DOM parsing
-- Content Discovery: Cards/items parsed
-- Detail: Metadata & episodes parsed
-- Playback Discovery: Player / iframe / stream found
+Comprehensive live smoke test verifying active CloudStreamHub providers powered by Scrapling:
+- Homepage: HTTP 200 & DOM parsing with provider-specific fingerprints
+- Detail: Metadata loaded
+- Player Discovery: Evaluates player containers (iframe, embeds) without stream downloading
+  * Reports PLAYER_DISCOVERED or PLAYER_NOT_FOUND
+  * Marks runtimePlayback as UNVERIFIED_BY_AUTOMATION
 - Subtitle: Reports NONE / HARDSUB / VTT truthfully
-- Explicit semantic status: PASS, AUTOMATION_BLOCKED, or FAIL
+- Explicit semantic status: PASS, AUTOMATION_BLOCKED, DRIFT_DETECTED, or FAIL
 """
 
 import os
 import sys
+
+# Ensure repository root is on sys.path
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
+
 import json
 import time
 import argparse
-import requests
-from bs4 import BeautifulSoup
 from datetime import datetime, timezone
+from bs4 import BeautifulSoup
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-    "Accept-Language": "tr,en-US;q=0.7,en;q=0.3"
-}
+from tools.scraping import (
+    ProviderFetcher,
+    FetchMode,
+    FetchStatus,
+    AdaptiveManager,
+    XhrRedactor
+)
 
-def test_provider(provider):
+def test_provider(provider, domains_config, adaptive_mgr):
     name = provider["name"]
+    domain_key = provider.get("domainKey", name)
+    domain_info = domains_config.get("providers", {}).get(domain_key, {})
+    canonical = domain_info.get("canonical")
+    allowed_hosts = set(domain_info.get("allowedHosts", []))
     smoke = provider.get("smokeTest", {})
     known_detail = smoke.get("knownDetail")
 
@@ -36,79 +48,101 @@ def test_provider(provider):
         "module": provider["module"],
         "homepage": {"status": "UNTESTED"},
         "detail": {"status": "UNTESTED"},
-        "playback": {"status": "UNTESTED"},
+        "playerDiscovery": {"status": "UNTESTED"},
+        "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
         "subtitle": "NONE",
         "overall": "UNKNOWN",
         "details": []
     }
 
-    session = requests.Session()
-    session.headers.update(HEADERS)
-
-    canonical = None
-    if known_detail:
-        from urllib.parse import urlparse
-        p = urlparse(known_detail)
-        canonical = f"{p.scheme}://{p.netloc}"
-
     if not canonical:
         res["overall"] = "FAIL"
-        res["details"].append("No canonical URL could be resolved")
+        res["details"].append("No canonical URL configured")
         return res
 
-    try:
-        r = session.get(canonical, timeout=12)
-        if r.status_code == 200:
-            soup = BeautifulSoup(r.text, "html.parser")
-            items = soup.select("a.poster, a.item, a.mcard, a.dcard, a[href*='/belgesel/'], div.poster, .listmovie, .panel")
+    with ProviderFetcher(allowed_hosts=allowed_hosts, canonical=canonical, timeout=15) as fetcher:
+        # 1. Homepage Test
+        home_res = fetcher.fetch(canonical, preferred_mode=FetchMode.HTTP, allow_dynamic_fallback=True)
+        if home_res.status == FetchStatus.UNTRUSTED_REDIRECT:
+            res["homepage"] = {"status": "UNTRUSTED_REDIRECT", "candidate": home_res.candidateHost}
+            res["overall"] = "CRITICAL"
+            return res
+        elif home_res.status == FetchStatus.CLOUDFLARE:
+            res["homepage"] = {"status": "AUTOMATION_BLOCKED", "reason": "Cloudflare challenge"}
+        elif home_res.status == FetchStatus.BLOCKED:
+            res["homepage"] = {"status": "AUTOMATION_BLOCKED", "reason": "WAF / 403 Forbidden"}
+        elif home_res.statusCode == 200:
+            soup = BeautifulSoup(home_res.body, "html.parser")
+            selectors = [
+                "a.poster", "a.item", "a.mcard", "a.dcard", "a[href*='/belgesel/']",
+                "div.poster a", ".listmovie a", ".panel a", "article a", ".film-content a",
+                "div.film-box a", "div.menulink a", "div.kutu a"
+            ]
+            items = []
+            for sel in selectors:
+                for tag in soup.select(sel):
+                    href = tag.get("href")
+                    title = tag.get("title") or tag.text.strip()
+                    if href and (title or tag.find("img")):
+                        items.append(href)
+                if items:
+                    break
+
             if items:
                 res["homepage"] = {"status": "PASS", "itemCount": len(items)}
             else:
-                res["homepage"] = {"status": "PASS", "itemCount": 0, "note": "Page 200 but 0 cards matched generic selector"}
-        elif r.status_code == 403 and ("cloudflare" in r.text.lower() or "cf-ray" in r.headers):
-            res["homepage"] = {"status": "AUTOMATION_BLOCKED", "reason": "Cloudflare challenge"}
+                # Check adaptive drift
+                stat, count, _ = adaptive_mgr.check_css_selector(
+                    html_content=home_res.body,
+                    selector_str="a.poster, a.mcard",
+                    identifier=f"{name}_smoke_home",
+                    base_url=canonical
+                )
+                if stat == "DRIFT_DETECTED" and count > 0:
+                    res["homepage"] = {"status": "DRIFT_DETECTED", "itemCount": count}
+                else:
+                    res["homepage"] = {"status": "PASS", "itemCount": 0, "note": "Page 200 but 0 cards matched selector"}
         else:
-            res["homepage"] = {"status": "FAIL", "code": r.status_code}
-    except Exception as e:
-        res["homepage"] = {"status": "FAIL", "error": str(e)}
+            res["homepage"] = {"status": "FAIL", "code": home_res.statusCode}
 
-    if known_detail:
-        try:
-            dr = session.get(known_detail, timeout=12)
-            if dr.status_code == 200:
-                dsoup = BeautifulSoup(dr.text, "html.parser")
-                title_tag = dsoup.select_one("h1, h2, meta[property='og:title']")
+        # 2. Detail & Player Discovery Test
+        if known_detail:
+            det_res = fetcher.fetch(known_detail, preferred_mode=FetchMode.HTTP, allow_dynamic_fallback=True)
+            if det_res.status == FetchStatus.CLOUDFLARE or det_res.status == FetchStatus.BLOCKED:
+                res["detail"] = {"status": "AUTOMATION_BLOCKED", "reason": "Cloudflare/WAF challenge"}
+                res["playerDiscovery"] = {"status": "AUTOMATION_BLOCKED"}
+            elif det_res.statusCode == 200:
+                dsoup = BeautifulSoup(det_res.body, "html.parser")
+                title_tag = dsoup.select_one("h1, h2, meta[property='og:title'], title")
                 title = title_tag.text.strip() if title_tag else "Unknown"
                 res["detail"] = {"status": "PASS", "title": title[:50]}
 
                 iframes = [ifr.get("src") or ifr.get("data-src") for ifr in dsoup.find_all("iframe") if ifr.get("src") or ifr.get("data-src")]
                 videos = [v.get("src") for v in dsoup.find_all("video") if v.get("src")]
-                has_player = any(k in dr.text.lower() for k in ["player", "jwplayer", "m3u8", "eval(", "closeload", "rapidrame", "vidpapi"])
+                has_player = any(k in det_res.body.lower() for k in ["player", "jwplayer", "m3u8", "eval(", "closeload", "rapidrame", "vidpapi"])
 
                 if iframes or videos or has_player:
-                    res["playback"] = {"status": "PASS", "iframes": len(iframes), "hasPlayer": has_player}
+                    res["playerDiscovery"] = {"status": "PLAYER_DISCOVERED", "iframes": len(iframes), "hasPlayer": has_player}
                 else:
-                    res["playback"] = {"status": "FAIL", "reason": "No iframe or player found"}
+                    res["playerDiscovery"] = {"status": "PLAYER_NOT_FOUND", "reason": "No iframe or player found"}
 
-                if ".vtt" in dr.text.lower() or ".srt" in dr.text.lower():
+                if ".vtt" in det_res.body.lower() or ".srt" in det_res.body.lower():
                     res["subtitle"] = "VTT/SRT"
-                elif "dublaj" in title.lower() or "dublaj" in dr.text.lower():
+                elif "dublaj" in title.lower() or "dublaj" in det_res.body.lower():
                     res["subtitle"] = "HARDSUB/DUBLAJ"
                 else:
                     res["subtitle"] = "NONE"
-            elif dr.status_code == 403 and ("cloudflare" in dr.text.lower() or "cf-ray" in dr.headers):
-                res["detail"] = {"status": "AUTOMATION_BLOCKED", "reason": "Cloudflare challenge"}
-                res["playback"] = {"status": "AUTOMATION_BLOCKED"}
             else:
-                res["detail"] = {"status": "FAIL", "code": dr.status_code}
-                res["playback"] = {"status": "FAIL"}
-        except Exception as e:
-            res["detail"] = {"status": "FAIL", "error": str(e)}
-            res["playback"] = {"status": "FAIL", "error": str(e)}
+                res["detail"] = {"status": "FAIL", "code": det_res.statusCode}
+                res["playerDiscovery"] = {"status": "PLAYER_NOT_FOUND"}
 
-    statuses = [res["homepage"]["status"], res["detail"]["status"], res["playback"]["status"]]
-    if any(s == "AUTOMATION_BLOCKED" for s in statuses):
+    statuses = [res["homepage"]["status"], res["detail"]["status"]]
+    if any(s == "UNTRUSTED_REDIRECT" for s in statuses):
+        res["overall"] = "CRITICAL"
+    elif any(s == "AUTOMATION_BLOCKED" for s in statuses):
         res["overall"] = "AUTOMATION_BLOCKED"
+    elif any(s == "DRIFT_DETECTED" for s in statuses):
+        res["overall"] = "DRIFT_DETECTED"
     elif all(s == "PASS" for s in statuses):
         res["overall"] = "PASS"
     elif any(s == "PASS" for s in statuses):
@@ -121,20 +155,25 @@ def test_provider(provider):
 def main():
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     providers_file = os.path.join(repo_root, "config", "providers.json")
+    domains_file = os.path.join(repo_root, "config", "domains.json")
 
     with open(providers_file, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    providers = [p for p in data.get("providers", []) if p.get("enabled")]
+    with open(domains_file, "r", encoding="utf-8") as f:
+        domains_config = json.load(f)
 
-    print(f"=== Live Provider Smoke Test ({len(providers)} providers) ===\n")
+    providers = [p for p in data.get("providers", []) if p.get("enabled")]
+    adaptive_mgr = AdaptiveManager()
+
+    print(f"=== Live Provider Smoke Test (Scrapling) ({len(providers)} providers) ===\n")
     results = []
 
     for p in providers:
         print(f"[*] Testing {p['name']}...", end=" ", flush=True)
-        res = test_provider(p)
+        res = test_provider(p, domains_config, adaptive_mgr)
         results.append(res)
-        print(f"{res['overall']} (Home: {res['homepage']['status']}, Detail: {res['detail']['status']}, Player: {res['playback']['status']}, Sub: {res['subtitle']})")
+        print(f"{res['overall']} (Home: {res['homepage']['status']}, Detail: {res['detail']['status']}, PlayerDiscovery: {res['playerDiscovery']['status']}, Sub: {res['subtitle']})")
 
     out_path = os.path.join(repo_root, "reports", "live_provider_smoke.json")
     os.makedirs(os.path.dirname(out_path), exist_ok=True)

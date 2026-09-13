@@ -16,7 +16,7 @@ Yeni bir Pull Request açmadan önce aşağıdaki maddeleri doğrulayınız:
 - [ ] **Fixture Testi Eklendi**: `src/test/resources` altında örnek HTML yanıtları ile parser testleri yazılmıştır.
 - [ ] **Yerel Derleme Başarılı**: Modül `./gradlew make` ile başarıyla `.cs3` artifact'ine derlenmiştir.
 
-## Yerel Geliştirme Komutları
+## Yerel Geliştirme ve Test Komutları
 
 ```powershell
 # Eklentileri derlemek için:
@@ -25,8 +25,16 @@ Yeni bir Pull Request açmadan önce aşağıdaki maddeleri doğrulayınız:
 # plugins.json üretmek için:
 ./gradlew makePluginsJson
 
+# Provider birim testlerini çalıştırmak için:
+./gradlew test
+
 # Repository ve meta veri doğrulaması:
 python tools/validate_repo.py
-# veya Windows PowerShell:
-powershell -ExecutionPolicy Bypass -File tools/validate_repo.ps1
+
+# Scrapling araç testlerini çalıştırmak için:
+python -m pytest tools/tests
+
+# Provider sağlık denetimi (L0-L5) çalıştırmak için:
+python tools/provider_health.py
 ```
+

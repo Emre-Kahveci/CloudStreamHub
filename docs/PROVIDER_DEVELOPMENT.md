@@ -123,3 +123,18 @@ class MyProvider : MainAPI() {
     }
 }
 ```
+
+## 5. Tersine Mühendislik ve Sağlık Kontrolü Araçları (Scrapling)
+
+Yeni bir sağlayıcı araştırması yaparken veya mevcut eklentileri test ederken Scrapling altyapısını kullanabilirsiniz:
+
+```powershell
+# Sitenin DOM yapısını, anti-bot korumasını ve stream kaynaklarını probe etmek için:
+python tools/provider_probe.py https://hedefsite.com/ --mode auto --capture-xhr
+
+# Seçici kayması (adaptive drift) ve sağlık denetimi için:
+python tools/provider_health.py --provider HedefProvider
+```
+
+Ayrıntılı bilgi için [SCRAPLING_MONITORING.md](SCRAPLING_MONITORING.md) belgesini inceleyiniz.
+

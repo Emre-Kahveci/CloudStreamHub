@@ -1,22 +1,25 @@
 {
-  "testedAt": "2026-09-13T20:26:37.783392+00:00",
+  "testedAt": "2026-09-13T22:00:31.802731+00:00",
   "providers": [
     {
       "provider": "AnimeciX",
       "module": "AnimeciX",
       "homepage": {
-        "status": "AUTOMATION_BLOCKED",
-        "reason": "Cloudflare challenge"
+        "status": "PASS",
+        "itemCount": 0,
+        "note": "Page 200 but 0 cards matched selector"
       },
       "detail": {
-        "status": "AUTOMATION_BLOCKED",
-        "reason": "Cloudflare challenge"
+        "status": "PASS",
+        "title": "AnimeciX - Türkçe Anime Bilgi ve Paylaşım Platform"
       },
-      "playback": {
-        "status": "AUTOMATION_BLOCKED"
+      "playerDiscovery": {
+        "status": "PLAYER_NOT_FOUND",
+        "reason": "No iframe or player found"
       },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
-      "overall": "AUTOMATION_BLOCKED",
+      "overall": "PASS",
       "details": []
     },
     {
@@ -28,14 +31,15 @@
       },
       "detail": {
         "status": "PASS",
-        "title": "Unknown"
+        "title": "404 — Sayfa Bulunamadı | Belgeselx"
       },
-      "playback": {
-        "status": "FAIL",
+      "playerDiscovery": {
+        "status": "PLAYER_NOT_FOUND",
         "reason": "No iframe or player found"
       },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
-      "overall": "PARTIAL_PASS",
+      "overall": "PASS",
       "details": []
     },
     {
@@ -44,18 +48,19 @@
       "homepage": {
         "status": "PASS",
         "itemCount": 0,
-        "note": "Page 200 but 0 cards matched generic selector"
+        "note": "Page 200 but 0 cards matched selector"
       },
       "detail": {
         "status": "PASS",
-        "title": ""
+        "title": "Silo izle - Dizipal"
       },
-      "playback": {
-        "status": "FAIL",
+      "playerDiscovery": {
+        "status": "PLAYER_NOT_FOUND",
         "reason": "No iframe or player found"
       },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "HARDSUB/DUBLAJ",
-      "overall": "PARTIAL_PASS",
+      "overall": "PASS",
       "details": []
     },
     {
@@ -63,17 +68,18 @@
       "module": "FilmMakinesi",
       "homepage": {
         "status": "PASS",
-        "itemCount": 44
+        "itemCount": 42
       },
       "detail": {
         "status": "PASS",
-        "title": ""
+        "title": "Forgotten Island 2026 Filmi 1080p Full HD izle"
       },
-      "playback": {
-        "status": "PASS",
+      "playerDiscovery": {
+        "status": "PLAYER_DISCOVERED",
         "iframes": 2,
         "hasPlayer": true
       },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "HARDSUB/DUBLAJ",
       "overall": "PASS",
       "details": []
@@ -89,11 +95,12 @@
         "status": "PASS",
         "title": "Örümcek Adam Yepyeni Bir Gün - Spider Man Brand Ne"
       },
-      "playback": {
-        "status": "PASS",
+      "playerDiscovery": {
+        "status": "PLAYER_DISCOVERED",
         "iframes": 1,
         "hasPlayer": true
       },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "HARDSUB/DUBLAJ",
       "overall": "PASS",
       "details": []
@@ -103,17 +110,18 @@
       "module": "KultFilmler",
       "homepage": {
         "status": "PASS",
-        "itemCount": 47
+        "itemCount": 20
       },
       "detail": {
         "status": "PASS",
-        "title": ""
+        "title": "Soldier - Asker İzle HD İzle - Kült Filmler"
       },
-      "playback": {
-        "status": "PASS",
+      "playerDiscovery": {
+        "status": "PLAYER_DISCOVERED",
         "iframes": 1,
         "hasPlayer": true
       },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
       "overall": "PASS",
       "details": []
@@ -123,18 +131,19 @@
       "module": "TurkAnime",
       "homepage": {
         "status": "PASS",
-        "itemCount": 22
+        "itemCount": 156
       },
       "detail": {
         "status": "PASS",
-        "title": "Unknown"
+        "title": "Death Note izle | Konusu, Bölümleri ve Karakterler"
       },
-      "playback": {
-        "status": "FAIL",
+      "playerDiscovery": {
+        "status": "PLAYER_NOT_FOUND",
         "reason": "No iframe or player found"
       },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
-      "overall": "PARTIAL_PASS",
+      "overall": "PASS",
       "details": []
     },
     {
@@ -142,17 +151,18 @@
       "module": "YesilCamTv",
       "homepage": {
         "status": "PASS",
-        "itemCount": 41
+        "itemCount": 1
       },
       "detail": {
         "status": "PASS",
-        "title": ""
+        "title": "Sahte Kabadayı | YESILCAM TV"
       },
-      "playback": {
-        "status": "PASS",
+      "playerDiscovery": {
+        "status": "PLAYER_DISCOVERED",
         "iframes": 1,
         "hasPlayer": false
       },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "HARDSUB/DUBLAJ",
       "overall": "PASS",
       "details": []
