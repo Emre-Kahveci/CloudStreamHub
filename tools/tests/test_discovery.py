@@ -60,3 +60,90 @@ def test_classify_subtitles_truthful():
     assert classify_subtitles("<html><h1>Movie Title (Türkçe Dublaj)</h1></html>", "Movie Title (Türkçe Dublaj)") == "DUBBED"
     assert classify_subtitles("<html><h1>Movie Title (Türkçe Altyazılı)</h1></html>", "Movie Title (Türkçe Altyazılı)") == "HARDSUB"
     assert classify_subtitles("<html><h1>Regular Movie</h1></html>", "Regular Movie") == "NONE"
+
+def test_turkanime_navigation_is_not_content():
+    """Verifies that navigation links like .#0-9 or letter filters are NEVER parsed as content items."""
+    html = """
+    <div class="letter-nav">
+        <a class="animelist-item" href="/anime-harf/#">.#0-9</a>
+        <a class="animelist-item" href="/anime-harf/A">A</a>
+        <a class="animelist-item" href="/anime-harf/B">B</a>
+    </div>
+    <div class="panel">
+        <div class="panel-title">
+            <a href="/anime/death-note">Death Note</a>
+        </div>
+        <img src="/death_note.jpg"/>
+    </div>
+    """
+    homepage_cfg = {
+        "selectors": ["div.panel-title a", "a.animelist-item"],
+        "requiredUrlPatterns": ["/anime/"],
+        "excludedUrlPatterns": ["harf/", "harf-", "#"]
+    }
+    cards = discover_homepage_cards(html, "https://www.turkanime.tv/", homepage_cfg=homepage_cfg)
+    assert len(cards) == 1
+    assert cards[0]["title"] == "Death Note"
+    assert cards[0]["url"] == "https://www.turkanime.tv/anime/death-note"
+    assert not any(c["title"] in [".#0-9", "A", "B"] for c in cards)
+
+def test_yesilcamtv_category_is_not_content():
+    """Verifies that category/genre links like 'Belgesel' are NEVER parsed as movie content items."""
+    html = """
+    <div class="category-menu">
+        <a href="/kategori/belgesel/">Belgesel</a>
+        <a href="/kategori/komedi/">Komedi</a>
+    </div>
+    <div class="movies-list">
+        <article>
+            <a href="/sahte-kabadayi-izle/" title="Sahte Kabadayı"><img src="/poster.jpg"/></a>
+        </article>
+    </div>
+    """
+    homepage_cfg = {
+        "selectors": [".movies-list a", "article a", ".category-menu a"],
+        "requiredUrlPatterns": ["-izle"],
+        "excludedUrlPatterns": ["/kategori/", "/category/", "/genre/"]
+    }
+    cards = discover_homepage_cards(html, "https://yesilcamtv.com.tr/", homepage_cfg=homepage_cfg)
+    assert len(cards) == 1
+    assert cards[0]["title"] == "Sahte Kabadayı"
+    assert cards[0]["url"] == "https://yesilcamtv.com.tr/sahte-kabadayi-izle/"
+    assert not any(c["title"].lower() in ["belgesel", "komedi"] for c in cards)
+
+def test_episode_selector_strict_config_vs_fallback():
+    """Verifies STRICT_CONFIG vs GENERIC_FALLBACK and non-episode exclusion."""
+    html = """
+    <html>
+        <h1>Death Note</h1>
+        <div class="menu">
+            <a href="/yakinda-yeni-sezon-animeleri">Yakında Yeni Sezon</a>
+        </div>
+        <div class="episodes">
+            <a class="custom-ep" href="/video/death-note-1-bolum">1. Bölüm</a>
+        </div>
+    </html>
+    """
+    # 1. When configured selector is passed -> STRICT_CONFIG
+    res_strict = parse_detail_page(
+        html,
+        200,
+        "https://www.turkanime.tv/anime/death-note",
+        episode_selector="a.custom-ep"
+    )
+    assert res_strict["episodeDiscoveryMode"] == "STRICT_CONFIG"
+    assert len(res_strict["episodeLinks"]) == 1
+    assert res_strict["episodeLinks"][0] == "https://www.turkanime.tv/video/death-note-1-bolum"
+
+    # 2. When configured selector is None or empty, fallback kicks in but excludes 'yakinda-yeni-sezon-animeleri'
+    res_fallback = parse_detail_page(
+        html,
+        200,
+        "https://www.turkanime.tv/anime/death-note",
+        episode_selector=None
+    )
+    assert res_fallback["episodeDiscoveryMode"] == "GENERIC_FALLBACK"
+    assert len(res_fallback["episodeLinks"]) == 1
+    assert res_fallback["episodeLinks"][0] == "https://www.turkanime.tv/video/death-note-1-bolum"
+    assert not any("yakinda" in link for link in res_fallback["episodeLinks"])
+

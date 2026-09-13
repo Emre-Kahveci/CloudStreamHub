@@ -28,8 +28,30 @@
         },
         "search": {
           "method": "GET",
-          "path": "/?s={query}",
-          "expectedSelector": "a.poster, a.item, div.title-card"
+          "path": "/secure/search/{query}?limit=20",
+          "headers": {
+            "x-e-h": "7Y2ozlO+QysR5w9Q6Tupmtvl9jJp7ThFH8SB+Lo7NvZjgjqRSqOgcT2v4ISM9sP10LmnlYI8WQ==.xrlyOBFS5BHjQ2Lk",
+            "Referer": "https://animecix.tv/"
+          },
+          "jsonKey": "results"
+        },
+        "homepage": {
+          "selectors": [
+            "div.title-card a",
+            "a.poster",
+            "a[href*='/titles/']"
+          ],
+          "requiredUrlPatterns": [
+            "/titles/"
+          ],
+          "excludedUrlPatterns": [
+            "/search",
+            "/profile",
+            "/settings",
+            "/login",
+            "/register",
+            "/dmca"
+          ]
         }
       }
     },
@@ -60,6 +82,21 @@
           "method": "GET",
           "path": "/?s={query}",
           "expectedSelector": "a[href*='/belgesel/'], div.panel a, .video-item a"
+        },
+        "homepage": {
+          "selectors": [
+            "a[href*='/belgesel/']",
+            "div.panel a",
+            ".video-item a"
+          ],
+          "requiredUrlPatterns": [
+            "/belgesel/"
+          ],
+          "excludedUrlPatterns": [
+            "/kategori/",
+            "/tur/",
+            "/iletisim/"
+          ]
         }
       }
     },
@@ -86,12 +123,34 @@
         "contentType": "TvSeries",
         "playerProbe": {
           "mode": "episode",
-          "episodeSelector": "a[href*='bolum'], a[href*='sezon'], .episode-item a, a.episode"
+          "episodeSelector": "a[href*='bolum'], .episode-item a, a.episode"
         },
         "search": {
           "method": "GET",
-          "path": "/find?q={query}",
-          "expectedSelector": "article a, a.poster, .movie-box a"
+          "path": "/api/search.php?q={query}",
+          "headers": {
+            "Referer": "https://dizipal1430.com/",
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          "jsonKey": "results"
+        },
+        "homepage": {
+          "selectors": [
+            "a[href*='/dizi/']",
+            "a[href*='/film/']"
+          ],
+          "requiredUrlPatterns": [
+            "/dizi/",
+            "/film/"
+          ],
+          "excludedUrlPatterns": [
+            "/kategori/",
+            "/tur/",
+            "/filmler",
+            "/diziler",
+            "/trendler",
+            "/sayfa/"
+          ]
         }
       }
     },
@@ -121,8 +180,24 @@
         },
         "search": {
           "method": "GET",
-          "path": "/?s={query}",
-          "expectedSelector": "div.film-box a, .film-content a, a.poster"
+          "path": "/arama/?s={query}",
+          "expectedSelector": "a.item, div.item-relative a.item, a[href*='/film/']"
+        },
+        "homepage": {
+          "selectors": [
+            "a.item",
+            "div.item a",
+            "div.film-box a"
+          ],
+          "requiredUrlPatterns": [
+            "/film/"
+          ],
+          "excludedUrlPatterns": [
+            "/kategori/",
+            "/tur/",
+            "/yil/",
+            "/film-izle/sayfa/"
+          ]
         }
       }
     },
@@ -151,16 +226,29 @@
           "mode": "detail"
         },
         "search": {
-          "method": "POST_JSON",
-          "path": "/search/",
-          "payload": {
-            "query": "{query}"
-          },
+          "method": "GET",
+          "path": "/search?q={query}",
           "headers": {
-            "Content-Type": "application/json",
-            "X-Requested-With": "fetch"
+            "X-Requested-With": "fetch",
+            "Content-Type": "application/json"
           },
           "jsonKey": "results"
+        },
+        "homepage": {
+          "selectors": [
+            "a.poster",
+            "div.card-video a",
+            ".movie-card a"
+          ],
+          "requiredUrlPatterns": [
+            "/"
+          ],
+          "excludedUrlPatterns": [
+            "/kategori/",
+            "/tur/",
+            "/iletisim/",
+            "/sayfa/"
+          ]
         }
       }
     },
@@ -192,6 +280,24 @@
           "method": "GET",
           "path": "/?s={query}",
           "expectedSelector": "a.mcard, a.dcard, article a"
+        },
+        "homepage": {
+          "selectors": [
+            "a.mcard",
+            "a.dcard",
+            "article a"
+          ],
+          "requiredUrlPatterns": [
+            "/"
+          ],
+          "excludedUrlPatterns": [
+            "/kategori/",
+            "/tur/",
+            "/arsiv/",
+            "/oyuncu/",
+            "/yonetmen/",
+            "/sayfa/"
+          ]
         }
       }
     },
@@ -218,19 +324,40 @@
         "contentType": "Anime",
         "playerProbe": {
           "mode": "episode",
-          "episodeSelector": "a[href*='bolum'], a[href*='video/'], #bolumler a"
+          "episodeSelector": "a[data-url*='ajax/bolumler'], #bolumler a[href*='/video/'], a[href*='/video/']"
         },
         "search": {
           "method": "POST_FORM",
-          "path": "/ajax/arama",
+          "path": "/arama",
           "payload": {
             "arama": "{query}"
           },
           "headers": {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-Requested-With": "XMLHttpRequest"
+            "Referer": "https://www.turkanime.tv/",
+            "Content-Type": "application/x-www-form-urlencoded"
           },
-          "expectedKeyword": "/anime/"
+          "expectedSelector": "div#orta-icerik div.panel, a[href*='/anime/']"
+        },
+        "homepage": {
+          "selectors": [
+            "div.panel-title a",
+            "div#orta-icerik div.panel a[href*='/video/']",
+            "div.panel-body a[href*='/anime/']"
+          ],
+          "requiredUrlPatterns": [
+            "/anime/",
+            "/video/"
+          ],
+          "excludedUrlPatterns": [
+            "harf/",
+            "harf-",
+            "tur/",
+            "takvim",
+            "ara",
+            "siralama",
+            "top-",
+            "sayfa"
+          ]
         }
       }
     },
@@ -260,7 +387,26 @@
         "search": {
           "method": "GET",
           "path": "/?s={query}",
-          "expectedSelector": ".film-kutusu a, .video-item a, a[href*='-izle/']"
+          "expectedSelector": ".listmovie, article, div.item, div.post, div.search-result, a[href*='-izle/']"
+        },
+        "homepage": {
+          "selectors": [
+            ".movies-list a",
+            ".listmovie a",
+            "article a[href*='-izle']",
+            "div.item-filmes a"
+          ],
+          "requiredUrlPatterns": [
+            "-izle"
+          ],
+          "excludedUrlPatterns": [
+            "/kategori/",
+            "/category/",
+            "/genre/",
+            "/tag/",
+            "/etiket/",
+            "/sayfa/"
+          ]
         }
       }
     },

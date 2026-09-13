@@ -154,3 +154,38 @@ def test_session_lifecycle_cleanup():
     assert fetcher._http_client is None
     assert fetcher._dynamic_client is None
     assert fetcher._stealth_client is None
+
+def test_extract_response_text_variants():
+    """Verifies safe response text extraction across UTF-8, declared charset, invalid UTF-8, and fallbacks."""
+    from tools.scraping.fetch import extract_response_text
+
+    # 1. None / Empty
+    assert extract_response_text(None) == ""
+    assert extract_response_text(b"") == ""
+    assert extract_response_text("") == ""
+
+    # 2. Valid UTF-8
+    utf8_bytes = "Türkçe Belgesel & Dizi İzle".encode("utf-8")
+    assert extract_response_text(utf8_bytes) == "Türkçe Belgesel & Dizi İzle"
+
+    # 3. String pass-through
+    assert extract_response_text("Hello World") == "Hello World"
+
+    # 4. Declared charset (ISO-8859-9 / Windows-1254 Turkish)
+    tr_bytes = "Türkçe Şeker".encode("iso-8859-9")
+    mock_resp = MockResponse(body="dummy")
+    mock_resp.body = tr_bytes
+    mock_resp.encoding = "iso-8859-9"
+    assert extract_response_text(mock_resp) == "Türkçe Şeker"
+
+    # 5. Invalid UTF-8 (e.g. truncated byte 0xc3 like BelgeselX)
+    truncated_bytes = b"Belgesel 1.B\xc3<br><span>Test</span>"
+    extracted = extract_response_text(truncated_bytes)
+    assert "Belgesel" in extracted
+    assert "<span>Test</span>" in extracted
+
+    # 6. Response object with headers content-type charset
+    mock_ct_resp = MockResponse(body="dummy", headers={"content-type": "text/html; charset=windows-1254"})
+    mock_ct_resp.body = tr_bytes
+    mock_ct_resp.encoding = None
+    assert "Türkçe" in extract_response_text(mock_ct_resp)

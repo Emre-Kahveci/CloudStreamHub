@@ -19,10 +19,13 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
+import re
 import json
 import time
 import argparse
+from urllib.parse import urljoin, urlparse
 from datetime import datetime, timezone
+from bs4 import BeautifulSoup
 
 from tools.scraping import (
     ProviderFetcher,
@@ -88,7 +91,8 @@ def test_provider(provider, domains_config, adaptive_mgr):
         elif home_res.status == FetchStatus.BLOCKED:
             res["homepage"] = {"status": "AUTOMATION_BLOCKED", "reason": "WAF / 403 Forbidden"}
         elif home_res.statusCode == 200:
-            cards = discover_homepage_cards(home_res.body, canonical)
+            homepage_cfg = monitoring_cfg.get("homepage", {})
+            cards = discover_homepage_cards(home_res.body, canonical, homepage_cfg=homepage_cfg)
             if len(cards) > 0:
                 res["homepage"] = {"status": "PASS", "itemCount": len(cards), "sample": cards[0]["title"]}
             else:
@@ -119,7 +123,8 @@ def test_provider(provider, domains_config, adaptive_mgr):
                 res["detail"] = {"status": "AUTOMATION_BLOCKED", "reason": "Cloudflare/WAF challenge"}
                 res["playerDiscovery"] = {"status": "AUTOMATION_BLOCKED"}
             else:
-                detail_info = parse_detail_page(det_res.body, det_res.statusCode, known_detail)
+                ep_selector = monitoring_cfg.get("playerProbe", {}).get("episodeSelector")
+                detail_info = parse_detail_page(det_res.body, det_res.statusCode, known_detail, episode_selector=ep_selector, fetcher=fetcher)
                 if detail_info["status"] == "FAIL":
                     if detail_info.get("isSoft404"):
                         res["detail"] = {"status": "FAIL", "title": detail_info.get("title"), "reason": "SOFT_404_PAGE"}
@@ -127,7 +132,12 @@ def test_provider(provider, domains_config, adaptive_mgr):
                         res["detail"] = {"status": "FAIL", "reason": detail_info.get("reason")}
                     res["playerDiscovery"] = {"status": "PLAYER_NOT_FOUND"}
                 else:
-                    res["detail"] = {"status": "PASS", "title": detail_info["title"][:50]}
+                    res["detail"] = {
+                        "status": "PASS",
+                        "title": detail_info["title"][:50],
+                        "episodeDiscoveryMode": detail_info.get("episodeDiscoveryMode", "NONE"),
+                        "episodesCount": len(detail_info.get("episodeLinks", []))
+                    }
                     res["subtitle"] = classify_subtitles(det_res.body, detail_info["title"])
 
                     # Target chaining for player discovery
@@ -150,6 +160,29 @@ def test_provider(provider, domains_config, adaptive_mgr):
                             pass
 
                     p_stat, p_info = evaluate_player_discovery(target_body, target_url)
+                    if p_stat != "PLAYER_DISCOVERED" and fetcher:
+                        soup = BeautifulSoup(target_body, "html.parser")
+                        btn = soup.select_one("button[onclick*='videosec'], a[onclick*='videosec']")
+                        if btn:
+                            m = re.search(r"'(ajax/videosec[^']+)'", btn.get("onclick", ""))
+                            if m:
+                                parsed_t = urlparse(target_url)
+                                root_t = f"{parsed_t.scheme}://{parsed_t.netloc}/"
+                                videosec_url = urljoin(root_t, m.group(1))
+                                try:
+                                    v_res = fetcher.fetch(
+                                        videosec_url,
+                                        preferred_mode=FetchMode.HTTP,
+                                        allow_dynamic_fallback=False,
+                                        headers={"X-Requested-With": "XMLHttpRequest", "Referer": target_url}
+                                    )
+                                    if v_res.statusCode == 200 and v_res.body:
+                                        p_stat, p_info = evaluate_player_discovery(v_res.body, videosec_url)
+                                        if p_stat == "PLAYER_DISCOVERED":
+                                            target_url = videosec_url
+                                except Exception:
+                                    pass
+
                     if p_stat == "PLAYER_DISCOVERED":
                         res["playerDiscovery"] = {
                             "status": "PLAYER_DISCOVERED",

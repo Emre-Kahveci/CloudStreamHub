@@ -14,7 +14,7 @@ from .detection import (
 )
 from .redaction import XhrRedactor
 from .adaptive import AdaptiveManager
-from .fetch import ProviderFetcher
+from .fetch import ProviderFetcher, extract_response_text
 from .discovery import (
     discover_homepage_cards,
     parse_detail_page,
@@ -35,6 +35,7 @@ __all__ = [
     "XhrRedactor",
     "AdaptiveManager",
     "ProviderFetcher",
+    "extract_response_text",
     "discover_homepage_cards",
     "parse_detail_page",
     "evaluate_player_discovery",

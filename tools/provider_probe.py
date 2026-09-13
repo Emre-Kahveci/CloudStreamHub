@@ -200,10 +200,15 @@ def probe_page(
                 "hasPlayerScript": p_info["hasPlayerScript"]
             }
 
-            # If XHR capture was on and we probed multiple pages, aggregate XHRs
-            if capture_xhr and det_res.capturedXhr:
-                probe_data["capturedXhr"].extend(det_res.capturedXhr)
-                probe_data["capturedXhrCount"] = len(probe_data["capturedXhr"])
+        captured = probe_data["capturedXhr"]
+        probe_data["networkSummary"] = {
+            "xhr": sum(1 for x in captured if x.get("resourceType") == "xhr"),
+            "fetch": sum(1 for x in captured if x.get("resourceType") == "fetch"),
+            "script": sum(1 for x in captured if x.get("resourceType") == "script"),
+            "media": sum(1 for x in captured if x.get("resourceType") == "media"),
+            "websocket": sum(1 for x in captured if x.get("resourceType") == "websocket"),
+            "total": len(captured)
+        }
 
     return probe_data
 
@@ -234,7 +239,13 @@ def main():
     print(f" Fetch Mode Used:  {probe_result['fetchModeUsed']} (Browser: {probe_result['browserUsed']})")
     print(f" Status:           {probe_result['status']}")
     print(f" Elapsed:          {probe_result['elapsedMs']} ms")
-    print(f" Cloudflare:       {probe_result['cloudflare']}")
+    if probe_result['fetchModeUsed'] == "STEALTH":
+        if probe_result['cloudflare']:
+            print(" Cloudflare:       Active challenge detected and solved via StealthySession")
+        else:
+            print(" Cloudflare:       Stealth browser probe executed; no challenge observed.")
+    else:
+        print(f" Cloudflare:       {probe_result['cloudflare']}")
     print(f" Anti-Bot Blocked: {probe_result['blocked']}")
     if probe_result['error']:
         print(f" Error:            {probe_result['error']}")
@@ -277,10 +288,15 @@ def main():
             print(f"  - {m}")
         print(f" Script Player:    {ply['hasPlayerScript']}")
 
-    if args.capture_xhr:
-        print(f"\n--- Captured Sanitized XHRs ({probe_result['capturedXhrCount']}) ---")
-        for x in probe_result['capturedXhr'][:10]:
-            print(f"  [{x.get('method', 'GET')}] {x.get('status', '???')} {x.get('resourceType', 'xhr')} -> {x.get('url')}")
+    if args.capture_xhr or probe_result.get("networkSummary", {}).get("total", 0) > 0:
+        net = probe_result.get("networkSummary", {})
+        print("\n--- Network Capture Summary ---")
+        print(f" XHR:       {net.get('xhr', 0)}")
+        print(f" Fetch:     {net.get('fetch', 0)}")
+        print(f" Script:    {net.get('script', 0)}")
+        print(f" Media:     {net.get('media', 0)}")
+        print(f" WebSocket: {net.get('websocket', 0)}")
+        print(f" Total captured network requests: {net.get('total', 0)}")
 
     print("=" * 65)
 

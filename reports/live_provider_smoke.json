@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-09-13T22:18:58.803881+00:00",
+  "testedAt": "2026-09-13T22:41:28.244954+00:00",
   "providers": [
     {
       "provider": "AnimeciX",
@@ -11,7 +11,9 @@
       },
       "detail": {
         "status": "PASS",
-        "title": "AnimeciX - Türkçe Anime Bilgi ve Paylaşım Platform"
+        "title": "AnimeciX - Türkçe Anime Bilgi ve Paylaşım Platform",
+        "episodeDiscoveryMode": "NONE",
+        "episodesCount": 0
       },
       "playerDiscovery": {
         "status": "PLAYER_NOT_FOUND",
@@ -26,8 +28,9 @@
       "provider": "BelgeselX",
       "module": "BelgeselX",
       "homepage": {
-        "status": "FAIL",
-        "code": null
+        "status": "PASS",
+        "itemCount": 15,
+        "sample": "BARBARLARIN YÃKSELÄ°ÅÄ°\nDireniÅ Part 110"
       },
       "detail": {
         "status": "FAIL",
@@ -39,28 +42,32 @@
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
-      "overall": "FAIL",
+      "overall": "PARTIAL_PASS",
       "details": []
     },
     {
       "provider": "DiziPal",
       "module": "DiziPal",
       "homepage": {
-        "status": "FAIL",
-        "itemCount": 0,
-        "reason": "0 valid content items discovered"
+        "status": "PASS",
+        "itemCount": 15,
+        "sample": "Dublaj & Altyazı\n\n\r\n                                            Lanterns"
       },
       "detail": {
         "status": "PASS",
-        "title": "Silo izle - Dizipal"
+        "title": "Silo izle - Dizipal",
+        "episodeDiscoveryMode": "STRICT_CONFIG",
+        "episodesCount": 30
       },
       "playerDiscovery": {
-        "status": "PLAYER_NOT_FOUND",
+        "status": "PLAYER_DISCOVERED",
+        "iframes": 1,
+        "hasPlayer": true,
         "targetUrl": "https://dizipal1430.com/bolum/silo-1-sezon-1-bolum"
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "DUBBED",
-      "overall": "PARTIAL_PASS",
+      "overall": "PASS",
       "details": []
     },
     {
@@ -73,7 +80,9 @@
       },
       "detail": {
         "status": "PASS",
-        "title": "Forgotten Island 2026 Filmi 1080p Full HD izle"
+        "title": "Forgotten Island 2026 Filmi 1080p Full HD izle",
+        "episodeDiscoveryMode": "NONE",
+        "episodesCount": 0
       },
       "playerDiscovery": {
         "status": "PLAYER_DISCOVERED",
@@ -96,7 +105,9 @@
       },
       "detail": {
         "status": "PASS",
-        "title": "Örümcek Adam Yepyeni Bir Gün - Spider Man Brand Ne"
+        "title": "Örümcek Adam Yepyeni Bir Gün - Spider Man Brand Ne",
+        "episodeDiscoveryMode": "GENERIC_FALLBACK",
+        "episodesCount": 1
       },
       "playerDiscovery": {
         "status": "PLAYER_DISCOVERED",
@@ -119,7 +130,9 @@
       },
       "detail": {
         "status": "PASS",
-        "title": "Soldier - Asker İzle HD İzle - Kült Filmler"
+        "title": "Soldier - Asker İzle HD İzle - Kült Filmler",
+        "episodeDiscoveryMode": "NONE",
+        "episodesCount": 0
       },
       "playerDiscovery": {
         "status": "PLAYER_DISCOVERED",
@@ -137,20 +150,24 @@
       "module": "TurkAnime",
       "homepage": {
         "status": "PASS",
-        "itemCount": 15,
-        "sample": ".#0-9"
+        "itemCount": 9,
+        "sample": "Shiguang Dailiren III 12 izle"
       },
       "detail": {
         "status": "PASS",
-        "title": "Death Note izle | Konusu, Bölümleri ve Karakterler"
+        "title": "Death Note izle | Konusu, Bölümleri ve Karakterler",
+        "episodeDiscoveryMode": "STRICT_CONFIG",
+        "episodesCount": 37
       },
       "playerDiscovery": {
-        "status": "PLAYER_NOT_FOUND",
-        "targetUrl": "https://www.turkanime.tv/yakinda-yeni-sezon-animeleri"
+        "status": "PLAYER_DISCOVERED",
+        "iframes": 1,
+        "hasPlayer": true,
+        "targetUrl": "https://www.turkanime.tv/ajax/videosec&b=VnZsR01hV2s0UEMyaFd2QkpESGVRdz09Ojp5M25zSFl1V2luQlJDMkNG&f=WE1ZT1RJekZwQ1lDNmRhY1RnN2JpUT09Ojp2UVUwR0F4c0ctdFFUOTF1"
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
-      "overall": "PARTIAL_PASS",
+      "overall": "PASS",
       "details": []
     },
     {
@@ -158,12 +175,14 @@
       "module": "YesilCamTv",
       "homepage": {
         "status": "PASS",
-        "itemCount": 1,
-        "sample": "Belgesel"
+        "itemCount": 15,
+        "sample": "Sahte Kabadayı"
       },
       "detail": {
         "status": "PASS",
-        "title": "Sahte Kabadayı | YESILCAM TV"
+        "title": "Sahte Kabadayı | YESILCAM TV",
+        "episodeDiscoveryMode": "NONE",
+        "episodesCount": 0
       },
       "playerDiscovery": {
         "status": "PLAYER_DISCOVERED",

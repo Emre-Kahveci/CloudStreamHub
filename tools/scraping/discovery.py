@@ -32,18 +32,50 @@ STRONG_PLAYER_HOSTS = [
     "vidsrc", "superembed", "player", "embed", "upstream"
 ]
 
-def discover_homepage_cards(html_body: str, base_url: str, selector_override: Optional[str] = None) -> List[Dict[str, Any]]:
+# Navigation and Category indicators to exclude from content items
+NAVIGATION_TOKENS = {
+    ".#0-9", "#0-9", "0-9", "#", "tüm liste", "tum liste", "sayfa", "page",
+    "kategori", "kategoriler", "kategori seç", "türler", "turler", "filmler", "diziler", "anime", "animeler",
+    "aksiyon", "komedi", "korku", "dram", "romantik", "animasyon", "belgesel", "bilim kurgu",
+    "macera", "suç", "suc", "fantastik", "gerilim", "gizem", "savaş", "savas", "western"
+}
+
+GENERIC_EXCLUDE_URL_PATTERNS = [
+    "login", "register", "giris", "kayit", "facebook", "twitter", "instagram",
+    "youtube", "iletisim", "hakkinda", "dmca", "sikayet", "privacy", "terms",
+    "/kategori/", "/category/", "/genre/", "/tur/", "/etiket/", "/tag/",
+    "/harf/", "/harf-", "/takvim", "/siralama", "/top-", "/sayfa/", "/page/"
+]
+
+def discover_homepage_cards(
+    html_body: str,
+    base_url: str,
+    selector_override: Optional[str] = None,
+    homepage_cfg: Optional[Dict[str, Any]] = None
+) -> List[Dict[str, Any]]:
     """
-    Extracts valid content cards from homepage HTML.
-    Returns list of discovered items with {title, url, poster}.
+    Extracts valid content cards from homepage HTML with strict navigation/category filtering.
+    Invariant: navigation link != content item, category link != content item.
     """
     if not html_body:
         return []
 
     soup = BeautifulSoup(html_body, "html.parser")
-    selectors_to_check = [s.strip() for s in selector_override.split(",")] if selector_override else KNOWN_CARD_SELECTORS
+
+    cfg = homepage_cfg or {}
+    selectors_to_check = cfg.get("selectors")
+    if not selectors_to_check:
+        if selector_override:
+            selectors_to_check = [s.strip() for s in selector_override.split(",")]
+        else:
+            selectors_to_check = KNOWN_CARD_SELECTORS
+
+    required_patterns = cfg.get("requiredUrlPatterns", [])
+    excluded_patterns = cfg.get("excludedUrlPatterns", [])
 
     cards = []
+    seen_urls = set()
+
     for sel in selectors_to_check:
         for tag in soup.select(sel):
             href = tag.get("href")
@@ -51,33 +83,66 @@ def discover_homepage_cards(html_body: str, base_url: str, selector_override: Op
             img = tag.find("img")
             poster = (img.get("src") or img.get("data-src") or img.get("data-lazy-src")) if img else None
 
-            if href and (title or poster):
-                abs_href = urljoin(base_url, href)
-                # Ignore non-content links like login/register/social
-                if any(x in abs_href.lower() for x in ["login", "register", "giris", "kayit", "facebook", "twitter", "instagram"]):
+            if not href:
+                continue
+
+            abs_href = urljoin(base_url, href)
+
+            # 1. Deduplication
+            if abs_href in seen_urls or abs_href.rstrip("/") == base_url.rstrip("/"):
+                continue
+
+            # 2. Strict Navigation Token check (title)
+            normalized_title = title.lower().strip()
+            if normalized_title in NAVIGATION_TOKENS or (len(normalized_title) <= 2 and not normalized_title.isalnum()):
+                continue
+
+            # 3. Excluded URL patterns check (generic + config-specific)
+            all_excluded = GENERIC_EXCLUDE_URL_PATTERNS + [p.lower() for p in excluded_patterns]
+            if any(p in abs_href.lower() for p in all_excluded):
+                continue
+
+            # 4. Required URL patterns check (if configured)
+            if required_patterns:
+                if not any(req.lower() in abs_href.lower() for req in required_patterns):
                     continue
-                cards.append({
-                    "title": (title or "Discovered Title")[:80].strip(),
-                    "url": abs_href,
-                    "poster": urljoin(base_url, poster) if poster else None,
-                    "selector": sel
-                })
-                if len(cards) >= 15:
-                    break
+
+            # 5. Content item must have a real title or poster
+            if not title and not poster:
+                continue
+
+            seen_urls.add(abs_href)
+            cards.append({
+                "title": (title or "Discovered Title")[:80].strip(),
+                "url": abs_href,
+                "poster": urljoin(base_url, poster) if poster else None,
+                "selector": sel
+            })
+            if len(cards) >= 15:
+                break
         if cards:
             break
 
     return cards
 
-def parse_detail_page(html_body: str, status_code: Optional[int], base_url: str) -> Dict[str, Any]:
+def parse_detail_page(
+    html_body: str,
+    status_code: Optional[int],
+    base_url: str,
+    episode_selector: Optional[str] = None,
+    fetcher: Optional[Any] = None
+) -> Dict[str, Any]:
     """
-    Validates and extracts detail page metadata with soft-404 rejection.
+    Validates and extracts detail page metadata with soft-404 rejection and truthful episode discovery:
+    - Primary: monitoring.playerProbe.episodeSelector (STRICT_CONFIG)
+    - Fallback: Generic episode selectors (GENERIC_FALLBACK)
     """
     result = {
         "status": "FAIL",
         "title": None,
         "isSoft404": False,
         "episodeLinks": [],
+        "episodeDiscoveryMode": "NONE",
         "reason": None
     }
 
@@ -101,23 +166,91 @@ def parse_detail_page(html_body: str, status_code: Optional[int], base_url: str)
     result["status"] = "PASS"
     result["title"] = title[:80]
 
-    # Find episode links for series/anime
-    ep_selectors = [
-        "a[href*='bolum']", "a[href*='episode']", "a[href*='sezon']",
-        ".episode-item a", ".season-item a", "a.episode", "#bolumler a",
-        "a[href*='/titles/']"
-    ]
     seen_eps = set()
-    for sel in ep_selectors:
-        for tag in soup.select(sel):
-            href = tag.get("href")
-            if href:
-                abs_href = urljoin(base_url, href)
-                if abs_href not in seen_eps and abs_href != base_url:
-                    seen_eps.add(abs_href)
-                    result["episodeLinks"].append(abs_href)
+
+    # Helper to validate and clean episode URL
+    def is_valid_episode_url(url_str: str) -> bool:
+        low = url_str.lower()
+        # Exclude non-episode pages that contain words like 'sezon' or 'bolum'
+        if any(bad in low for bad in [
+            "yakinda", "yeni-sezon-animeleri", "sezon-animeleri", "kategori",
+            "category", "genre", "tur/", "etiket", "tag", "facebook", "twitter", "#"
+        ]):
+            return False
+        return True
+
+    # 1. PRIMARY: Configured episodeSelector or TurkAnime AJAX bolumler
+    # Check for TurkAnime AJAX bolumler button first
+    bolum_btn = soup.select_one("a[data-url*='ajax/bolumler']")
+    if bolum_btn and fetcher:
+        data_url = bolum_btn.get("data-url")
+        if data_url:
+            parsed_u = urlparse(base_url)
+            root_u = f"{parsed_u.scheme}://{parsed_u.netloc}/"
+            ajax_url = urljoin(root_u, data_url.lstrip("/"))
+            token_el = soup.select_one("meta[name='_token']")
+            token = token_el.get("content") if token_el else ""
+            headers = {
+                "X-Requested-With": "XMLHttpRequest",
+                "token": token,
+                "Referer": base_url
+            }
+            try:
+                ajax_res = fetcher.fetch(ajax_url, headers=headers)
+                if ajax_res.statusCode == 200 and ajax_res.body:
+                    ajax_soup = BeautifulSoup(ajax_res.body, "html.parser")
+                    for a in ajax_soup.select("a[href*='/video/']"):
+                        ep_href = a.get("href")
+                        if ep_href:
+                            abs_ep = urljoin(base_url, ep_href)
+                            if abs_ep not in seen_eps and is_valid_episode_url(abs_ep):
+                                seen_eps.add(abs_ep)
+                                result["episodeLinks"].append(abs_ep)
+                    if result["episodeLinks"]:
+                        result["episodeDiscoveryMode"] = "STRICT_CONFIG"
+            except Exception:
+                pass
+
+    if not result["episodeLinks"] and episode_selector:
+        selectors_list = [s.strip() for s in episode_selector.split(",") if s.strip()]
+        for sel in selectors_list:
+            if "ajax/bolumler" in sel:
+                continue
+            for tag in soup.select(sel):
+                href = tag.get("href") or tag.get("data-href")
+                if not href and tag.get("onclick"):
+                    # Extract from onclick (e.g., IndexIcerik('...'))
+                    m = re.search(r"'(ajax/[^']+)'", tag.get("onclick"))
+                    if m:
+                        href = m.group(1)
+
+                if href and "ajax/bolumler" not in href:
+                    abs_href = urljoin(base_url, href)
+                    if abs_href not in seen_eps and abs_href != base_url and is_valid_episode_url(abs_href):
+                        seen_eps.add(abs_href)
+                        result["episodeLinks"].append(abs_href)
+
         if result["episodeLinks"]:
-            break
+            result["episodeDiscoveryMode"] = "STRICT_CONFIG"
+
+    # 3. FALLBACK: Generic episode selectors
+    if not result["episodeLinks"]:
+        ep_selectors = [
+            "a[href*='bolum']", "a[href*='episode']", "a[href*='sezon']",
+            ".episode-item a", ".season-item a", "a.episode", "#bolumler a",
+            "a[href*='/video/']", "a[href*='/titles/']"
+        ]
+        for sel in ep_selectors:
+            for tag in soup.select(sel):
+                href = tag.get("href")
+                if href:
+                    abs_href = urljoin(base_url, href)
+                    if abs_href not in seen_eps and abs_href != base_url and is_valid_episode_url(abs_href):
+                        seen_eps.add(abs_href)
+                        result["episodeLinks"].append(abs_href)
+            if result["episodeLinks"]:
+                result["episodeDiscoveryMode"] = "GENERIC_FALLBACK"
+                break
 
     return result
 
@@ -174,6 +307,19 @@ def evaluate_player_discovery(html_body: str, base_url: str) -> Tuple[str, Dict[
         re.search(r'(?:file|source)\s*:\s*["\']https?://[^"\']+\.(?:m3u8|mp4)', body_str, re.IGNORECASE)
     )
     info["hasPlayerScript"] = has_player_code
+
+    # 4. Inspect base64 encodedContent in scripts (e.g. DiziPal / Videoplay)
+    import base64
+    for b64_match in re.finditer(r'const\s+encodedContent\s*=\s*[\'"]([A-Za-z0-9+/=]+)[\'"]', body_str):
+        try:
+            decoded_snippet = base64.b64decode(b64_match.group(1)).decode("utf-8", errors="ignore")
+            ifr_m = re.search(r'src=[\'"]([^\'"]+)[\'"]', decoded_snippet)
+            if ifr_m:
+                abs_src = urljoin(base_url, ifr_m.group(1))
+                info["iframes"].append(XhrRedactor.sanitize_url(abs_src))
+                info["hasPlayerScript"] = True
+        except Exception:
+            pass
 
     if info["iframes"] or info["videos"] or info["mediaUrls"] or has_player_code:
         return "PLAYER_DISCOVERED", info

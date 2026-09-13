@@ -24,6 +24,73 @@ from .redaction import XhrRedactor
 
 logger = logging.getLogger("ProviderFetcher")
 
+def extract_response_text(response: Any) -> str:
+    """
+    Safely extracts response body as text without raising UnicodeDecodeError or altering JSON.
+    Supports:
+    - Empty body / None
+    - Raw bytes with valid UTF-8
+    - Declared charset in response or headers
+    - Invalid UTF-8 with fallback (windows-1254, windows-1252, iso-8859-9, latin-1)
+    - Replacement fallback (errors='replace')
+    - String pass-through or safe text conversion
+    """
+    if response is None:
+        return ""
+    if isinstance(response, str):
+        return response
+
+    raw_bytes = None
+    if isinstance(response, (bytes, bytearray)):
+        raw_bytes = bytes(response)
+    elif hasattr(response, "body") and isinstance(response.body, (bytes, bytearray)):
+        raw_bytes = bytes(response.body)
+    elif hasattr(response, "content") and isinstance(response.content, (bytes, bytearray)):
+        raw_bytes = bytes(response.content)
+
+    if raw_bytes is None:
+        # Fallback to text if body is not available as bytes
+        if hasattr(response, "text"):
+            t = response.text
+            if isinstance(t, str):
+                return t
+            return str(t or "")
+        return ""
+
+    if not raw_bytes:
+        return ""
+
+    # Check declared charset
+    declared_encoding = getattr(response, "encoding", None)
+    if not declared_encoding and hasattr(response, "headers"):
+        headers = getattr(response, "headers", {}) or {}
+        ct = headers.get("content-type", "") if isinstance(headers, dict) else getattr(headers, "get", lambda k, d="": "")("content-type", "")
+        if "charset=" in ct.lower():
+            declared_encoding = ct.lower().split("charset=")[-1].split(";")[0].strip()
+
+    # 1. Try UTF-8 first (standard web)
+    try:
+        return raw_bytes.decode("utf-8")
+    except UnicodeDecodeError:
+        pass
+
+    # 2. Try declared encoding if different from utf-8
+    if declared_encoding and declared_encoding.lower() not in ("utf-8", "utf8"):
+        try:
+            return raw_bytes.decode(declared_encoding)
+        except (UnicodeDecodeError, LookupError):
+            pass
+
+    # 3. Windows/Latin fallbacks (e.g. Turkish Windows 1254, Latin 1)
+    for enc in ("windows-1254", "windows-1252", "iso-8859-9", "latin-1"):
+        try:
+            return raw_bytes.decode(enc)
+        except (UnicodeDecodeError, LookupError):
+            continue
+
+    # 4. Final safety fallback: replacement (never fail-closed with UnicodeDecodeError)
+    return raw_bytes.decode("utf-8", errors="replace")
+
 class ProviderFetcher:
     """
     Central fetch engine for CloudStreamHub monitoring and research.
@@ -280,12 +347,7 @@ class ProviderFetcher:
         final_url = getattr(resp, "url", url)
         status_code = getattr(resp, "status", None)
 
-        if hasattr(resp, "html_content") and resp.html_content:
-            body = resp.html_content
-        elif hasattr(resp, "body") and isinstance(resp.body, bytes):
-            body = resp.body.decode("utf-8", errors="ignore")
-        else:
-            body = str(getattr(resp, "text", "") or "")
+        body = extract_response_text(resp)
 
         resp_headers = getattr(resp, "headers", {}) or {}
 
@@ -374,10 +436,12 @@ class ProviderFetcher:
 
         def page_setup_hook(page):
             if headers:
-                try:
-                    page.set_extra_http_headers(headers)
-                except Exception:
-                    pass
+                safe_browser_headers = {k: v for k, v in headers.items() if k.lower() != "referer"}
+                if safe_browser_headers:
+                    try:
+                        page.set_extra_http_headers(safe_browser_headers)
+                    except Exception:
+                        pass
 
             if capture_xhr:
                 def on_request(req):
@@ -430,12 +494,7 @@ class ProviderFetcher:
         final_url = getattr(resp, "url", url)
         status_code = getattr(resp, "status", 200)
 
-        if hasattr(resp, "html_content") and resp.html_content:
-            body = resp.html_content
-        elif hasattr(resp, "body") and isinstance(resp.body, bytes):
-            body = resp.body.decode("utf-8", errors="ignore")
-        else:
-            body = str(getattr(resp, "text", "") or "")
+        body = extract_response_text(resp)
 
         resp_headers = getattr(resp, "headers", {}) or {}
         sanitized_xhrs = [XhrRedactor.sanitize_captured_xhr(x) for x in captured_raw]
