@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-09-13T22:49:48.317061+00:00",
+  "testedAt": "2026-09-16T17:17:58.132254+00:00",
   "providers": [
     {
       "provider": "AnimeciX",
@@ -30,7 +30,7 @@
       "homepage": {
         "status": "PASS",
         "itemCount": 15,
-        "sample": "BARBARLARIN YÃKSELÄ°ÅÄ°\nDireniÅ Part 111"
+        "sample": "ANTİK UZAYLILAR\nUzaylılar ve Kuts48"
       },
       "detail": {
         "status": "FAIL",
@@ -51,7 +51,7 @@
       "homepage": {
         "status": "PASS",
         "itemCount": 15,
-        "sample": "Dublaj & Altyazı\n\n\r\n                                            Lanterns"
+        "sample": "Dublaj & Altyazı\n\n\r\n                                            Reacher"
       },
       "detail": {
         "status": "PASS",
@@ -151,7 +151,7 @@
       "homepage": {
         "status": "PASS",
         "itemCount": 9,
-        "sample": "Shiguang Dailiren III 12 izle"
+        "sample": "Tenmaku no Jaadugar 12. Bölüm Final izle"
       },
       "detail": {
         "status": "PASS",
@@ -163,7 +163,7 @@
         "status": "PLAYER_DISCOVERED",
         "iframes": 1,
         "hasPlayer": true,
-        "targetUrl": "https://www.turkanime.tv/ajax/videosec&b=RWNnQitnNXlXM3hYdEMvQUROS2Irdz09OjpoY0lsUU53UHloaXlvOGdF&f=L2d6ZFVLa1BzT08yaVY0K3BCNkhkdz09OjpYRUdOVk0wWko0NVcwQkE4"
+        "targetUrl": "https://www.turkanime.tv/ajax/videosec&b=T1pRK0NxK2ZNZyt6N005VUJVc1VtZz09Ojptek5LM2dudldLRjNENGdm&f=ZXcyZkZwdFlhWktNbHNST0tQejVPdz09OjpwQWFTSjhaTFZPZE5sbGRE"
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
@@ -193,6 +193,125 @@
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
       "overall": "PASS",
+      "details": []
+    },
+    {
+      "provider": "SezonlukDizi",
+      "module": "SezonlukDizi",
+      "homepage": {
+        "status": "PASS",
+        "itemCount": 9,
+        "sample": "One Piece"
+      },
+      "detail": {
+        "status": "PASS",
+        "title": "Breaking Bad izle - Sezonluk Dizi izle",
+        "episodeDiscoveryMode": "STRICT_CONFIG",
+        "episodesCount": 20
+      },
+      "playerDiscovery": {
+        "status": "PLAYER_NOT_FOUND",
+        "targetUrl": "https://sezonlukdizi.cc/breaking-bad/5-sezon-16-bolum.html"
+      },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
+      "subtitle": "DUBBED",
+      "overall": "PARTIAL_PASS",
+      "details": []
+    },
+    {
+      "provider": "SinemaCX",
+      "module": "SinemaCX",
+      "homepage": {
+        "status": "PASS",
+        "itemCount": 15,
+        "sample": "Bulvar İzle"
+      },
+      "detail": {
+        "status": "PASS",
+        "title": "Bulvar izle (2026)",
+        "episodeDiscoveryMode": "NONE",
+        "episodesCount": 0
+      },
+      "playerDiscovery": {
+        "status": "PLAYER_DISCOVERED",
+        "iframes": 1,
+        "hasPlayer": false,
+        "targetUrl": "https://sinemacc.com/film/bulvar-boulevard-2026/"
+      },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
+      "subtitle": "DUBBED",
+      "overall": "PASS",
+      "details": []
+    },
+    {
+      "provider": "DiziMom",
+      "module": "DiziMom",
+      "homepage": {
+        "status": "PASS",
+        "itemCount": 15,
+        "sample": "Koma izle"
+      },
+      "detail": {
+        "status": "PASS",
+        "title": "Bangkok Breaking izle | DiziMOM",
+        "episodeDiscoveryMode": "GENERIC_FALLBACK",
+        "episodesCount": 15
+      },
+      "playerDiscovery": {
+        "status": "PLAYER_NOT_FOUND",
+        "targetUrl": "https://www.dizimom.diy/turkce-dublaj-bolumler-hd/"
+      },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
+      "subtitle": "DUBBED",
+      "overall": "PARTIAL_PASS",
+      "details": []
+    },
+    {
+      "provider": "DiziYou",
+      "module": "DiziYou",
+      "homepage": {
+        "status": "PASS",
+        "itemCount": 15,
+        "sample": "Lanterns 1. Sezon 5. Bölüm"
+      },
+      "detail": {
+        "status": "PASS",
+        "title": "Arcane izle - Türkçe Dublaj & Altyazılı | Diziyou",
+        "episodeDiscoveryMode": "STRICT_CONFIG",
+        "episodesCount": 18
+      },
+      "playerDiscovery": {
+        "status": "PLAYER_DISCOVERED",
+        "iframes": 1,
+        "hasPlayer": false,
+        "targetUrl": "https://www.diziyou.one/arcane-1-sezon-1-bolum/"
+      },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
+      "subtitle": "DUBBED",
+      "overall": "PASS",
+      "details": []
+    },
+    {
+      "provider": "Dizilla",
+      "module": "Dizilla",
+      "homepage": {
+        "status": "PASS",
+        "itemCount": 15,
+        "sample": "Sihame izle"
+      },
+      "detail": {
+        "status": "PASS",
+        "title": "Breaking Bad izle | Türkçe Dublaj & Altyazılı izle",
+        "episodeDiscoveryMode": "STRICT_CONFIG",
+        "episodesCount": 13
+      },
+      "playerDiscovery": {
+        "status": "PLAYER_NOT_FOUND",
+        "targetUrl": "https://dizilla.now/breaking-bad-5-sezon-16-bolum-c02"
+      },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
+      "subtitle": "DUBBED",
+      "overall": "PARTIAL_PASS",
       "details": []
     }
   ]

@@ -60,7 +60,9 @@ def is_bot_blocked(status: Optional[int], body: str) -> bool:
     if status in BLOCKED_STATUS_CODES:
         return True
     body_lower = body.lower() if body else ""
-    if any(phrase in body_lower for phrase in ("access denied", "waf", "bot detected", "ddos protection by")):
+    if any(phrase in body_lower for phrase in ("access denied", "bot detected", "ddos protection by")):
+        return True
+    if re.search(r"\b(waf|web application firewall)\b", body_lower) and status != 200:
         return True
     return False
 

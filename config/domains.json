@@ -83,7 +83,8 @@
         "dizibox"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "blocked",
+      "notes": "Blocked by upstream Cloudflare 1000s Box / ASN firewall rule; requires personal trusted cookies which violate security policy"
     },
     "FilmModu": {
       "canonical": "https://www.filmmodu.one",
@@ -180,6 +181,62 @@
       "expectedMarkers": [
         "FilmMakinesi",
         "filmmakinesi"
+      ],
+      "lastChecked": null,
+      "status": "active"
+    },
+    "SezonlukDizi": {
+      "canonical": "https://sezonlukdizi.cc",
+      "allowedHosts": [
+        "sezonlukdizi.cc",
+        "www.sezonlukdizi.cc"
+      ],
+      "expectedMarkers": [
+        "Sezonluk Dizi",
+        "sezonlukdizi"
+      ],
+      "lastChecked": null,
+      "status": "active"
+    },
+    "SinemaCX": {
+      "canonical": "https://sinemacc.com",
+      "allowedHosts": [
+        "www.sinema.gg",
+        "sinema.gg",
+        "sinemacc.com",
+        "www.sinemacc.com"
+      ],
+      "expectedMarkers": [
+        "Sinema",
+        "sinema",
+        "sinemacc",
+        "sinemacx"
+      ],
+      "lastChecked": null,
+      "status": "active"
+    },
+    "DiziMom": {
+      "canonical": "https://www.dizimom.diy",
+      "allowedHosts": [
+        "www.dizimom.diy",
+        "dizimom.diy"
+      ],
+      "expectedMarkers": [
+        "DiziMom",
+        "dizimom"
+      ],
+      "lastChecked": null,
+      "status": "active"
+    },
+    "DiziYou": {
+      "canonical": "https://www.diziyou.one",
+      "allowedHosts": [
+        "www.diziyou.one",
+        "diziyou.one"
+      ],
+      "expectedMarkers": [
+        "DiziYou",
+        "diziyou"
       ],
       "lastChecked": null,
       "status": "active"

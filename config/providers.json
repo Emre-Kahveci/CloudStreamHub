@@ -422,6 +422,254 @@
       "domainKey": "TrtDizi",
       "healthTier": "unsupported",
       "notes": "Module not yet implemented; disabled to prevent phantom health check failures"
+    },
+    {
+      "name": "SezonlukDizi",
+      "module": "SezonlukDizi",
+      "enabled": true,
+      "language": "tr",
+      "types": [
+        "TvSeries"
+      ],
+      "domainKey": "SezonlukDizi",
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "breaking",
+        "knownDetail": "https://sezonlukdizi.cc/diziler/breaking-bad.html",
+        "expectedType": "TvSeries"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": true,
+        "stealthFallback": true,
+        "contentType": "TvSeries",
+        "playerProbe": {
+          "mode": "episode",
+          "episodeSelector": "table tr a[href*='-sezon-'], a[href*='-sezon-']"
+        },
+        "search": {
+          "method": "POST_FORM",
+          "path": "/ajax/arama.asp",
+          "payload": {
+            "q": "{query}"
+          },
+          "headers": {
+            "X-Requested-With": "XMLHttpRequest",
+            "Referer": "https://sezonlukdizi.cc/"
+          },
+          "jsonKey": "results.diziler.results"
+        },
+        "homepage": {
+          "selectors": [
+            "div.afis a",
+            "a[href*='/diziler/']"
+          ],
+          "requiredUrlPatterns": [
+            "/diziler/"
+          ],
+          "excludedUrlPatterns": [
+            "/iletisim",
+            "/gizlilik"
+          ]
+        }
+      }
+    },
+    {
+      "name": "SinemaCX",
+      "module": "SinemaCX",
+      "enabled": true,
+      "language": "tr",
+      "types": [
+        "Movie"
+      ],
+      "domainKey": "SinemaCX",
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "bulvar",
+        "knownDetail": "https://sinemacc.com/film/bulvar-boulevard-2026/",
+        "expectedType": "Movie"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": true,
+        "stealthFallback": true,
+        "contentType": "Movie",
+        "playerProbe": {
+          "mode": "detail"
+        },
+        "search": {
+          "method": "GET",
+          "path": "/?s={query}",
+          "expectedSelector": "div.frag-k a, a[href*='/film/']"
+        },
+        "homepage": {
+          "selectors": [
+            "div.frag-k a",
+            "a[href*='/film/']"
+          ],
+          "requiredUrlPatterns": [
+            "/film/"
+          ],
+          "excludedUrlPatterns": [
+            "/kategori/",
+            "/tur/"
+          ]
+        }
+      }
+    },
+    {
+      "name": "DiziMom",
+      "module": "DiziMom",
+      "enabled": true,
+      "language": "tr",
+      "types": [
+        "TvSeries"
+      ],
+      "domainKey": "DiziMom",
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "breaking",
+        "knownDetail": "https://www.dizimom.diy/diziler/bangkok-breaking-izle/",
+        "expectedType": "TvSeries"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": true,
+        "stealthFallback": true,
+        "contentType": "TvSeries",
+        "playerProbe": {
+          "mode": "episode",
+          "episodeSelector": "a[href*='/bolum/'], div.seasons-wrap a"
+        },
+        "search": {
+          "method": "GET",
+          "path": "/?s={query}",
+          "expectedSelector": "a[href*='/diziler/'], a[href*='-sezon-'], article a"
+        },
+        "homepage": {
+          "selectors": [
+            "a[href*='/diziler/']",
+            "a[href*='-sezon-']",
+            "article a",
+            "div.post a"
+          ],
+          "requiredUrlPatterns": [
+            "/"
+          ],
+          "excludedUrlPatterns": [
+            "/kategori/",
+            "/tur/"
+          ]
+        }
+      }
+    },
+    {
+      "name": "DiziYou",
+      "module": "DiziYou",
+      "enabled": true,
+      "language": "tr",
+      "types": [
+        "TvSeries"
+      ],
+      "domainKey": "DiziYou",
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "arcane",
+        "knownDetail": "https://www.diziyou.one/arcane/",
+        "expectedType": "TvSeries"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": true,
+        "stealthFallback": true,
+        "contentType": "TvSeries",
+        "playerProbe": {
+          "mode": "episode",
+          "episodeSelector": "a[href*='-sezon-']"
+        },
+        "search": {
+          "method": "GET",
+          "path": "/?s={query}",
+          "expectedSelector": "div.cat-item a, div#list-series a"
+        },
+        "homepage": {
+          "selectors": [
+            "div.cat-item a",
+            "div#list-series a",
+            "a[href*='-sezon-']",
+            "div.bolumust a"
+          ],
+          "requiredUrlPatterns": [
+            "/"
+          ],
+          "excludedUrlPatterns": [
+            "/kategori/",
+            "/tur/"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Dizilla",
+      "module": "Dizilla",
+      "enabled": true,
+      "language": "tr",
+      "types": [
+        "TvSeries"
+      ],
+      "domainKey": "Dizilla",
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "breaking",
+        "knownDetail": "https://dizilla.now/dizi/breaking-bad-2",
+        "expectedType": "TvSeries"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": true,
+        "stealthFallback": true,
+        "contentType": "TvSeries",
+        "playerProbe": {
+          "mode": "episode",
+          "episodeSelector": "a[href*='-sezon-']"
+        },
+        "search": {
+          "method": "POST_FORM",
+          "path": "/api/bg/searchContent",
+          "headers": {
+            "X-Requested-With": "XMLHttpRequest",
+            "Referer": "https://dizilla.now/"
+          },
+          "payload": {
+            "searchterm": "{query}"
+          }
+        },
+        "homepage": {
+          "selectors": [
+            "div.serie-card a",
+            "a[href*='/dizi/']"
+          ],
+          "requiredUrlPatterns": [
+            "/dizi/"
+          ],
+          "excludedUrlPatterns": [
+            "/iletisim",
+            "/hakkimizda"
+          ]
+        }
+      }
+    },
+    {
+      "name": "DiziBox",
+      "module": "DiziBox",
+      "enabled": false,
+      "language": "tr",
+      "types": [
+        "TvSeries"
+      ],
+      "domainKey": "DiziBox",
+      "healthTier": "unsupported",
+      "notes": "Blocked upstream by Cloudflare ASN/Firewall (1000s box); requires personal trusted cookies which violate security policy"
     }
   ]
 }

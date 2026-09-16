@@ -203,6 +203,24 @@ def check_l3_search(name, canonical, smoke_test, monitoring_cfg, fetcher: Provid
             if res.status in (FetchStatus.CLOUDFLARE, FetchStatus.BLOCKED):
                 return "automation_blocked", f"Search AJAX protected ({res.status.value})"
             if res.statusCode == 200 and res.body:
+                if "jsonKey" in search_cfg or res.body.strip().startswith("{"):
+                    try:
+                        data = json.loads(res.body)
+                        json_key = search_cfg.get("jsonKey")
+                        results = data
+                        if json_key:
+                            for k in json_key.split("."):
+                                if isinstance(results, dict):
+                                    results = results.get(k, [])
+                        if isinstance(results, dict) and "results" in results:
+                            results = results["results"]
+                        if results and len(results) > 0:
+                            first = results[0] if isinstance(results, list) else results
+                            first_title = first.get("title") or first.get("name") if isinstance(first, dict) else str(first)
+                            return "pass", f"Found {len(results)} results. Top: {str(first_title)[:40]}"
+                    except Exception:
+                        pass
+
                 soup = BeautifulSoup(res.body, "html.parser")
                 selector = search_cfg.get("expectedSelector", "div.panel, article a, a[href*='/anime/']")
                 results = soup.select(selector)

@@ -1,7 +1,7 @@
 [
   {
     "provider": "AnimeciX",
-    "checkedAt": "2026-09-13T22:49:13.372330+00:00",
+    "checkedAt": "2026-09-16T17:16:22.815255+00:00",
     "canonical": "https://animecix.tv",
     "finalUrl": "https://animecix.tv/",
     "tierResults": {
@@ -19,12 +19,12 @@
       "L4": "Loaded: AnimeciX - Türkçe Anime Bilgi ve Paylaşı (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] No player iframe, video tag, or player script discovered at https://animecix.tv/titles/naruto"
     },
-    "durationMs": 1418,
+    "durationMs": 1217,
     "candidateHost": null
   },
   {
     "provider": "BelgeselX",
-    "checkedAt": "2026-09-13T22:49:14.790686+00:00",
+    "checkedAt": "2026-09-16T17:16:24.033228+00:00",
     "canonical": "https://belgeselx.com",
     "finalUrl": "https://belgeselx.com/",
     "tierResults": {
@@ -37,17 +37,17 @@
     },
     "overallStatus": "degraded",
     "diagnostic": {
-      "L2": "Found 15 items. Top: BARBARLARIN YÃKSELÄ°ÅÄ°\nDireniÅ Part 111",
-      "L3": "Found 44 content results. Top: BARBARLARIN YÃKSELÄ°ÅÄ°\nDireniÅ Part ",
+      "L2": "Found 15 items. Top: ANTİK UZAYLILAR\nUzaylılar ve Kuts48",
+      "L3": "Found 44 content results. Top: ANTİK UZAYLILAR\nUzaylılar ve Kuts48",
       "L4": "SOFT_404_PAGE: 404 — Sayfa Bulunamadı | Belgeselx",
       "L5": "[NONE] No target content body available to inspect at https://belgeselx.com/belgesel/gezegenimiz"
     },
-    "durationMs": 2724,
+    "durationMs": 2225,
     "candidateHost": null
   },
   {
     "provider": "DiziPal",
-    "checkedAt": "2026-09-13T22:49:17.514956+00:00",
+    "checkedAt": "2026-09-16T17:16:26.258711+00:00",
     "canonical": "https://dizipal1430.com",
     "finalUrl": "https://dizipal1430.com/",
     "tierResults": {
@@ -60,17 +60,17 @@
     },
     "overallStatus": "healthy",
     "diagnostic": {
-      "L2": "Found 15 items. Top: Dublaj & Altyazı\n\n\r\n                                            Lanterns",
+      "L2": "Found 15 items. Top: Dublaj & Altyazı\n\n\r\n                                            Reacher",
       "L3": "Found 1 API results. Top: Silo",
       "L4": "Loaded: Silo izle - Dizipal (Episodes: 30, Mode: STRICT_CONFIG)",
       "L5": "[STRICT_CONFIG] Discovered 1 iframes, 0 videos at https://dizipal1430.com/bolum/silo-1-sezon-1-bolum"
     },
-    "durationMs": 1158,
+    "durationMs": 1202,
     "candidateHost": null
   },
   {
     "provider": "FilmMakinesi",
-    "checkedAt": "2026-09-13T22:49:18.673516+00:00",
+    "checkedAt": "2026-09-16T17:16:27.461333+00:00",
     "canonical": "https://filmmakinesi.to",
     "finalUrl": "https://filmmakinesi.to/",
     "tierResults": {
@@ -88,12 +88,12 @@
       "L4": "Loaded: Forgotten Island 2026 Filmi 1080p Full H (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 2 iframes, 5 videos at https://filmmakinesi.to/film/forgotten-island-2026/"
     },
-    "durationMs": 804,
+    "durationMs": 901,
     "candidateHost": null
   },
   {
     "provider": "HDFilmCehennemi",
-    "checkedAt": "2026-09-13T22:49:19.478314+00:00",
+    "checkedAt": "2026-09-16T17:16:28.363017+00:00",
     "canonical": "https://www.hdfilmcehennemi.nl",
     "finalUrl": "https://www.hdfilmcehennemi.nl/",
     "tierResults": {
@@ -111,12 +111,12 @@
       "L4": "Loaded: Örümcek Adam Yepyeni Bir Gün - Spider Ma (Episodes: 1, Mode: GENERIC_FALLBACK)",
       "L5": "[GENERIC_FALLBACK] Discovered 1 iframes, 0 videos at https://www.hdfilmcehennemi.nl/spider-man-brand-new-day/"
     },
-    "durationMs": 1105,
+    "durationMs": 1098,
     "candidateHost": null
   },
   {
     "provider": "KultFilmler",
-    "checkedAt": "2026-09-13T22:49:20.584265+00:00",
+    "checkedAt": "2026-09-16T17:16:29.461469+00:00",
     "canonical": "https://kultfilmler.net",
     "finalUrl": "https://kultfilmler.net/",
     "tierResults": {
@@ -134,12 +134,12 @@
       "L4": "Loaded: Soldier - Asker İzle HD İzle - Kült Film (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 1 iframes, 0 videos at https://kultfilmler.net/soldier-asker/"
     },
-    "durationMs": 872,
+    "durationMs": 1215,
     "candidateHost": null
   },
   {
     "provider": "TurkAnime",
-    "checkedAt": "2026-09-13T22:49:21.456668+00:00",
+    "checkedAt": "2026-09-16T17:16:30.677062+00:00",
     "canonical": "https://www.turkanime.tv",
     "finalUrl": "https://www.turkanime.tv/",
     "tierResults": {
@@ -152,17 +152,17 @@
     },
     "overallStatus": "healthy",
     "diagnostic": {
-      "L2": "Found 9 items. Top: Shiguang Dailiren III 12 izle",
+      "L2": "Found 9 items. Top: Tenmaku no Jaadugar 12. Bölüm Final izle",
       "L3": "Found 16 search matches. Top: Re:Zero kara Hajimeru Iseka...",
       "L4": "Loaded: Death Note izle | Konusu, Bölümleri ve K (Episodes: 37, Mode: STRICT_CONFIG)",
-      "L5": "[STRICT_CONFIG] Discovered 1 iframes, 0 videos at https://www.turkanime.tv/ajax/videosec&b=RldLcEhsNGYvQWlFdktORmgyOGJGdz09OjpNSlFfSExVVmpRaWRVWmZE&f=RmZRMU9MMVVoeGF2bGhLZDVuSHA4QT09OjpsWE9uTEdEMVd3WjdGS2tp"
+      "L5": "[STRICT_CONFIG] Discovered 1 iframes, 0 videos at https://www.turkanime.tv/ajax/videosec&b=MWV6bzNrbkthYkpxc0paRDN2MVdxQT09OjpqZWY0QW14d00yOUo0cEg0&f=amdMWDcrdGNiVmZTTFVtL2VhcVNyZz09OjoxaDdlVlRRZ0t1cGlaOFl6"
     },
-    "durationMs": 2438,
+    "durationMs": 2976,
     "candidateHost": null
   },
   {
     "provider": "YesilCamTv",
-    "checkedAt": "2026-09-13T22:49:23.895916+00:00",
+    "checkedAt": "2026-09-16T17:16:33.654132+00:00",
     "canonical": "https://yesilcamtv.com.tr",
     "finalUrl": "https://yesilcamtv.com.tr/",
     "tierResults": {
@@ -180,7 +180,122 @@
       "L4": "Loaded: Sahte Kabadayı | YESILCAM TV (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 1 iframes, 0 videos at https://yesilcamtv.com.tr/sahte-kabadayi-izle/"
     },
-    "durationMs": 1019,
+    "durationMs": 1015,
+    "candidateHost": null
+  },
+  {
+    "provider": "SezonlukDizi",
+    "checkedAt": "2026-09-16T17:16:34.670123+00:00",
+    "canonical": "https://sezonlukdizi.cc",
+    "finalUrl": "https://sezonlukdizi.cc/",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "pass",
+      "L3_search": "pass",
+      "L4_load": "pass",
+      "L5_player_discovery": "player_not_found"
+    },
+    "overallStatus": "degraded",
+    "diagnostic": {
+      "L2": "Found 9 items. Top: One Piece",
+      "L3": "Found 3 results. Top: The Bad Guys: Breaking In (2025)",
+      "L4": "Loaded: Breaking Bad izle - Sezonluk Dizi izle (Episodes: 20, Mode: STRICT_CONFIG)",
+      "L5": "[STRICT_CONFIG] No player iframe, video tag, or player script discovered at https://sezonlukdizi.cc/breaking-bad/5-sezon-16-bolum.html"
+    },
+    "durationMs": 1198,
+    "candidateHost": null
+  },
+  {
+    "provider": "SinemaCX",
+    "checkedAt": "2026-09-16T17:16:35.868556+00:00",
+    "canonical": "https://sinemacc.com",
+    "finalUrl": "https://sinemacc.com/",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "pass",
+      "L3_search": "pass",
+      "L4_load": "pass",
+      "L5_player_discovery": "player_discovered"
+    },
+    "overallStatus": "healthy",
+    "diagnostic": {
+      "L2": "Found 15 items. Top: Bulvar İzle",
+      "L3": "Found 30 content results. Top: Bulvar\nBoulevard\n\n\n★ 4.7• 2026\n• 113 Dk.",
+      "L4": "Loaded: Bulvar izle (2026) (Episodes: 0, Mode: NONE)",
+      "L5": "[NONE] Discovered 1 iframes, 0 videos at https://sinemacc.com/film/bulvar-boulevard-2026/"
+    },
+    "durationMs": 1575,
+    "candidateHost": null
+  },
+  {
+    "provider": "DiziMom",
+    "checkedAt": "2026-09-16T17:16:37.444949+00:00",
+    "canonical": "https://www.dizimom.diy",
+    "finalUrl": "https://www.dizimom.diy/",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "pass",
+      "L3_search": "pass",
+      "L4_load": "pass",
+      "L5_player_discovery": "player_not_found"
+    },
+    "overallStatus": "degraded",
+    "diagnostic": {
+      "L2": "Found 15 items. Top: Koma izle",
+      "L3": "Found 23 content results. Top: Ángel Di María: Breaking Down the Wall i",
+      "L4": "Loaded: Bangkok Breaking izle | DiziMOM (Episodes: 15, Mode: GENERIC_FALLBACK)",
+      "L5": "[GENERIC_FALLBACK] No player iframe, video tag, or player script discovered at https://www.dizimom.diy/turkce-dublaj-bolumler-hd/"
+    },
+    "durationMs": 2847,
+    "candidateHost": null
+  },
+  {
+    "provider": "DiziYou",
+    "checkedAt": "2026-09-16T17:16:40.292737+00:00",
+    "canonical": "https://www.diziyou.one",
+    "finalUrl": "https://www.diziyou.one/",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "pass",
+      "L3_search": "pass",
+      "L4_load": "pass",
+      "L5_player_discovery": "player_discovered"
+    },
+    "overallStatus": "healthy",
+    "diagnostic": {
+      "L2": "Found 15 items. Top: Lanterns 1. Sezon 5. Bölüm",
+      "L3": "Found 1 content results. Top: Arcane",
+      "L4": "Loaded: Arcane izle - Türkçe Dublaj & Altyazılı  (Episodes: 18, Mode: STRICT_CONFIG)",
+      "L5": "[STRICT_CONFIG] Discovered 1 iframes, 1 videos at https://www.diziyou.one/arcane-1-sezon-1-bolum/"
+    },
+    "durationMs": 3726,
+    "candidateHost": null
+  },
+  {
+    "provider": "Dizilla",
+    "checkedAt": "2026-09-16T17:16:44.018983+00:00",
+    "canonical": "https://dizilla.now",
+    "finalUrl": "https://dizilla.now/",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "pass",
+      "L3_search": "pass",
+      "L4_load": "pass",
+      "L5_player_discovery": "player_not_found"
+    },
+    "overallStatus": "degraded",
+    "diagnostic": {
+      "L2": "Found 15 items. Top: Sihame izle",
+      "L3": "Found 3 results. Top: None",
+      "L4": "Loaded: Breaking Bad izle | Türkçe Dublaj & Alty (Episodes: 13, Mode: STRICT_CONFIG)",
+      "L5": "[STRICT_CONFIG] No player iframe, video tag, or player script discovered at https://dizilla.now/breaking-bad-5-sezon-16-bolum-c02"
+    },
+    "durationMs": 4420,
     "candidateHost": null
   }
 ]
