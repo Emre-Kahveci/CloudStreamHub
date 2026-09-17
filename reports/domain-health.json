@@ -180,5 +180,75 @@
     "candidateHost": null,
     "status": "healthy",
     "error": null
+  },
+  {
+    "provider": "SezonlukDizi",
+    "canonical": "https://sezonlukdizi.cc",
+    "finalUrl": "https://sezonlukdizi.cc",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://sezonlukdizi.cc"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "SinemaCX",
+    "canonical": "https://sinemacc.com",
+    "finalUrl": "https://sinemacc.com",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://sinemacc.com"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "DiziMom",
+    "canonical": "https://www.dizimom.diy",
+    "finalUrl": "https://www.dizimom.diy",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://www.dizimom.diy"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "DiziYou",
+    "canonical": "https://www.diziyou.one",
+    "finalUrl": "https://www.diziyou.one",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://www.diziyou.one"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "FullHDFilmizlesene",
+    "canonical": "https://www.fullhdfilmizlesene.now",
+    "finalUrl": "https://www.fullhdfilmizlesene.now",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://www.fullhdfilmizlesene.now"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
   }
 ]

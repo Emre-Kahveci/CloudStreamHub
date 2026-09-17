@@ -1,0 +1,17 @@
+OPENCode + CHATGPT + ANTIGRAVITY WORKFLOW V4.1
+
+Bu paketi repository root'una çıkar ve mevcut workflow dosyalarının üzerine yaz.
+Ardından OpenCode ve Antigravity workspace/session'larını yeniden aç.
+
+MEVCUT 12-REVIEW DÖNGÜSÜNDEN ÇIKMAK İÇİN:
+
+1. OpenCode: /closure-review
+2. Sonuç doğruysa: /approve-corrections
+3. Antigravity DEFAULT AGENT: "Onaylanmış correction planını uygula ve internal verification çalıştır."
+4. VERIFICATION_STATUS: PASS gelirse OpenCode: /review
+5. Final review yalnız gerçek blocking problem varsa tekrar correction açar.
+
+ÖNEMLİ:
+- Historical OPEN ledger kaydı tek başına verifier FAIL sebebi değildir.
+- Android/manual/live-network doğrulamalar MANUAL_REQUIRED olabilir ve otomatik PASS'i tek başına engellemez.
+- Yeni polish/LOW/follow-up bulguları final review döngüsünü sonsuza kadar uzatmamalıdır.

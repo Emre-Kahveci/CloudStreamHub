@@ -109,14 +109,29 @@ class XhrRedactor:
             parsed = urlparse(url)
             # Check for media streams with query strings (e.g. .m3u8, .mpd, .ts)
             path_lower = parsed.path.lower()
-            if any(path_lower.endswith(ext) for ext in (".m3u8", ".mpd", ".ts", ".mp4", ".m4s")) and parsed.query:
-                # Retain scheme, host, path but redact query parameters
-                return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, "<REDACTED_QUERY>", parsed.fragment))
+            query_str = parsed.query
+            path_str = parsed.path
+            is_pseudo_query = False
 
-            if not parsed.query:
+            if "&" in path_str and "=" in path_str:
+                parts = path_str.split("&", 1)
+                path_str = parts[0]
+                query_str = parts[1] + ("&" + parsed.query if parsed.query else "")
+                is_pseudo_query = True
+
+            is_media_or_player = any(path_lower.endswith(ext) for ext in (".m3u8", ".mpd", ".ts", ".mp4", ".m4s")) or "ajax/videosec" in path_lower
+            if is_media_or_player and query_str:
+                redacted_query = "<REDACTED_QUERY>"
+                if is_pseudo_query and not parsed.query:
+                    new_path = path_str + "&" + redacted_query
+                    return urlunparse((parsed.scheme, parsed.netloc, new_path, parsed.params, "", parsed.fragment))
+                else:
+                    return urlunparse((parsed.scheme, parsed.netloc, path_str, parsed.params, redacted_query, parsed.fragment))
+
+            if not query_str:
                 return url
 
-            query_dict = parse_qs(parsed.query, keep_blank_values=True)
+            query_dict = parse_qs(query_str, keep_blank_values=True)
             new_query = {}
             for param, values in query_dict.items():
                 if any(pat.match(param) for pat in SENSITIVE_PARAM_PATTERNS):
@@ -128,7 +143,12 @@ class XhrRedactor:
                     ]
 
             redacted_query = urlencode(new_query, doseq=True)
-            return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, redacted_query, parsed.fragment))
+
+            if is_pseudo_query and not parsed.query:
+                new_path = path_str + "&" + redacted_query
+                return urlunparse((parsed.scheme, parsed.netloc, new_path, parsed.params, "", parsed.fragment))
+            else:
+                return urlunparse((parsed.scheme, parsed.netloc, path_str, parsed.params, redacted_query, parsed.fragment))
         except Exception:
             return url
 
@@ -155,4 +175,20 @@ class XhrRedactor:
             sanitized["responseHeaders"] = XhrRedactor.sanitize_headers(sanitized["responseHeaders"])
         if "postData" in sanitized and sanitized["postData"]:
             sanitized["postData"] = XhrRedactor.sanitize_body(str(sanitized["postData"]))
+        return sanitized
+
+    @staticmethod
+    def redact_string(text: Optional[str]) -> str:
+        """Sanitizes arbitrary text, stripping JWTs, auth patterns, and query params from URLs."""
+        if not text:
+            return ""
+        sanitized = XhrRedactor.sanitize_body(str(text)) or ""
+        urls = re.findall(r'https?://[^\s<>"\']+', sanitized)
+        for u in urls:
+            redacted_u = XhrRedactor.sanitize_url(u)
+            if redacted_u != u:
+                sanitized = sanitized.replace(u, redacted_u)
+
+        # Redact player endpoint parameters regardless of ? syntax
+        sanitized = re.sub(r'(ajax/videosec)[?&][^\s<>"\']+', r'\1&<REDACTED_QUERY>', sanitized)
         return sanitized

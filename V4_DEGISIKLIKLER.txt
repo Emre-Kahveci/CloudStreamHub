@@ -1,0 +1,34 @@
+V4 DEĞİŞİKLİKLERİ
+==================
+
+1. OpenCode architect/reviewer repo içinde Python/shell/search için izin istemez.
+   Repo dışı erişim `external_directory: ask` olarak kalır.
+
+2. Yeni kalıcı review ledger:
+   .ai-workflow/REVIEW_HISTORY.md
+
+3. Yeni root-cause correction contract:
+   .ai-workflow/CORRECTION_PLAN.md
+
+4. Yeni internal verification raporu:
+   .ai-workflow/VERIFICATION_REPORT.md
+
+5. Yeni OpenCode komutları:
+   /closure-review
+   /approve-corrections
+
+6. /approve-fixes artık REVIEW_HISTORY + CORRECTION_PLAN üretir.
+
+7. Yeni Antigravity subagent:
+   implementation-verifier
+
+8. Yeni Antigravity skill:
+   verify-implementation
+
+9. implement-approved-plan skill artık implementation sonrası verifier'ı otomatik çağırır.
+
+10. fix-approved-review skill artık correction sonrası verifier'ı otomatik çağırır.
+
+11. Fixer artık lokal symptom patch yerine root-cause + affected-surface yaklaşımı kullanır.
+
+12. /review önce review history + invariants + verification report üzerinden closure kontrolü yapar.

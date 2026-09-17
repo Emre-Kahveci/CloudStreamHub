@@ -113,3 +113,90 @@ def test_sanitize_body_jwt_and_bearer():
     assert "secret_bearer_token" not in sanitized
     assert "<REDACTED>" in sanitized
     assert "<REDACTED_JWT>" in sanitized
+
+def test_redact_string():
+    raw_diagnostic = "Error requesting https://cdn.example.com/stream.m3u8?token=secrettoken123 with key: 'mysecretpassword'"
+    sanitized = XhrRedactor.redact_string(raw_diagnostic)
+    assert "secrettoken123" not in sanitized
+    assert "<REDACTED_QUERY>" in sanitized
+
+def test_redact_pseudo_query():
+    raw_diagnostic = "https://cdn.anime.com/ajax/videosec&b=secretToken123&f=123"
+    sanitized = XhrRedactor.redact_string(raw_diagnostic)
+    assert "secretToken123" not in sanitized
+    assert "<REDACTED_QUERY>" in sanitized
+
+def test_redact_pseudo_query_no_http():
+    raw_diagnostic = "Discovered 0 iframes at ajax/videosec&b=secretToken123&f=123"
+    sanitized = XhrRedactor.redact_string(raw_diagnostic)
+    assert "secretToken123" not in sanitized
+    assert "<REDACTED_QUERY>" in sanitized
+    assert "ajax/videosec&<REDACTED_QUERY>" in sanitized
+
+def test_smoke_report_producer_redaction(monkeypatch):
+    import json
+    from tools.live_provider_smoke import test_provider
+    from tools.scraping.models import FetchResult, FetchStatus
+    from tools.scraping import AdaptiveManager
+
+    class MockFetcher:
+        def __init__(self, **kwargs):
+            pass
+        def __enter__(self):
+            return self
+        def __exit__(self, exc_type, exc_val, exc_tb):
+            pass
+        def fetch(self, url, **kwargs):
+            if "videosec" in url:
+                return FetchResult(
+                    requestedUrl=url,
+                    finalUrl=url,
+                    statusCode=200,
+                    fetchMode="HTTP",
+                    status=FetchStatus.SUCCESS,
+                    body="<iframe src='https://video.example.com'></iframe>"
+                )
+
+            return FetchResult(
+                requestedUrl=url,
+                finalUrl=url,
+                statusCode=200,
+                fetchMode="HTTP",
+                status=FetchStatus.SUCCESS,
+                body='<title>Test Anime</title><button onclick="window.location.href=\\\'ajax/videosec&b=secret_b_val&f=secret_f_val\\\'">Play</button>'
+            )
+
+    monkeypatch.setattr("tools.live_provider_smoke.ProviderFetcher", MockFetcher)
+
+    # Mock discover_homepage_cards to pass homepage step
+    monkeypatch.setattr("tools.live_provider_smoke.discover_homepage_cards", lambda *args, **kwargs: [{"title": "Test Card"}])
+
+    provider = {
+        "name": "TestAnime",
+        "module": "TestAnime",
+        "domainKey": "TestAnime",
+        "smokeTest": {"knownDetail": "https://testanime.com/anime/test"},
+        "monitoring": {"playerProbe": {"mode": "detail"}}
+    }
+
+    domains_config = {
+        "providers": {
+            "TestAnime": {
+                "canonical": "https://testanime.com",
+                "allowedHosts": ["testanime.com"]
+            }
+        }
+    }
+
+    adaptive_mgr = AdaptiveManager()
+
+    res = test_provider(provider, domains_config, adaptive_mgr)
+
+    # Assert player discovery is PASS/PLAYER_DISCOVERED
+    assert res["playerDiscovery"]["status"] == "PLAYER_DISCOVERED"
+
+    # Assert serialized output is redacted
+    serialized = json.dumps(res)
+    assert "secret_b_val" not in serialized
+    assert "secret_f_val" not in serialized
+    assert "ajax/videosec&<REDACTED_QUERY>" in serialized

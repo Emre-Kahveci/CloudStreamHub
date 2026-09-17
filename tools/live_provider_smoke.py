@@ -79,11 +79,11 @@ def test_provider(provider, domains_config, adaptive_mgr):
             allow_stealth_fallback=stealth_fallback
         )
         if home_res.status == FetchStatus.CONFIG_ERROR:
-            res["homepage"] = {"status": "CONFIG_ERROR", "error": home_res.error}
+            res["homepage"] = {"status": "CONFIG_ERROR", "error": XhrRedactor.redact_string(str(home_res.error))}
             res["overall"] = "CRITICAL"
             return res
         elif home_res.status == FetchStatus.UNTRUSTED_REDIRECT:
-            res["homepage"] = {"status": "UNTRUSTED_REDIRECT", "candidate": home_res.candidateHost}
+            res["homepage"] = {"status": "UNTRUSTED_REDIRECT", "candidate": XhrRedactor.redact_string(home_res.candidateHost or "")}
             res["overall"] = "CRITICAL"
             return res
         elif home_res.status == FetchStatus.CLOUDFLARE:
@@ -129,7 +129,7 @@ def test_provider(provider, domains_config, adaptive_mgr):
                     if detail_info.get("isSoft404"):
                         res["detail"] = {"status": "FAIL", "title": detail_info.get("title"), "reason": "SOFT_404_PAGE"}
                     else:
-                        res["detail"] = {"status": "FAIL", "reason": detail_info.get("reason")}
+                        res["detail"] = {"status": "FAIL", "reason": XhrRedactor.redact_string(str(detail_info.get("reason")))}
                     res["playerDiscovery"] = {"status": "PLAYER_NOT_FOUND"}
                 else:
                     res["detail"] = {
@@ -188,10 +188,10 @@ def test_provider(provider, domains_config, adaptive_mgr):
                             "status": "PLAYER_DISCOVERED",
                             "iframes": len(p_info["iframes"]),
                             "hasPlayer": p_info["hasPlayerScript"],
-                            "targetUrl": target_url
+                            "targetUrl": XhrRedactor.redact_string(target_url)
                         }
                     else:
-                        res["playerDiscovery"] = {"status": "PLAYER_NOT_FOUND", "targetUrl": target_url}
+                        res["playerDiscovery"] = {"status": "PLAYER_NOT_FOUND", "targetUrl": XhrRedactor.redact_string(target_url)}
 
     statuses = [res["homepage"]["status"], res["detail"]["status"]]
     if any(s in ("UNTRUSTED_REDIRECT", "CONFIG_ERROR") for s in statuses):

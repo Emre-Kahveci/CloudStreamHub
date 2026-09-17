@@ -1,0 +1,27 @@
+V2 — REQUEST / INTENT COMPILER KATMANI
+=====================================
+
+Yeni dosyalar:
+- .opencode/agents/requirements-analyst.md
+- .opencode/commands/request.md
+- .ai-workflow/REQUEST_SPEC.md
+
+Güncellenenler:
+- .opencode/agents/architect.md
+- .opencode/commands/plan.md
+- .opencode/commands/workflow-status.md
+- .ai-workflow/README.md
+- 00_BURADAN_BASLA.txt
+- README_KURULUM_TR.md
+
+Yeni akış:
+/request doğal Türkçe istek
+  -> REQUEST_SPEC.md (raw request + structured intent)
+/plan
+  -> repository-verified architecture plan
+/approve-plan
+  -> APPROVED_PLAN.md
+Antigravity
+  -> implementation
+/review
+  -> ChatGPT review

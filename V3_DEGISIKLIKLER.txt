@@ -1,0 +1,26 @@
+V3 — Antigravity Skill + Subagent orchestration
+
+Why:
+Antigravity can persist a selected custom main agent across conversations. The previous v2 package defined the implementation/fixer roles as selectable main agents, which could leave the wrong agent active in unrelated chats.
+
+Changed:
+- approved-plan-implementer: mainAgent false, subagent true
+- verified-review-fixer: mainAgent false, subagent true
+- Added .agents/skills/implement-approved-plan/SKILL.md
+- Added .agents/skills/fix-approved-review/SKILL.md
+- Default Antigravity agent now remains the primary conversational agent.
+- The relevant skill instructs the default agent to invoke the specialized subagent with workspace=inherit.
+- Added missing controlled file creation/edit tools to implementation/fixer subagents.
+- Added explicit context-isolation handling: subagents read handoff files rather than depending on parent conversation history.
+
+New Antigravity usage:
+- Keep Default Agent selected.
+- Say: "Implement the approved plan." (or equivalent Turkish wording)
+  -> implement-approved-plan skill
+  -> approved-plan-implementer subagent
+- After OpenCode review + /approve-fixes, say:
+  "Fix the approved review findings."
+  -> fix-approved-review skill
+  -> verified-review-fixer subagent
+
+Do NOT manually select the implementer/fixer as a primary agent.

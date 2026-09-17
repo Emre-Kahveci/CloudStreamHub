@@ -189,3 +189,24 @@ def test_extract_response_text_variants():
     mock_ct_resp.body = tr_bytes
     mock_ct_resp.encoding = None
     assert "Türkçe" in extract_response_text(mock_ct_resp)
+
+def test_fetch_rejects_unallowlisted_redirect(monkeypatch):
+    """Verifies that an unallowlisted redirect is actively rejected by ProviderFetcher."""
+    fetcher = ProviderFetcher(allowed_hosts={"target.test"}, canonical="https://target.test", timeout=10)
+
+    # We mock the _fetch_http to return an UNTRUSTED_REDIRECT
+    monkeypatch.setattr(fetcher, "_fetch_http", lambda url, t0, **kwargs: FetchResult(
+        requestedUrl=url,
+        finalUrl="https://evil.com/malware",
+        candidateHost="evil.com",
+        statusCode=301,
+        fetchMode=FetchMode.HTTP,
+        status=FetchStatus.UNTRUSTED_REDIRECT,
+        body=""
+    ))
+
+    # And we verify that when fetching, it returns the untrusted redirect status
+    res = fetcher.fetch("https://target.test/home", allow_dynamic_fallback=True, allow_stealth_fallback=True)
+    assert res.status == FetchStatus.UNTRUSTED_REDIRECT
+    assert res.finalUrl == "https://evil.com/malware"
+    assert res.candidateHost == "evil.com"

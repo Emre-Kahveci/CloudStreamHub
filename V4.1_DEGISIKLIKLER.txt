@@ -1,0 +1,15 @@
+V4.1 — FINITE CLOSURE / DEADLOCK FIX
+
+1. Verifier artık REVIEW_HISTORY.md içindeki eski OPEN statüsüne bakarak otomatik FAIL vermez.
+2. Current truth = aktif contract + gerçek source/diff + test/gate sonuçları.
+3. Verification gate sınıfları eklendi:
+   - AUTO_REQUIRED
+   - MANUAL_REQUIRED
+   - OPTIONAL_DIAGNOSTIC
+4. MANUAL_REQUIRED (Android runtime, UI, live network vb.) tek başına PASS'i engellemez.
+5. CORRECTION_PLAN artık finite contract ve lifecycle status kullanır.
+6. Fixer contract dışına scope genişletemez.
+7. Final review closure semantics eklendi.
+8. Final review yeni LOW/polish/follow-up bulguları nedeniyle phase'i tekrar açmaz.
+9. Blocking reopen yalnız gerçek kabul kriteri/regression/security/data-integrity/contract problemleri içindir.
+10. Repo içi OpenCode architect/reviewer permission serbestliği V4'ten korunmuştur.

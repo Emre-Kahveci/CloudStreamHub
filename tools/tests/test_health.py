@@ -72,3 +72,48 @@ def test_generated_health_report_invariant_if_exists():
 
         if has_failed_tier:
             assert overall != 'healthy', f'Invariant violated: {prov} is marked \'{overall}\' while having failed tiers: {tiers}'
+
+def test_derive_health_score():
+    from tools.provider_health import derive_health_score
+    tiers_pass = {'L0_config': 'pass', 'L1_domain': 'pass', 'L2_homepage': 'pass', 'L3_search': 'pass', 'L4_load': 'pass', 'L5_player_discovery': 'player_discovered'}
+    assert derive_health_score('healthy', tiers_pass) == 100
+
+    tiers_warn = dict(tiers_pass, L2_homepage='drift_detected')
+    assert derive_health_score('warning', tiers_warn) == 75
+
+    tiers_degraded = dict(tiers_pass, L3_search='fail')
+    score = derive_health_score('degraded', tiers_degraded)
+    assert 35 <= score <= 50
+
+    tiers_cf = dict(tiers_pass, L2_homepage='cloudflare_challenge', L3_search='cloudflare_challenge')
+    score_cf = derive_health_score('degraded', tiers_cf)
+    assert 35 <= score_cf <= 50
+    assert score_cf == 45 # 2 degraded states -> 50 - 1*5 = 45
+
+    tiers_auto = dict(tiers_pass, L3_search='automation_blocked')
+    score_auto = derive_health_score('degraded', tiers_auto)
+    assert 35 <= score_auto <= 50
+    assert score_auto == 50 # 1 degraded state -> 50 - 0 = 50
+
+    tiers_failed = dict(tiers_pass, L0_config='fail')
+    assert derive_health_score('failed', tiers_failed) == 10
+
+    tiers_crit = dict(tiers_pass, L1_domain='untrusted_redirect')
+    assert derive_health_score('critical', tiers_crit) == 0
+
+def test_health_report_schema_and_playback_distinction():
+    from tools.provider_health import inspect_provider
+    # Verify report keys and discovery-versus-playback semantics
+    dummy_provider = {
+        'name': 'NonExistent',
+        'module': 'NonExistent',
+        'enabled': True,
+        'domainKey': 'NonExistent'
+    }
+    dummy_domains = {'providers': {}}
+    rep = inspect_provider(dummy_provider, '/tmp', dummy_domains, None)
+    assert rep['schemaVersion'] == 1
+    assert rep['playbackVerification'] == 'UNVERIFIED_BY_AUTOMATION'
+    assert 'healthScore' in rep
+    assert rep['overallStatus'] == 'failed'
+    assert rep['healthScore'] == 10

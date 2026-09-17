@@ -1,5 +1,5 @@
 {
-  "testedAt": "2026-09-16T17:17:58.132254+00:00",
+  "testedAt": "2026-09-16T23:02:40.957133+00:00",
   "providers": [
     {
       "provider": "AnimeciX",
@@ -30,7 +30,7 @@
       "homepage": {
         "status": "PASS",
         "itemCount": 15,
-        "sample": "ANTİK UZAYLILAR\nUzaylılar ve Kuts48"
+        "sample": "ANTİK UZAYLILAR\nUzaylılar ve Kuts16"
       },
       "detail": {
         "status": "FAIL",
@@ -163,7 +163,7 @@
         "status": "PLAYER_DISCOVERED",
         "iframes": 1,
         "hasPlayer": true,
-        "targetUrl": "https://www.turkanime.tv/ajax/videosec&b=T1pRK0NxK2ZNZyt6N005VUJVc1VtZz09Ojptek5LM2dudldLRjNENGdm&f=ZXcyZkZwdFlhWktNbHNST0tQejVPdz09OjpwQWFTSjhaTFZPZE5sbGRE"
+        "targetUrl": "https://www.turkanime.tv/ajax/videosec&<REDACTED_QUERY>"
       },
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "NONE",
@@ -249,7 +249,7 @@
       "homepage": {
         "status": "PASS",
         "itemCount": 15,
-        "sample": "Koma izle"
+        "sample": "Güneşin Doğduğu Yer izle"
       },
       "detail": {
         "status": "PASS",
@@ -312,6 +312,31 @@
       "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
       "subtitle": "DUBBED",
       "overall": "PARTIAL_PASS",
+      "details": []
+    },
+    {
+      "provider": "FullHDFilmizlesene",
+      "module": "FullHDFilmizlesene",
+      "homepage": {
+        "status": "PASS",
+        "itemCount": 15,
+        "sample": "Örümcek-Adam: Yepyeni Bir Gün - Spider-Man: Brand New Day izle"
+      },
+      "detail": {
+        "status": "PASS",
+        "title": "Hızlı Ve Öfkeli 10 - Fast X 2023 Film izle",
+        "episodeDiscoveryMode": "NONE",
+        "episodesCount": 0
+      },
+      "playerDiscovery": {
+        "status": "PLAYER_DISCOVERED",
+        "iframes": 1,
+        "hasPlayer": true,
+        "targetUrl": "https://www.fullhdfilmizlesene.now/film/hizli-ve-ofkeli-10/"
+      },
+      "runtimePlayback": "UNVERIFIED_BY_AUTOMATION",
+      "subtitle": "DUBBED",
+      "overall": "PASS",
       "details": []
     }
   ]

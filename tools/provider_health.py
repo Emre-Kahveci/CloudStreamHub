@@ -124,6 +124,32 @@ def evaluate_overall_health(tier_results: Dict[str, str], required_tiers: Option
 
     return "healthy"
 
+def derive_health_score(overall_status: str, tier_results: Dict[str, str]) -> int:
+    """
+    Derives an informational health score (0-100) for tool reporting.
+    This score is reporting-only and is NEVER persisted in playback payloads or
+    used for runtime source ordering or suppression.
+
+    Grading:
+    - critical: 0
+    - failed: 10
+    - degraded: 35-50 (based on number of failed tiers)
+    - warning: 75
+    - healthy: 100
+    """
+    if overall_status == "critical":
+        return 0
+    if overall_status == "failed":
+        return 10
+    if overall_status == "degraded":
+        degraded_count = sum(1 for k, v in tier_results.items() if v not in ("pass", "skipped", "player_discovered"))
+        return max(35, 50 - (max(0, degraded_count - 1) * 5))
+    if overall_status == "warning":
+        return 75
+    if overall_status == "healthy":
+        return 100
+    return 0
+
 def check_l2_homepage(name, html_body, canonical, adaptive_mgr: AdaptiveManager, monitoring_cfg: Dict[str, Any]):
     if not html_body:
         return "fail", "EMPTY_BODY", None
@@ -376,6 +402,7 @@ def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: Adaptive
     stealth_fallback = monitoring_cfg.get("stealthFallback", True)
 
     report = {
+        "schemaVersion": 1,
         "provider": name,
         "checkedAt": datetime.now(timezone.utc).isoformat(),
         "canonical": canonical,
@@ -389,6 +416,8 @@ def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: Adaptive
             "L5_player_discovery": "untested"
         },
         "overallStatus": "healthy",
+        "healthScore": 100,
+        "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
         "diagnostic": {},
         "durationMs": 0,
         "candidateHost": None
@@ -396,15 +425,21 @@ def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: Adaptive
 
     start_time = time.time()
 
+    def finalize_and_return(rep: Dict[str, Any]) -> Dict[str, Any]:
+        rep["overallStatus"] = evaluate_overall_health(rep["tierResults"])
+        rep["healthScore"] = derive_health_score(rep["overallStatus"], rep["tierResults"])
+        for k, v in list(rep["diagnostic"].items()):
+            rep["diagnostic"][k] = XhrRedactor.redact_string(str(v))
+        rep["durationMs"] = int((time.time() - start_time) * 1000)
+        return rep
+
     # L0
     l0_stat, l0_diag = check_l0_config(provider, repo_root, domains_config)
     report["tierResults"]["L0_config"] = l0_stat
     if l0_diag:
         report["diagnostic"]["L0"] = l0_diag
     if l0_stat != "pass":
-        report["overallStatus"] = "failed"
-        report["durationMs"] = int((time.time() - start_time) * 1000)
-        return report
+        return finalize_and_return(report)
 
     # Fetcher session reuse context
     with ProviderFetcher(allowed_hosts=allowed_hosts, canonical=canonical, timeout=15) as fetcher:
@@ -426,8 +461,7 @@ def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: Adaptive
             report["diagnostic"]["L1"] = l1_res.error
             for t in ["L2_homepage", "L3_search", "L4_load", "L5_player_discovery"]:
                 report["tierResults"][t] = "skipped"
-            report["durationMs"] = int((time.time() - start_time) * 1000)
-            return report
+            return finalize_and_return(report)
 
         if l1_res.status == FetchStatus.UNTRUSTED_REDIRECT:
             report["tierResults"]["L1_domain"] = "untrusted_redirect"
@@ -435,8 +469,7 @@ def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: Adaptive
             report["diagnostic"]["L1"] = f"Untrusted redirect candidate: {l1_res.candidateHost}"
             for t in ["L2_homepage", "L3_search", "L4_load", "L5_player_discovery"]:
                 report["tierResults"][t] = "skipped"
-            report["durationMs"] = int((time.time() - start_time) * 1000)
-            return report
+            return finalize_and_return(report)
 
         if l1_res.status == FetchStatus.CONTENT_MARKER_MISMATCH:
             report["tierResults"]["L1_domain"] = "content_marker_mismatch"
@@ -444,8 +477,7 @@ def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: Adaptive
             report["diagnostic"]["L1"] = l1_res.error
             for t in ["L2_homepage", "L3_search", "L4_load", "L5_player_discovery"]:
                 report["tierResults"][t] = "skipped"
-            report["durationMs"] = int((time.time() - start_time) * 1000)
-            return report
+            return finalize_and_return(report)
 
         if l1_res.status == FetchStatus.CLOUDFLARE or l1_res.cloudflare:
             report["tierResults"]["L1_domain"] = "cloudflare_challenge"
@@ -488,11 +520,7 @@ def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: Adaptive
         if l5_diag:
             report["diagnostic"]["L5"] = l5_diag
 
-    # Overall Status Calculation via central evaluator
-    report["overallStatus"] = evaluate_overall_health(report["tierResults"])
-
-    report["durationMs"] = int((time.time() - start_time) * 1000)
-    return report
+    return finalize_and_return(report)
 
 def main():
     parser = argparse.ArgumentParser(description="Multi-tier Truthful Provider Health Checker (Scrapling)")

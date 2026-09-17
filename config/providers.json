@@ -660,6 +660,55 @@
       }
     },
     {
+      "name": "FullHDFilmizlesene",
+      "module": "FullHDFilmizlesene",
+      "enabled": true,
+      "language": "tr",
+      "types": [
+        "Movie"
+      ],
+      "domainKey": "FullHDFilmizlesene",
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "fast",
+        "knownDetail": "https://www.fullhdfilmizlesene.now/film/hizli-ve-ofkeli-10/",
+        "expectedType": "Movie"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": true,
+        "stealthFallback": true,
+        "contentType": "Movie",
+        "playerProbe": {
+          "mode": "detail"
+        },
+        "search": {
+          "method": "GET",
+          "path": "/autocomplete/q.php?q={query}&callback=",
+          "headers": {
+            "Referer": "https://www.fullhdfilmizlesene.now/"
+          },
+          "jsonKey": "baslik"
+        },
+        "homepage": {
+          "selectors": [
+            ".list li.film a.tt",
+            ".list li.film a[href*='/film/']",
+            "a[href*='/film/']"
+          ],
+          "requiredUrlPatterns": [
+            "/film/"
+          ],
+          "excludedUrlPatterns": [
+            "/kategori/",
+            "/tur/",
+            "/iletisim/",
+            "/sayfa/"
+          ]
+        }
+      }
+    },
+    {
       "name": "DiziBox",
       "module": "DiziBox",
       "enabled": false,

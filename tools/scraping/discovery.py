@@ -301,14 +301,14 @@ def evaluate_player_discovery(html_body: str, base_url: str) -> Tuple[str, Dict[
     for m in m3u8_matches[:5]:
         info["mediaUrls"].append(XhrRedactor.sanitize_url(m))
 
+    body_without_scx = re.sub(r'var\s+scx\s*=\s*(\{.+?\});', '', body_str, flags=re.DOTALL | re.IGNORECASE)
     has_player_code = bool(
-        re.search(r'(?:jwplayer|videojs|Playerjs)\s*\(', body_str, re.IGNORECASE) or
-        any(host in body_str.lower() for host in ["vidpapi", "closeload", "rapidrame", "streamtape", "doodstream", "vidsrc", "superembed"]) or
-        re.search(r'(?:file|source)\s*:\s*["\']https?://[^"\']+\.(?:m3u8|mp4)', body_str, re.IGNORECASE)
+        re.search(r'(?:jwplayer|videojs|Playerjs)\s*\(', body_without_scx, re.IGNORECASE) or
+        any(host in body_without_scx.lower() for host in ["vidpapi", "closeload", "rapidrame", "streamtape", "doodstream", "vidsrc", "superembed"]) or
+        re.search(r'(?:file|source)\s*:\s*["\']https?://[^"\']+\.(?:m3u8|mp4)', body_without_scx, re.IGNORECASE)
     )
     info["hasPlayerScript"] = has_player_code
 
-    # 4. Inspect base64 encodedContent in scripts (e.g. DiziPal / Videoplay)
     import base64
     for b64_match in re.finditer(r'const\s+encodedContent\s*=\s*[\'"]([A-Za-z0-9+/=]+)[\'"]', body_str):
         try:
@@ -320,6 +320,27 @@ def evaluate_player_discovery(html_body: str, base_url: str) -> Tuple[str, Dict[
                 info["hasPlayerScript"] = True
         except Exception:
             pass
+
+    # 5. Inspect SCX sources
+    scx_match = re.search(r'var\s+scx\s*=\s*(\{.+?\});', body_str, re.DOTALL | re.IGNORECASE)
+    if scx_match:
+        import codecs
+        raw_json = scx_match.group(1)
+        for token_m in re.finditer(r'"([a-zA-Z0-9+/=_-]{10,})"', raw_json):
+            token = token_m.group(1)
+            if len(token) < 15:
+                continue
+            try:
+                rtt = codecs.decode(token, 'rot_13')
+                pad_len = (4 - len(rtt) % 4) % 4
+                padded = rtt + ("=" * pad_len)
+                decoded = base64.b64decode(padded).decode("utf-8")
+                if decoded.startswith("http://") or decoded.startswith("https://") or decoded.startswith("//"):
+                    full_url = "https:" + decoded if decoded.startswith("//") else decoded
+                    info["iframes"].append(XhrRedactor.sanitize_url(full_url))
+                    info["hasPlayerScript"] = True
+            except Exception:
+                pass
 
     if info["iframes"] or info["videos"] or info["mediaUrls"] or has_player_code:
         return "PLAYER_DISCOVERED", info

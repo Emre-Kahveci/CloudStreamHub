@@ -147,3 +147,30 @@ def test_episode_selector_strict_config_vs_fallback():
     assert res_fallback["episodeLinks"][0] == "https://www.turkanime.tv/video/death-note-1-bolum"
     assert not any("yakinda" in link for link in res_fallback["episodeLinks"])
 
+def test_evaluate_player_discovery_scx_source():
+    # Empty/malformed SCX
+    empty_scx_html = "<html><body><script>var scx = {};</script></body></html>"
+    stat, info = evaluate_player_discovery(empty_scx_html, "https://movies.test")
+    assert stat == "PLAYER_NOT_FOUND"
+    assert not info["hasPlayerScript"]
+
+    # Valid decodable SCX source
+    import base64
+    import codecs
+    target = "https://vidpapi.com/embed/123"
+    b64 = base64.b64encode(target.encode("utf-8")).decode("utf-8")
+    rtt = codecs.encode(b64.rstrip("="), 'rot_13')
+
+    valid_scx_html = f'<html><body><script>var scx = {{"token": "{rtt}"}};</script></body></html>'
+    stat, info = evaluate_player_discovery(valid_scx_html, "https://movies.test")
+    assert stat == "PLAYER_DISCOVERED"
+    assert info["hasPlayerScript"]
+    assert "https://vidpapi.com/embed/123" in info["iframes"]
+
+def test_evaluate_player_discovery_scx_false_positive():
+    # If SCX contains a player name like 'rapidrame' but does not decode to a valid URL, it should be ignored.
+    false_positive_html = '<html><body><script>var scx = {"some_key": "rapidrame_token"};</script></body></html>'
+    stat, info = evaluate_player_discovery(false_positive_html, "https://movies.test")
+    assert stat == "PLAYER_NOT_FOUND"
+    assert not info["hasPlayerScript"]
+

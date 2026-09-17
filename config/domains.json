@@ -240,6 +240,23 @@
       ],
       "lastChecked": null,
       "status": "active"
+    },
+    "FullHDFilmizlesene": {
+      "canonical": "https://www.fullhdfilmizlesene.now",
+      "allowedHosts": [
+        "www.fullhdfilmizlesene.now",
+        "fullhdfilmizlesene.now",
+        "www.fullhdfilmizlesene.pw",
+        "fullhdfilmizlesene.pw",
+        "img.fullhdfilmizlesene.now",
+        "rapidvid.org"
+      ],
+      "expectedMarkers": [
+        "FullHDFilmizlesene",
+        "fullhdfilmizlesene"
+      ],
+      "lastChecked": null,
+      "status": "active"
     }
   }
 }

@@ -1,7 +1,8 @@
 [
   {
+    "schemaVersion": 1,
     "provider": "AnimeciX",
-    "checkedAt": "2026-09-16T17:16:22.815255+00:00",
+    "checkedAt": "2026-09-16T22:39:04.473510+00:00",
     "canonical": "https://animecix.tv",
     "finalUrl": "https://animecix.tv/",
     "tierResults": {
@@ -13,18 +14,21 @@
       "L5_player_discovery": "player_not_found"
     },
     "overallStatus": "degraded",
+    "healthScore": 45,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
       "L2": "NO_HOMEPAGE_ITEMS_PARSED",
       "L3": "Found 1 API results. Top: Naruto x UT",
       "L4": "Loaded: AnimeciX - Türkçe Anime Bilgi ve Paylaşı (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] No player iframe, video tag, or player script discovered at https://animecix.tv/titles/naruto"
     },
-    "durationMs": 1217,
+    "durationMs": 1162,
     "candidateHost": null
   },
   {
+    "schemaVersion": 1,
     "provider": "BelgeselX",
-    "checkedAt": "2026-09-16T17:16:24.033228+00:00",
+    "checkedAt": "2026-09-16T22:39:05.635710+00:00",
     "canonical": "https://belgeselx.com",
     "finalUrl": "https://belgeselx.com/",
     "tierResults": {
@@ -36,18 +40,21 @@
       "L5_player_discovery": "player_not_found"
     },
     "overallStatus": "degraded",
+    "healthScore": 45,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
-      "L2": "Found 15 items. Top: ANTİK UZAYLILAR\nUzaylılar ve Kuts48",
-      "L3": "Found 44 content results. Top: ANTİK UZAYLILAR\nUzaylılar ve Kuts48",
+      "L2": "Found 15 items. Top: ANTİK UZAYLILAR\nUzaylılar ve Kuts16",
+      "L3": "Found 44 content results. Top: ANTİK UZAYLILAR\nUzaylılar ve Kuts16",
       "L4": "SOFT_404_PAGE: 404 — Sayfa Bulunamadı | Belgeselx",
       "L5": "[NONE] No target content body available to inspect at https://belgeselx.com/belgesel/gezegenimiz"
     },
-    "durationMs": 2225,
+    "durationMs": 2370,
     "candidateHost": null
   },
   {
+    "schemaVersion": 1,
     "provider": "DiziPal",
-    "checkedAt": "2026-09-16T17:16:26.258711+00:00",
+    "checkedAt": "2026-09-16T22:39:08.006202+00:00",
     "canonical": "https://dizipal1430.com",
     "finalUrl": "https://dizipal1430.com/",
     "tierResults": {
@@ -59,18 +66,21 @@
       "L5_player_discovery": "player_discovered"
     },
     "overallStatus": "healthy",
+    "healthScore": 100,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
       "L2": "Found 15 items. Top: Dublaj & Altyazı\n\n\r\n                                            Reacher",
       "L3": "Found 1 API results. Top: Silo",
       "L4": "Loaded: Silo izle - Dizipal (Episodes: 30, Mode: STRICT_CONFIG)",
       "L5": "[STRICT_CONFIG] Discovered 1 iframes, 0 videos at https://dizipal1430.com/bolum/silo-1-sezon-1-bolum"
     },
-    "durationMs": 1202,
+    "durationMs": 1214,
     "candidateHost": null
   },
   {
+    "schemaVersion": 1,
     "provider": "FilmMakinesi",
-    "checkedAt": "2026-09-16T17:16:27.461333+00:00",
+    "checkedAt": "2026-09-16T22:39:09.221199+00:00",
     "canonical": "https://filmmakinesi.to",
     "finalUrl": "https://filmmakinesi.to/",
     "tierResults": {
@@ -82,18 +92,21 @@
       "L5_player_discovery": "player_discovered"
     },
     "overallStatus": "healthy",
+    "healthScore": 100,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
       "L2": "Found 15 items. Top: Forgotten Island23 Eylül",
       "L3": "Found 98 content results. Top: Aksiyon",
       "L4": "Loaded: Forgotten Island 2026 Filmi 1080p Full H (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 2 iframes, 5 videos at https://filmmakinesi.to/film/forgotten-island-2026/"
     },
-    "durationMs": 901,
+    "durationMs": 829,
     "candidateHost": null
   },
   {
+    "schemaVersion": 1,
     "provider": "HDFilmCehennemi",
-    "checkedAt": "2026-09-16T17:16:28.363017+00:00",
+    "checkedAt": "2026-09-16T22:39:10.050543+00:00",
     "canonical": "https://www.hdfilmcehennemi.nl",
     "finalUrl": "https://www.hdfilmcehennemi.nl/",
     "tierResults": {
@@ -105,18 +118,21 @@
       "L5_player_discovery": "player_discovered"
     },
     "overallStatus": "healthy",
+    "healthScore": 100,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
       "L2": "Found 15 items. Top: Örümcek Adam Yepyeni Bir Gün - Spider Man Brand New Day",
       "L3": "Found 15 API results. Top: <a href=\"https://www.hdfilmcehennemi.nl/",
       "L4": "Loaded: Örümcek Adam Yepyeni Bir Gün - Spider Ma (Episodes: 1, Mode: GENERIC_FALLBACK)",
       "L5": "[GENERIC_FALLBACK] Discovered 1 iframes, 0 videos at https://www.hdfilmcehennemi.nl/spider-man-brand-new-day/"
     },
-    "durationMs": 1098,
+    "durationMs": 940,
     "candidateHost": null
   },
   {
+    "schemaVersion": 1,
     "provider": "KultFilmler",
-    "checkedAt": "2026-09-16T17:16:29.461469+00:00",
+    "checkedAt": "2026-09-16T22:39:10.991496+00:00",
     "canonical": "https://kultfilmler.net",
     "finalUrl": "https://kultfilmler.net/",
     "tierResults": {
@@ -128,18 +144,21 @@
       "L5_player_discovery": "player_discovered"
     },
     "overallStatus": "healthy",
+    "healthScore": 100,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
       "L2": "Found 15 items. Top: Türkçe Altyazı1998\n\n\n\nSoldier – AskerAksiyon · Bilim Kurgu\n6.1IMDB",
       "L3": "Found 6 content results. Top: Türkçe Altyazı1998\n\n\n\nSoldier – AskerAks",
       "L4": "Loaded: Soldier - Asker İzle HD İzle - Kült Film (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 1 iframes, 0 videos at https://kultfilmler.net/soldier-asker/"
     },
-    "durationMs": 1215,
+    "durationMs": 831,
     "candidateHost": null
   },
   {
+    "schemaVersion": 1,
     "provider": "TurkAnime",
-    "checkedAt": "2026-09-16T17:16:30.677062+00:00",
+    "checkedAt": "2026-09-16T22:39:11.823457+00:00",
     "canonical": "https://www.turkanime.tv",
     "finalUrl": "https://www.turkanime.tv/",
     "tierResults": {
@@ -151,18 +170,21 @@
       "L5_player_discovery": "player_discovered"
     },
     "overallStatus": "healthy",
+    "healthScore": 100,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
       "L2": "Found 9 items. Top: Tenmaku no Jaadugar 12. Bölüm Final izle",
       "L3": "Found 16 search matches. Top: Re:Zero kara Hajimeru Iseka...",
       "L4": "Loaded: Death Note izle | Konusu, Bölümleri ve K (Episodes: 37, Mode: STRICT_CONFIG)",
-      "L5": "[STRICT_CONFIG] Discovered 1 iframes, 0 videos at https://www.turkanime.tv/ajax/videosec&b=MWV6bzNrbkthYkpxc0paRDN2MVdxQT09OjpqZWY0QW14d00yOUo0cEg0&f=amdMWDcrdGNiVmZTTFVtL2VhcVNyZz09OjoxaDdlVlRRZ0t1cGlaOFl6"
+      "L5": "[STRICT_CONFIG] Discovered 1 iframes, 0 videos at https://www.turkanime.tv/ajax/videosec&<REDACTED_QUERY>"
     },
-    "durationMs": 2976,
+    "durationMs": 2736,
     "candidateHost": null
   },
   {
+    "schemaVersion": 1,
     "provider": "YesilCamTv",
-    "checkedAt": "2026-09-16T17:16:33.654132+00:00",
+    "checkedAt": "2026-09-16T22:39:14.560404+00:00",
     "canonical": "https://yesilcamtv.com.tr",
     "finalUrl": "https://yesilcamtv.com.tr/",
     "tierResults": {
@@ -174,18 +196,21 @@
       "L5_player_discovery": "player_discovered"
     },
     "overallStatus": "healthy",
+    "healthScore": 100,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
       "L2": "Found 15 items. Top: Sahte Kabadayı",
       "L3": "Found 1 content results. Top: 1990\t\t\n\n\n\n\n \n\n\n\n\nKabadayilar Krali",
       "L4": "Loaded: Sahte Kabadayı | YESILCAM TV (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 1 iframes, 0 videos at https://yesilcamtv.com.tr/sahte-kabadayi-izle/"
     },
-    "durationMs": 1015,
+    "durationMs": 1152,
     "candidateHost": null
   },
   {
+    "schemaVersion": 1,
     "provider": "SezonlukDizi",
-    "checkedAt": "2026-09-16T17:16:34.670123+00:00",
+    "checkedAt": "2026-09-16T22:39:15.712864+00:00",
     "canonical": "https://sezonlukdizi.cc",
     "finalUrl": "https://sezonlukdizi.cc/",
     "tierResults": {
@@ -197,18 +222,21 @@
       "L5_player_discovery": "player_not_found"
     },
     "overallStatus": "degraded",
+    "healthScore": 50,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
       "L2": "Found 9 items. Top: One Piece",
       "L3": "Found 3 results. Top: The Bad Guys: Breaking In (2025)",
       "L4": "Loaded: Breaking Bad izle - Sezonluk Dizi izle (Episodes: 20, Mode: STRICT_CONFIG)",
       "L5": "[STRICT_CONFIG] No player iframe, video tag, or player script discovered at https://sezonlukdizi.cc/breaking-bad/5-sezon-16-bolum.html"
     },
-    "durationMs": 1198,
+    "durationMs": 1403,
     "candidateHost": null
   },
   {
+    "schemaVersion": 1,
     "provider": "SinemaCX",
-    "checkedAt": "2026-09-16T17:16:35.868556+00:00",
+    "checkedAt": "2026-09-16T22:39:17.116810+00:00",
     "canonical": "https://sinemacc.com",
     "finalUrl": "https://sinemacc.com/",
     "tierResults": {
@@ -220,18 +248,21 @@
       "L5_player_discovery": "player_discovered"
     },
     "overallStatus": "healthy",
+    "healthScore": 100,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
       "L2": "Found 15 items. Top: Bulvar İzle",
       "L3": "Found 30 content results. Top: Bulvar\nBoulevard\n\n\n★ 4.7• 2026\n• 113 Dk.",
       "L4": "Loaded: Bulvar izle (2026) (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 1 iframes, 0 videos at https://sinemacc.com/film/bulvar-boulevard-2026/"
     },
-    "durationMs": 1575,
+    "durationMs": 1383,
     "candidateHost": null
   },
   {
+    "schemaVersion": 1,
     "provider": "DiziMom",
-    "checkedAt": "2026-09-16T17:16:37.444949+00:00",
+    "checkedAt": "2026-09-16T22:39:18.500643+00:00",
     "canonical": "https://www.dizimom.diy",
     "finalUrl": "https://www.dizimom.diy/",
     "tierResults": {
@@ -243,18 +274,21 @@
       "L5_player_discovery": "player_not_found"
     },
     "overallStatus": "degraded",
+    "healthScore": 50,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
-      "L2": "Found 15 items. Top: Koma izle",
+      "L2": "Found 15 items. Top: Güneşin Doğduğu Yer izle",
       "L3": "Found 23 content results. Top: Ángel Di María: Breaking Down the Wall i",
       "L4": "Loaded: Bangkok Breaking izle | DiziMOM (Episodes: 15, Mode: GENERIC_FALLBACK)",
       "L5": "[GENERIC_FALLBACK] No player iframe, video tag, or player script discovered at https://www.dizimom.diy/turkce-dublaj-bolumler-hd/"
     },
-    "durationMs": 2847,
+    "durationMs": 2709,
     "candidateHost": null
   },
   {
+    "schemaVersion": 1,
     "provider": "DiziYou",
-    "checkedAt": "2026-09-16T17:16:40.292737+00:00",
+    "checkedAt": "2026-09-16T22:39:21.209861+00:00",
     "canonical": "https://www.diziyou.one",
     "finalUrl": "https://www.diziyou.one/",
     "tierResults": {
@@ -266,18 +300,21 @@
       "L5_player_discovery": "player_discovered"
     },
     "overallStatus": "healthy",
+    "healthScore": 100,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
       "L2": "Found 15 items. Top: Lanterns 1. Sezon 5. Bölüm",
       "L3": "Found 1 content results. Top: Arcane",
       "L4": "Loaded: Arcane izle - Türkçe Dublaj & Altyazılı  (Episodes: 18, Mode: STRICT_CONFIG)",
       "L5": "[STRICT_CONFIG] Discovered 1 iframes, 1 videos at https://www.diziyou.one/arcane-1-sezon-1-bolum/"
     },
-    "durationMs": 3726,
+    "durationMs": 3423,
     "candidateHost": null
   },
   {
+    "schemaVersion": 1,
     "provider": "Dizilla",
-    "checkedAt": "2026-09-16T17:16:44.018983+00:00",
+    "checkedAt": "2026-09-16T22:39:24.633075+00:00",
     "canonical": "https://dizilla.now",
     "finalUrl": "https://dizilla.now/",
     "tierResults": {
@@ -289,13 +326,41 @@
       "L5_player_discovery": "player_not_found"
     },
     "overallStatus": "degraded",
+    "healthScore": 50,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
       "L2": "Found 15 items. Top: Sihame izle",
       "L3": "Found 3 results. Top: None",
       "L4": "Loaded: Breaking Bad izle | Türkçe Dublaj & Alty (Episodes: 13, Mode: STRICT_CONFIG)",
       "L5": "[STRICT_CONFIG] No player iframe, video tag, or player script discovered at https://dizilla.now/breaking-bad-5-sezon-16-bolum-c02"
     },
-    "durationMs": 4420,
+    "durationMs": 4228,
+    "candidateHost": null
+  },
+  {
+    "schemaVersion": 1,
+    "provider": "FullHDFilmizlesene",
+    "checkedAt": "2026-09-16T22:39:28.861891+00:00",
+    "canonical": "https://www.fullhdfilmizlesene.now",
+    "finalUrl": "https://www.fullhdfilmizlesene.now/",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "pass",
+      "L3_search": "pass",
+      "L4_load": "pass",
+      "L5_player_discovery": "player_discovered"
+    },
+    "overallStatus": "healthy",
+    "healthScore": 100,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
+    "diagnostic": {
+      "L2": "Found 15 items. Top: Örümcek-Adam: Yepyeni Bir Gün - Spider-Man: Brand New Day izle",
+      "L3": "Found 8 API results. Top: None",
+      "L4": "Loaded: Hızlı Ve Öfkeli 10 - Fast X 2023 Film iz (Episodes: 0, Mode: NONE)",
+      "L5": "[NONE] Discovered 1 iframes, 0 videos at https://www.fullhdfilmizlesene.now/film/hizli-ve-ofkeli-10/"
+    },
+    "durationMs": 783,
     "candidateHost": null
   }
 ]
