@@ -88,10 +88,10 @@
     },
     {
         "iconUrl": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/main/assets/icon.png",
-        "fileHash": "sha256-be96c30f436d917cba2f16426b8798954111efaa5a2676eb5d0283aabbaf26f0",
+        "fileHash": "sha256-f636c70986482e931efc1c24842a7312bdb58e6aff4af7d1f0c21873fa367348",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 60678,
+        "fileSize": 61835,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -105,7 +105,7 @@
             "Cartoon",
             "Documentary"
         ],
-        "version": 2,
+        "version": 3,
         "internalName": "CloudStreamHub",
         "description": "CloudStreamHub Aggregator - TMDB Ke\u015fif & T\u00fcm T\u00fcrk\u00e7e Sa\u011flay\u0131c\u0131lar\u0131 Birle\u015ftiren S\u00fcper Eklenti",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/CloudStreamHub.cs3",
@@ -349,10 +349,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=filmmodu.one",
-        "fileHash": "sha256-32cf0ef92919622ee688e06a44cb05031841ad63f0530588e0fb16adfb330d59",
+        "fileHash": "sha256-0b71d530ab3a1e6e926d671854b5e628bb4308ec5606d205ec00b99792e9971b",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 46291,
+        "fileSize": 52600,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -362,7 +362,7 @@
         "tvTypes": [
             "Movie"
         ],
-        "version": 2,
+        "version": 3,
         "internalName": "FilmModu",
         "description": "FilmModu - Y\u00fcksek kaliteli yerli ve yabanc\u0131 film ar\u015fivi",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/FilmModu.cs3",
@@ -390,10 +390,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=hdfilmcehennemi.nl",
-        "fileHash": "sha256-bf7fae40d4f5e989cfce7df37cec5039639773596922275ed23b3c9badc760b9",
+        "fileHash": "sha256-0754f2afe37b905bf6a62bfa2b1b283064408b284630ce470a50f4a2a4668429",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 50568,
+        "fileSize": 50651,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -404,7 +404,7 @@
             "Movie",
             "TvSeries"
         ],
-        "version": 91,
+        "version": 92,
         "internalName": "HDFilmCehennemi",
         "description": "HDFilmCehennemi - Y\u00fcksek kalitede T\u00fcrk\u00e7e dublaj ve altyaz\u0131l\u0131 film ve dizi izleme platformu",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/HDFilmCehennemi.cs3",
@@ -454,10 +454,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=kultfilmler.net",
-        "fileHash": "sha256-e1f374d5d60dfe4ae6193a0e1de32bb3a277b1c049d7c23886b3ce260b4fef91",
+        "fileHash": "sha256-a306acde9353e3b71a52b01f8195c3e7049744cec176fadae8c2ed86a2b9b9c4",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 49664,
+        "fileSize": 49751,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -468,7 +468,7 @@
             "Movie",
             "TvSeries"
         ],
-        "version": 33,
+        "version": 34,
         "internalName": "KultFilmler",
         "description": "K\u00fclt Filmler - Klasik ve k\u00fclt film ar\u015fivi",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/KultFilmler.cs3",
@@ -626,10 +626,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=yesilcamtv.com.tr",
-        "fileHash": "sha256-dc6b658dacba59cf0e713525e285dab650cefb52a21d1ad6471ff83cd38bd8b9",
+        "fileHash": "sha256-e1244a762b357803f10ec52ab34051e34761c6b1edc45cc509e42652899d2d5f",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 46083,
+        "fileSize": 47715,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -639,7 +639,7 @@
         "tvTypes": [
             "Movie"
         ],
-        "version": 11,
+        "version": 12,
         "internalName": "YesilCamTv",
         "description": "Ye\u015fil\u00e7am klasik T\u00fcrk sinemas\u0131 filmleri ve ar\u015fiv",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/YesilCamTv.cs3",
