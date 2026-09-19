@@ -32,18 +32,34 @@ open class VidmolyTrExtractor : ExtractorApi() {
 
             val m3u8Url = m3u8Match?.groupValues?.getOrNull(1) ?: m3u8Match?.value
             if (!m3u8Url.isNullOrBlank()) {
-                callback(
-                    newExtractorLink(
-                        source = name,
-                        name = "$name HLS",
-                        url = m3u8Url,
-                        type = ExtractorLinkType.M3U8
-                    ) {
-                        this.referer = "${host}/"
-                        this.quality = Qualities.P1080.value
-                    }
+                val preflight = com.cloudstream.tr.core.network.StreamValidator.validateStream(
+                    url = m3u8Url,
+                    headers = mapOf("Referer" to "${host}/"),
+                    provider = name
                 )
+                if (preflight.isValid) {
+                    callback(
+                        newExtractorLink(
+                            source = name,
+                            name = "$name HLS",
+                            url = m3u8Url,
+                            type = preflight.streamType
+                        ) {
+                            this.referer = "${host}/"
+                            this.quality = Qualities.Unknown.value
+                        }
+                    )
+                }
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            com.cloudstream.tr.core.diagnostics.DiagnosticLogger.log(
+                provider = name,
+                stage = com.cloudstream.tr.core.diagnostics.DiagnosticStage.EXTRACTOR,
+                category = com.cloudstream.tr.core.diagnostics.DiagnosticCategory.EXTRACTOR,
+                message = "Vidmoly getUrl failed: ${e.message}",
+                url = url,
+                throwable = e
+            )
+        }
     }
 }

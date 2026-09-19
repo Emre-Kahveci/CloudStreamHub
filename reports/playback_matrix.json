@@ -1,0 +1,496 @@
+{
+  "metadata": {
+    "generatedAt": "2026-09-19T16:23:59.121300+00:00",
+    "sourceCommitSha": "d1041127c716522c78f18f1cdcb7d44ee3c8c935",
+    "configHash": "3d83265fbc513919",
+    "providerCount": 30,
+    "cloudStreamVersion": "v4.8.0"
+  },
+  "summary": {
+    "totalActive": 30,
+    "fullyPlayable": 25,
+    "unverifiedOrDegraded": 5
+  },
+  "providers": [
+    {
+      "provider": "AnimeciX",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "BelgeselX",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "DiziPal",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "FilmMakinesi",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "UNSUPPORTED_HOST",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED",
+      "sourceHost": "closeload.com",
+      "streamType": "HLS",
+      "notes": [
+        "Tested with representative extractor: closeload.com"
+      ]
+    },
+    {
+      "provider": "HDFilmCehennemi",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "KultFilmler",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "TurkAnime",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "YesilCamTv",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "SezonlukDizi",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "SinemaCX",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "player.filmizle.in",
+      "streamType": "HLS",
+      "notes": [
+        "Tested with representative extractor: player.filmizle.in"
+      ]
+    },
+    {
+      "provider": "DiziMom",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "UNSUPPORTED_HOST",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED",
+      "sourceHost": "peacemakerst.com",
+      "streamType": "HLS",
+      "notes": [
+        "Tested with representative extractor: peacemakerst.com"
+      ]
+    },
+    {
+      "provider": "DiziYou",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "Dizilla",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "UNSUPPORTED_HOST",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED",
+      "sourceHost": "four.pichive.online",
+      "streamType": "HLS",
+      "notes": [
+        "Tested with representative extractor: four.pichive.online"
+      ]
+    },
+    {
+      "provider": "FullHDFilmizlesene",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "UNSUPPORTED_HOST",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED",
+      "sourceHost": "rapidvid.org",
+      "streamType": "HLS",
+      "notes": [
+        "Tested with representative extractor: rapidvid.org"
+      ]
+    },
+    {
+      "provider": "FilmModu",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "UNSUPPORTED_HOST",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED",
+      "sourceHost": "closeload.com",
+      "streamType": "HLS",
+      "notes": [
+        "Tested with representative extractor: closeload.com"
+      ]
+    },
+    {
+      "provider": "JetFilmIzle",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "CizgiMax",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "DDizi",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "Sinewix",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "CloudStreamHub",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "DiziKorea",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "DramaDizilerim",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "WebDramaTurkey",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "Animeler",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "SetFilmIzle",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "DiziLife",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "HDFilmDelisi",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "Dizigecesi",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "RareFilmm",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    },
+    {
+      "provider": "FilmHane",
+      "domain": "PASS",
+      "search": "PASS",
+      "load": "PASS",
+      "playerDiscovery": "PASS",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "runtimePlayback": "PLAYABLE",
+      "sourceHost": "provider-cdn",
+      "streamType": "HLS",
+      "notes": [
+        "Standard provider resolution"
+      ]
+    }
+  ]
+}

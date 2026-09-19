@@ -49,17 +49,24 @@ open class RapidVidExtractor : ExtractorApi() {
                     if (!token.isNullOrBlank()) {
                         val streamUrl = decryptRapidvidAv(token)
                         if (streamUrl.isNotBlank()) {
-                            callback(
-                                newExtractorLink(
-                                    source = "RapidVid",
-                                    name = "RapidVid",
-                                    url = streamUrl,
-                                    type = INFER_TYPE
-                                ) {
-                                    this.referer = "https://rapidvid.org/"
-                                }
+                            val preflight = com.cloudstream.tr.core.network.StreamValidator.validateStream(
+                                url = streamUrl,
+                                headers = mapOf("Referer" to "https://rapidvid.org/"),
+                                provider = "RapidVid"
                             )
-                            foundStream = true
+                            if (preflight.isValid) {
+                                callback(
+                                    newExtractorLink(
+                                        source = "RapidVid",
+                                        name = "RapidVid",
+                                        url = streamUrl,
+                                        type = preflight.streamType
+                                    ) {
+                                        this.referer = "https://rapidvid.org/"
+                                    }
+                                )
+                                foundStream = true
+                            }
                         }
                     }
                 }
@@ -76,7 +83,15 @@ open class RapidVidExtractor : ExtractorApi() {
                         subtitleCallback(SubtitleFile(lang = label.trim(), url = file))
                     }
                 }
-            } catch (_: Exception) {}
+            } catch (e: Exception) {
+                com.cloudstream.tr.core.diagnostics.DiagnosticLogger.log(
+                    provider = "RapidVid",
+                    stage = com.cloudstream.tr.core.diagnostics.DiagnosticStage.EXTRACTOR,
+                    category = com.cloudstream.tr.core.diagnostics.DiagnosticCategory.EXTRACTOR,
+                    message = "RapidVid HTML parsing failed: ${e.message}",
+                    throwable = e
+                )
+            }
             return foundStream
         }
     }
@@ -90,6 +105,15 @@ open class RapidVidExtractor : ExtractorApi() {
         try {
             val resp = app.get(url, headers = SafeHttpClient.defaultHeaders(referer = referer ?: mainUrl)).text
             parseHtmlResponse(resp, subtitleCallback, callback)
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            com.cloudstream.tr.core.diagnostics.DiagnosticLogger.log(
+                provider = name,
+                stage = com.cloudstream.tr.core.diagnostics.DiagnosticStage.EXTRACTOR,
+                category = com.cloudstream.tr.core.diagnostics.DiagnosticCategory.EXTRACTOR,
+                message = "RapidVid getUrl failed: ${e.message}",
+                url = url,
+                throwable = e
+            )
+        }
     }
 }

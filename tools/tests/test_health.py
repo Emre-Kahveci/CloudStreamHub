@@ -101,6 +101,11 @@ def test_derive_health_score():
     tiers_crit = dict(tiers_pass, L1_domain='untrusted_redirect')
     assert derive_health_score('critical', tiers_crit) == 0
 
+    # Strict Invariant: failed or critical status can NEVER have score 100
+    for bad_status in ['critical', 'failed', 'degraded']:
+        bad_score = derive_health_score(bad_status, tiers_pass)
+        assert bad_score < 100, f'Impossible state: {bad_status} must never score 100'
+
 def test_health_report_schema_and_playback_distinction():
     from tools.provider_health import inspect_provider
     # Verify report keys and discovery-versus-playback semantics

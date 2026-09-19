@@ -114,4 +114,76 @@ class CoreTest {
         val result = RapidVidExtractor.decryptRapidvidAv("")
         assertEquals("", result)
     }
+
+    @Test
+    fun testStreamValidatorInferFromBytes() {
+        val hlsBytes = "#EXTM3U\n#EXT-X-VERSION:3".toByteArray(Charsets.UTF_8)
+        assertEquals(ExtractorLinkType.M3U8, com.cloudstream.tr.core.network.StreamValidator.inferTypeFromBytes(hlsBytes))
+
+        val mp4Bytes = byteArrayOf(0x00, 0x00, 0x00, 0x18, 'f'.code.toByte(), 't'.code.toByte(), 'y'.code.toByte(), 'p'.code.toByte())
+        assertEquals(ExtractorLinkType.VIDEO, com.cloudstream.tr.core.network.StreamValidator.inferTypeFromBytes(mp4Bytes))
+
+        val mkvBytes = byteArrayOf(0x1A.toByte(), 0x45.toByte(), 0xDF.toByte(), 0xA3.toByte(), 0x01, 0x02)
+        assertEquals(ExtractorLinkType.VIDEO, com.cloudstream.tr.core.network.StreamValidator.inferTypeFromBytes(mkvBytes))
+    }
+
+    @Test
+    fun testStreamValidatorInvalidMediaBody() {
+        val html = "<!DOCTYPE html><html><head><title>Just a moment...</title></head><body>Cloudflare</body></html>"
+        assertTrue(com.cloudstream.tr.core.network.StreamValidator.isInvalidMediaBody(html, "text/html"))
+
+        val secError = "security error"
+        assertTrue(com.cloudstream.tr.core.network.StreamValidator.isInvalidMediaBody(secError, "text/html"))
+
+        val jsonErr = "{\"status\":false,\"message\":\"Expired link\"}"
+        assertTrue(com.cloudstream.tr.core.network.StreamValidator.isInvalidMediaBody(jsonErr, "application/json"))
+
+        val validM3u8 = "#EXTM3U\n#EXT-X-TARGETDURATION:10"
+        assertFalse(com.cloudstream.tr.core.network.StreamValidator.isInvalidMediaBody(validM3u8, "application/x-mpegurl"))
+    }
+
+    @Test
+    fun testStreamValidatorInferFromMetadata() {
+        assertEquals(ExtractorLinkType.M3U8, com.cloudstream.tr.core.network.StreamValidator.inferTypeFromMetadata("application/vnd.apple.mpegurl", "https://cdn.com/stream"))
+        assertEquals(ExtractorLinkType.M3U8, com.cloudstream.tr.core.network.StreamValidator.inferTypeFromMetadata(null, "https://cdn.com/hls/master.m3u8?token=123"))
+        assertEquals(ExtractorLinkType.VIDEO, com.cloudstream.tr.core.network.StreamValidator.inferTypeFromMetadata("video/mp4", "https://cdn.com/play/1"))
+        assertEquals(ExtractorLinkType.DASH, com.cloudstream.tr.core.network.StreamValidator.inferTypeFromMetadata("application/dash+xml", "https://cdn.com/manifest.mpd"))
+    }
+
+    @Test
+    fun testDiagnosticLoggerRedaction() {
+        val urlWithToken = "https://cdn.example.com/hls/live.m3u8?token=secret123456789&key=abc"
+        val redacted = com.cloudstream.tr.core.diagnostics.DiagnosticLogger.redactUrl(urlWithToken)
+        assertFalse(redacted.contains("secret123456789"))
+        assertTrue(redacted.contains("[REDACTED]"))
+
+        val msg = "User token=xyz987654321 Bearer secret_bearer_token_12345 failed"
+        val cleanMsg = com.cloudstream.tr.core.diagnostics.DiagnosticLogger.redactSensitiveInfo(msg)
+        assertFalse(cleanMsg.contains("xyz987654321"))
+        assertFalse(cleanMsg.contains("secret_bearer_token_12345"))
+        assertTrue(cleanMsg.contains("[REDACTED]"))
+    }
+
+    @Test
+    fun testBoundedParallelResolverDeduplication() = runBlocking {
+        val items = listOf("stream1", "stream1", "stream2", "stream2")
+        val linksEmitted = mutableListOf<String>()
+
+        val count = BoundedParallelResolver.resolveProgressive(
+            candidates = items,
+            maxConcurrency = 2,
+            earlyExitOnFirstSuccess = false,
+            resolver = { item, emitLink ->
+                emitLink(newExtractorLink("Test", item, "https://$item.mp4", ExtractorLinkType.VIDEO))
+            },
+            onLinkFound = { link ->
+                synchronized(linksEmitted) {
+                    linksEmitted.add(link.url)
+                }
+            }
+        )
+
+        assertEquals(2, count)
+        assertEquals(2, linksEmitted.size)
+    }
 }

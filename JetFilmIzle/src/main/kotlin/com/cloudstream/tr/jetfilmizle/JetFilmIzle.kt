@@ -9,7 +9,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class JetFilmIzle : MainAPI() {
-    override var mainUrl = "https://jetfilmizle.vip"
+    override var mainUrl = "https://jetfilmizle.now"
     override var name = "JetFilmIzle"
     override val hasMainPage = true
     override var lang = "tr"

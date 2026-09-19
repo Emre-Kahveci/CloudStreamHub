@@ -415,8 +415,8 @@ def inspect_provider(provider, repo_root, domains_config, adaptive_mgr: Adaptive
             "L4_load": "untested",
             "L5_player_discovery": "untested"
         },
-        "overallStatus": "healthy",
-        "healthScore": 100,
+        "overallStatus": "untested",
+        "healthScore": 0,
         "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
         "diagnostic": {},
         "durationMs": 0,

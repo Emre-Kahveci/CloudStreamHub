@@ -28,19 +28,34 @@ open class CloseLoadExtractor : ExtractorApi() {
 
             if (!videoSrc.isNullOrBlank()) {
                 val fullStream = if (videoSrc.startsWith("http")) videoSrc else if (videoSrc.startsWith("//")) "https:$videoSrc" else "${host}/$videoSrc"
-                val isM3u8 = fullStream.contains(".m3u8")
-                callback(
-                    newExtractorLink(
-                        source = name,
-                        name = "$name Stream",
-                        url = fullStream,
-                        type = if (isM3u8) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
-                    ) {
-                        this.referer = "${host}/"
-                        this.quality = Qualities.P1080.value
-                    }
+                val preflight = com.cloudstream.tr.core.network.StreamValidator.validateStream(
+                    url = fullStream,
+                    headers = mapOf("Referer" to "${host}/"),
+                    provider = name
                 )
+                if (preflight.isValid) {
+                    callback(
+                        newExtractorLink(
+                            source = name,
+                            name = "$name ${if (preflight.streamType == ExtractorLinkType.M3U8) "HLS" else "Stream"}",
+                            url = fullStream,
+                            type = preflight.streamType
+                        ) {
+                            this.referer = "${host}/"
+                            this.quality = Qualities.Unknown.value
+                        }
+                    )
+                }
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            com.cloudstream.tr.core.diagnostics.DiagnosticLogger.log(
+                provider = name,
+                stage = com.cloudstream.tr.core.diagnostics.DiagnosticStage.EXTRACTOR,
+                category = com.cloudstream.tr.core.diagnostics.DiagnosticCategory.EXTRACTOR,
+                message = "CloseLoad getUrl failed: ${e.message}",
+                url = url,
+                throwable = e
+            )
+        }
     }
 }

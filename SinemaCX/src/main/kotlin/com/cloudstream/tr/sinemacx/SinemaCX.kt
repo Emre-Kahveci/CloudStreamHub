@@ -10,12 +10,29 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class SinemaCX : MainAPI() {
-    override var mainUrl = "https://www.sinema.gg"
+    override var mainUrl = "https://sinemacc.com"
     override var name = "SinemaCX"
     override val hasMainPage = true
     override var lang = "tr"
     override val hasQuickSearch = true
     override val supportedTypes = setOf(TvType.Movie)
+
+    private fun decodeIframeUrl(src: String): String? {
+        val trimmed = src.trim()
+        if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("//")) {
+            return fixUrlNull(trimmed)
+        }
+        return try {
+            val decoded = String(android.util.Base64.decode(trimmed, android.util.Base64.DEFAULT), Charsets.UTF_8).trim()
+            if (decoded.startsWith("http://") || decoded.startsWith("https://")) {
+                decoded
+            } else {
+                fixUrlNull(trimmed)
+            }
+        } catch (_: Exception) {
+            fixUrlNull(trimmed)
+        }
+    }
 
     override val mainPage = mainPageOf(
         "${mainUrl}/" to "Son Eklenen Filmler",
@@ -150,9 +167,12 @@ class SinemaCX : MainAPI() {
         val allIframes = mutableListOf<String>()
         for (pageDoc in pagesToCheck) {
             pageDoc.select("iframe").forEach { iframe ->
-                val src = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
-                if (src.isNotBlank() && !src.contains("youtube", ignoreCase = true)) {
-                    fixUrlNull(src)?.let { allIframes.add(it) }
+                val rawSrc = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
+                if (rawSrc.isNotBlank() && !rawSrc.contains("youtube", ignoreCase = true)) {
+                    val resolved = decodeIframeUrl(rawSrc)
+                    if (resolved != null && !resolved.contains("vr_set=") && !resolved.contains("/fragman")) {
+                        allIframes.add(resolved)
+                    }
                 }
             }
         }
@@ -160,6 +180,7 @@ class SinemaCX : MainAPI() {
         val distinctIframes = allIframes.distinct()
         val count = BoundedParallelResolver.resolveProgressive(
             candidates = distinctIframes,
+            provider = name,
             resolver = { iframeUrl, emitLink ->
                 if (iframeUrl.contains("filmizle.in")) {
                     FilmizleInExtractor().getUrl(iframeUrl, referer = "https://sinemacc.com/", subtitleCallback, emitLink)

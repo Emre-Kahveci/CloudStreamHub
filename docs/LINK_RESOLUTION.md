@@ -73,30 +73,40 @@ override suspend fun loadLinks(
 
     var foundAny = false
 
-    // 3. Extractor veya doğrudan akış üretimi
-    for (src in videoSources) {
-        if (src.isDirectStream) {
-            callback(
-                newExtractorLink(
-                    source = name,
-                    name = "$name HD",
+    // 3. Extractor veya doğrudan akış üretimi (StreamValidator ile doğrulanmış)
+    val count = BoundedParallelResolver.resolveProgressive(
+        candidates = videoSources,
+        provider = name,
+        resolver = { src, emitLink ->
+            if (src.isDirectStream) {
+                val preflight = StreamValidator.validateStream(
                     url = src.streamUrl,
-                    referer = mainUrl,
-                    quality = Qualities.P1080.value,
-                    type = if (src.streamUrl.contains(".m3u8")) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
+                    headers = mapOf("Referer" to mainUrl),
+                    provider = name
                 )
-            )
-            foundAny = true
-        } else {
-            // Built-in CloudStream extractor'larına devret
-            loadExtractor(src.embedUrl, referer = mainUrl, subtitleCallback) { link ->
-                callback(link)
-                foundAny = true
+                if (preflight.isValid) {
+                    emitLink(
+                        newExtractorLink(
+                            source = name,
+                            name = "$name Stream",
+                            url = src.streamUrl,
+                            referer = mainUrl,
+                            quality = Qualities.Unknown.value,
+                            type = preflight.streamType
+                        )
+                    )
+                }
+            } else {
+                loadExtractor(src.embedUrl, referer = mainUrl, subtitleCallback, emitLink)
             }
+        },
+        onLinkFound = { link ->
+            callback(link)
+            foundAny = true
         }
-    }
+    )
 
-    return foundAny
+    return foundAny || count > 0
 }
 ```
 

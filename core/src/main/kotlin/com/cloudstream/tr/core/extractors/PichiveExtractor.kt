@@ -67,20 +67,36 @@ open class PichiveExtractor : ExtractorApi() {
                     pl.sources?.forEach { s ->
                         val fileUrl = s.file ?: return@forEach
                         val masterUrl = fileUrl.replace("m.php", "master.m3u8")
-                        callback(
-                            newExtractorLink(
-                                source = name,
-                                name = "$name ${s.title ?: "HLS"}",
-                                url = masterUrl,
-                                type = ExtractorLinkType.M3U8
-                            ) {
-                                this.referer = "${host}/"
-                                this.quality = Qualities.P1080.value
-                            }
+                        val preflight = com.cloudstream.tr.core.network.StreamValidator.validateStream(
+                            url = masterUrl,
+                            headers = mapOf("Referer" to "${host}/"),
+                            provider = name
                         )
+                        if (preflight.isValid) {
+                            callback(
+                                newExtractorLink(
+                                    source = name,
+                                    name = "$name ${s.title ?: "HLS"}",
+                                    url = masterUrl,
+                                    type = preflight.streamType
+                                ) {
+                                    this.referer = "${host}/"
+                                    this.quality = Qualities.Unknown.value
+                                }
+                            )
+                        }
                     }
                 }
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            com.cloudstream.tr.core.diagnostics.DiagnosticLogger.log(
+                provider = name,
+                stage = com.cloudstream.tr.core.diagnostics.DiagnosticStage.EXTRACTOR,
+                category = com.cloudstream.tr.core.diagnostics.DiagnosticCategory.EXTRACTOR,
+                message = "Pichive getUrl failed: ${e.message}",
+                url = url,
+                throwable = e
+            )
+        }
     }
 }

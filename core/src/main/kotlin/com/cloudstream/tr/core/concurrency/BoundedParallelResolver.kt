@@ -25,6 +25,7 @@ object BoundedParallelResolver {
         candidates: List<T>,
         maxConcurrency: Int = DEFAULT_MAX_CONCURRENCY,
         earlyExitOnFirstSuccess: Boolean = false,
+        provider: String = "Generic",
         resolver: suspend (candidate: T, emitLink: (ExtractorLink) -> Unit) -> Unit,
         onLinkFound: (ExtractorLink) -> Unit
     ): Int = coroutineScope {
@@ -33,6 +34,7 @@ object BoundedParallelResolver {
         val semaphore = Semaphore(maxConcurrency.coerceAtLeast(1))
         val linksEmitted = AtomicInteger(0)
         val hasFoundDirectStream = AtomicBoolean(false)
+        val seenUrls = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
 
         val jobs = candidates.map { candidate ->
             launch {
@@ -47,16 +49,25 @@ object BoundedParallelResolver {
 
                     try {
                         resolver(candidate) { link ->
-                            linksEmitted.incrementAndGet()
-                            onLinkFound(link)
-                            if (earlyExitOnFirstSuccess) {
-                                hasFoundDirectStream.set(true)
+                            val normUrl = link.url.trim()
+                            if (normUrl.isNotBlank() && seenUrls.add(normUrl)) {
+                                linksEmitted.incrementAndGet()
+                                onLinkFound(link)
+                                if (earlyExitOnFirstSuccess) {
+                                    hasFoundDirectStream.set(true)
+                                }
                             }
                         }
                     } catch (_: CancellationException) {
                         // Coroutine cancelled cleanly
-                    } catch (_: Exception) {
-                        // Gracefully absorb individual extractor failures
+                    } catch (e: Exception) {
+                        com.cloudstream.tr.core.diagnostics.DiagnosticLogger.log(
+                            provider = provider,
+                            stage = com.cloudstream.tr.core.diagnostics.DiagnosticStage.EXTRACTOR,
+                            category = com.cloudstream.tr.core.diagnostics.DiagnosticCategory.EXTRACTOR,
+                            message = "Extractor resolution failed: ${e.message}",
+                            throwable = e
+                        )
                     }
                 }
             }

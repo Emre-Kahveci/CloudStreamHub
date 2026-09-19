@@ -47,19 +47,35 @@ open class PeacemakerExtractor : ExtractorApi() {
 
             resp?.videoSources?.forEach { vs ->
                 val streamUrl = vs.file ?: return@forEach
-                val isM3u8 = streamUrl.contains(".m3u8") || vs.type?.contains("hls") == true
-                callback(
-                    newExtractorLink(
-                        source = name,
-                        name = "$name ${vs.label ?: "Stream"}",
-                        url = streamUrl,
-                        type = if (isM3u8) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
-                    ) {
-                        this.referer = "https://peacemakerst.com/"
-                        this.quality = Qualities.P1080.value
-                    }
+                val preflight = com.cloudstream.tr.core.network.StreamValidator.validateStream(
+                    url = streamUrl,
+                    headers = mapOf("Referer" to "https://peacemakerst.com/"),
+                    provider = name
                 )
+                if (preflight.isValid) {
+                    val resolvedQuality = getQualityFromName(vs.label)
+                    callback(
+                        newExtractorLink(
+                            source = name,
+                            name = "$name ${vs.label ?: "Stream"}",
+                            url = streamUrl,
+                            type = preflight.streamType
+                        ) {
+                            this.referer = "https://peacemakerst.com/"
+                            this.quality = resolvedQuality
+                        }
+                    )
+                }
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            com.cloudstream.tr.core.diagnostics.DiagnosticLogger.log(
+                provider = name,
+                stage = com.cloudstream.tr.core.diagnostics.DiagnosticStage.EXTRACTOR,
+                category = com.cloudstream.tr.core.diagnostics.DiagnosticCategory.EXTRACTOR,
+                message = "Peacemaker getUrl failed: ${e.message}",
+                url = url,
+                throwable = e
+            )
+        }
     }
 }

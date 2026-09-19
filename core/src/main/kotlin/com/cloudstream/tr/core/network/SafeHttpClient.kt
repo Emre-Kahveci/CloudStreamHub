@@ -70,12 +70,21 @@ object SafeHttpClient {
      */
     suspend fun safeGet(
         url: String,
-        headers: Map<String, String> = emptyMap()
+        headers: Map<String, String> = emptyMap(),
+        provider: String = "Generic"
     ): NiceResponse? {
         return try {
             val mergedHeaders = defaultHeaders().toMutableMap().apply { putAll(headers) }
             app.get(url, headers = mergedHeaders)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            com.cloudstream.tr.core.diagnostics.DiagnosticLogger.log(
+                provider = provider,
+                stage = com.cloudstream.tr.core.diagnostics.DiagnosticStage.DOMAIN,
+                category = com.cloudstream.tr.core.diagnostics.DiagnosticCategory.NETWORK,
+                message = "safeGet failed: ${e.message}",
+                url = url,
+                throwable = e
+            )
             null
         }
     }
@@ -87,7 +96,8 @@ object SafeHttpClient {
         url: String,
         headers: Map<String, String> = emptyMap(),
         data: Map<String, String> = emptyMap(),
-        jsonString: String? = null
+        jsonString: String? = null,
+        provider: String = "Generic"
     ): NiceResponse? {
         return try {
             val mergedHeaders = defaultHeaders().toMutableMap().apply { putAll(headers) }
@@ -98,7 +108,15 @@ object SafeHttpClient {
             } else {
                 app.post(url, headers = mergedHeaders, data = data)
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            com.cloudstream.tr.core.diagnostics.DiagnosticLogger.log(
+                provider = provider,
+                stage = com.cloudstream.tr.core.diagnostics.DiagnosticStage.DOMAIN,
+                category = com.cloudstream.tr.core.diagnostics.DiagnosticCategory.NETWORK,
+                message = "safePost failed: ${e.message}",
+                url = url,
+                throwable = e
+            )
             null
         }
     }

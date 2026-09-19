@@ -22,12 +22,13 @@ open class TauVideo : ExtractorApi() {
         val api = app.get(videoUrl).parsedSafe<TauVideoUrls>() ?: return
 
         for (video in api.urls) {
+            val streamType = com.cloudstream.tr.core.network.StreamValidator.inferTypeFromMetadata(null, video.url)
             callback.invoke(
                 newExtractorLink(
                     source = this.name,
                     name = this.name,
                     url = video.url,
-                    type = ExtractorLinkType.VIDEO
+                    type = streamType
                 ) {
                     this.referer = extRef
                     this.quality = getQualityFromName(video.label)

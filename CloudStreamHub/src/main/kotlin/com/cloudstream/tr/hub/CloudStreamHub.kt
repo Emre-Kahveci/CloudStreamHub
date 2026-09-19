@@ -5,7 +5,11 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
 import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.diagnostics.DiagnosticCategory
+import com.cloudstream.tr.core.diagnostics.DiagnosticLogger
+import com.cloudstream.tr.core.diagnostics.DiagnosticStage
 import com.cloudstream.tr.core.model.ProviderModels
+import com.cloudstream.tr.core.network.StreamValidator
 
 class CloudStreamHub : MainAPI() {
     override var mainUrl = "https://api.themoviedb.org/3"
@@ -180,82 +184,6 @@ class CloudStreamHub : MainAPI() {
         }
     }
 
-    private fun getRegisteredTurkishProviders(): List<MainAPI> {
-        val discovered = mutableListOf<MainAPI>()
-
-        // 1. Try Reflection on APIHolder (support INSTANCE, methods, fields)
-        try {
-            val holderClass = Class.forName("com.lagradost.cloudstream3.APIHolder")
-            val holderInstance = try {
-                holderClass.getField("INSTANCE").get(null)
-            } catch (_: Exception) {
-                null
-            }
-
-            val getterNames = listOf("getAllProviders", "getApis", "getPlugins")
-            for (mName in getterNames) {
-                try {
-                    val m = holderClass.getMethod(mName)
-                    m.isAccessible = true
-                    val obj = m.invoke(holderInstance)
-                    val items = when (obj) {
-                        is Array<*> -> obj.filterIsInstance<MainAPI>()
-                        is Collection<*> -> obj.filterIsInstance<MainAPI>()
-                        else -> emptyList()
-                    }
-                    if (items.isNotEmpty()) {
-                        discovered.addAll(items)
-                        break
-                    }
-                } catch (_: Exception) {}
-            }
-
-            if (discovered.isEmpty()) {
-                val candidateFields = listOf("allProviders", "apis", "loadedPlugins")
-                for (fieldName in candidateFields) {
-                    try {
-                        val field = holderClass.getDeclaredField(fieldName)
-                        field.isAccessible = true
-                        val obj = field.get(holderInstance)
-                        val items = when (obj) {
-                            is Array<*> -> obj.filterIsInstance<MainAPI>()
-                            is Collection<*> -> obj.filterIsInstance<MainAPI>()
-                            else -> emptyList()
-                        }
-                        if (items.isNotEmpty()) {
-                            discovered.addAll(items)
-                            break
-                        }
-                    } catch (_: Exception) {}
-                }
-            }
-        } catch (_: Exception) {}
-
-        // 2. Direct ClassLoader fallback for known providers in current runtime
-        if (discovered.isEmpty()) {
-            val knownClassNames = listOf(
-                "com.cloudstream.tr.filmmodu.FilmModu",
-                "com.cloudstream.tr.kultfilmler.KultFilmler",
-                "com.cloudstream.tr.hdfilmcehennemi.HDFilmCehennemi",
-                "com.cloudstream.tr.yesilcamtv.YesilCamTv",
-                "com.cloudstream.tr.dizipal.DiziPal",
-                "com.cloudstream.tr.dizilla.Dizilla",
-                "com.cloudstream.tr.sezonlukdizi.SezonlukDizi"
-            )
-            for (cName in knownClassNames) {
-                try {
-                    val clazz = Class.forName(cName)
-                    val instance = clazz.getDeclaredConstructor().newInstance() as? MainAPI
-                    if (instance != null) {
-                        discovered.add(instance)
-                    }
-                } catch (_: Exception) {}
-            }
-        }
-
-        return discovered.distinctBy { it.name }.filter { it.lang == "tr" && it.name != this.name }
-    }
-
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
@@ -265,24 +193,39 @@ class CloudStreamHub : MainAPI() {
         val payload = AggregatorLinkPayload.fromUrlData(data) ?: return false
         var linksFound = false
 
-        val providers = getRegisteredTurkishProviders()
+        val providers = CloudStreamProviderRegistryAdapter.getRegisteredTurkishProviders(excludeName = this.name)
         if (providers.isEmpty()) {
+            DiagnosticLogger.log(
+                provider = name,
+                stage = DiagnosticStage.LOAD,
+                category = DiagnosticCategory.SOURCE_DISCOVERY,
+                message = "No registered Turkish providers available for aggregation. Please install individual provider plugins."
+            )
             return false
         }
 
         val resolved = BoundedParallelResolver.resolveProgressive(
             candidates = providers,
             maxConcurrency = 4,
+            provider = name,
             resolver = { provider, emitLink ->
                 try {
                     val searchList = provider.search(payload.title) ?: emptyList()
                     if (searchList.isEmpty()) return@resolveProgressive
 
-                    val matched = searchList.firstOrNull { res: SearchResponse ->
-                        val normA = ProviderModels.normalizeTitle(res.name)
-                        val normB = ProviderModels.normalizeTitle(payload.title)
-                        normA.contains(normB) || normB.contains(normA)
-                    } ?: searchList.first()
+                    val matched = HubMatchingEngine.findConfidentMatch(
+                        candidates = searchList,
+                        targetTitle = payload.title,
+                        targetYear = payload.year
+                    ) ?: run {
+                        DiagnosticLogger.log(
+                            provider = provider.name,
+                            stage = DiagnosticStage.SEARCH,
+                            category = DiagnosticCategory.SOURCE_DISCOVERY,
+                            message = "No confident match for '${payload.title}' (${payload.year ?: "N/A"}). First result rejected to prevent wrong playback."
+                        )
+                        return@resolveProgressive
+                    }
 
                     val loadRes = provider.load(matched.url) ?: return@resolveProgressive
                     val targetLinkData: String? = if (payload.isMovie) {
@@ -290,7 +233,14 @@ class CloudStreamHub : MainAPI() {
                     } else {
                         val epList = (loadRes as? TvSeriesLoadResponse)?.episodes ?: emptyList()
                         val ep = epList.firstOrNull { it.season == payload.season && it.episode == payload.episode }
-                            ?: epList.firstOrNull { it.episode == payload.episode }
+                        if (ep == null) {
+                            DiagnosticLogger.log(
+                                provider = provider.name,
+                                stage = DiagnosticStage.EPISODE_DISCOVERY,
+                                category = DiagnosticCategory.SOURCE_DISCOVERY,
+                                message = "Episode S${payload.season}E${payload.episode} not found in provider. Rejected fallback to prevent wrong season playback."
+                            )
+                        }
                         ep?.data
                     }
 
@@ -305,25 +255,40 @@ class CloudStreamHub : MainAPI() {
                                     return@loadLinks
                                 }
 
-                                val formattedName = ProviderModels.formatSourceTitle(
-                                    sourceName = provider.name,
-                                    resolution = rawLink.name
-                                )
-                                val taggedLink = ExtractorLink(
-                                    source = provider.name,
-                                    name = formattedName,
-                                    url = rawLink.url,
-                                    referer = rawLink.referer,
-                                    quality = rawLink.quality,
-                                    type = rawLink.type,
-                                    headers = rawLink.headers
-                                )
-                                emitLink(taggedLink)
+                                kotlinx.coroutines.runBlocking {
+                                    val preflight = StreamValidator.validateStream(
+                                        url = rawUrl,
+                                        headers = rawLink.headers,
+                                        provider = provider.name
+                                    )
+                                    if (preflight.isValid) {
+                                        val formattedName = ProviderModels.formatSourceTitle(
+                                            sourceName = provider.name,
+                                            resolution = rawLink.name
+                                        )
+                                        val taggedLink = ExtractorLink(
+                                            source = provider.name,
+                                            name = formattedName,
+                                            url = rawLink.url,
+                                            referer = rawLink.referer,
+                                            quality = rawLink.quality,
+                                            type = preflight.streamType,
+                                            headers = rawLink.headers
+                                        )
+                                        emitLink(taggedLink)
+                                    }
+                                }
                             }
                         )
                     }
-                } catch (_: Exception) {
-                    // Failures in individual providers do not abort the aggregation
+                } catch (e: Exception) {
+                    DiagnosticLogger.log(
+                        provider = provider.name,
+                        stage = DiagnosticStage.LOAD,
+                        category = DiagnosticCategory.EXTRACTOR,
+                        message = "Provider resolution failed during aggregation: ${e.message}",
+                        throwable = e
+                    )
                 }
             },
             onLinkFound = { link ->
