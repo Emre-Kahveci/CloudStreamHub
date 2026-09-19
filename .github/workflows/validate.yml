@@ -20,10 +20,24 @@ jobs:
     steps:
       - name: Checkout Source
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Fast Fail — Validate Repository Schema & Metadata
         run: |
           python tools/validate_repo.py
+
+      - name: Enforce Version Bump Invariant
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            BASE_SHA="${{ github.event.before }}"
+          else
+            BASE_SHA="HEAD^"
+          fi
+          echo "Determined BASE_SHA: $BASE_SHA"
+          python tools/verify_version_bumps.py --base "$BASE_SHA"
 
       - name: Set up JDK 17 with Gradle Cache
         uses: actions/setup-java@v5

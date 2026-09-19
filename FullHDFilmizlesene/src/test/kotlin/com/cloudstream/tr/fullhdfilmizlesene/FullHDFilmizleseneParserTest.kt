@@ -4,11 +4,32 @@ import com.lagradost.cloudstream3.MovieLoadResponse
 import com.lagradost.cloudstream3.MovieSearchResponse
 import kotlinx.coroutines.runBlocking
 import org.jsoup.Jsoup
+import org.junit.After
 import org.junit.Assert.*
+import org.junit.Before
 import org.junit.Test
+import com.cloudstream.tr.core.network.StreamValidator
+import com.cloudstream.tr.core.network.StreamHttpTransport
+import com.cloudstream.tr.core.network.StreamHttpResponse
 
 class FullHDFilmizleseneParserTest {
     private val provider = FullHDFilmizlesene()
+
+    @Before
+    fun setUp() {
+        StreamValidator.transport = StreamHttpTransport { _, _ ->
+            StreamHttpResponse(
+                code = 200,
+                contentType = "application/vnd.apple.mpegurl",
+                openStream = { "#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:10\n".byteInputStream() }
+            )
+        }
+    }
+
+    @After
+    fun tearDown() {
+        StreamValidator.resetTransport()
+    }
 
     @Test
     fun testParseCard() {

@@ -6,19 +6,88 @@ import com.cloudstream.tr.core.diagnostics.DiagnosticStage
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import kotlinx.coroutines.withTimeoutOrNull
-import java.net.URI
+import java.io.InputStream
+
+enum class ValidationStatus {
+    VALID,
+    INVALID,
+    INDETERMINATE
+}
 
 data class PreflightResult(
-    val isValid: Boolean,
+    val status: ValidationStatus,
     val streamType: ExtractorLinkType,
     val detectedMime: String? = null,
     val statusCode: Int = 0,
     val failureReason: String? = null,
     val media3ErrorCode: Int? = null
+) {
+    val isValid: Boolean get() = status == ValidationStatus.VALID
+}
+
+data class StreamHttpResponse(
+    val code: Int,
+    val contentType: String? = null,
+    val openStream: () -> InputStream
 )
 
+fun interface StreamHttpTransport {
+    suspend fun get(url: String, headers: Map<String, String>): StreamHttpResponse
+}
+
 object StreamValidator {
-    private const val DEFAULT_TIMEOUT_MS = 2000L
+    const val DEFAULT_TIMEOUT_MS = 2000L
+    const val MAX_READ_BYTES = 8192
+
+    private val defaultTransport = StreamHttpTransport { url, headers ->
+        val resp = app.get(url, headers = headers)
+        StreamHttpResponse(
+            code = resp.code,
+            contentType = resp.headers["Content-Type"] ?: resp.headers["content-type"],
+            openStream = { resp.body.byteStream() }
+        )
+    }
+
+    var transport: StreamHttpTransport = defaultTransport
+
+    fun resetTransport() {
+        transport = defaultTransport
+    }
+
+    /**
+     * Pure HTTP status classifier:
+     * - 200..299 -> VALID (continue media analysis)
+     * - 400, 401, 403, 404, 405, 406, 410, 422 -> INVALID
+     * - 408, 425, 429, 500..599 -> INDETERMINATE (retryable/transient)
+     * - Other 4xx -> INVALID
+     */
+    fun classifyHttpStatus(code: Int): ValidationStatus {
+        return when {
+            code in 200..299 -> ValidationStatus.VALID
+            code in listOf(400, 401, 403, 404, 405, 406, 410, 422) -> ValidationStatus.INVALID
+            code in listOf(408, 425, 429) || code in 500..599 -> ValidationStatus.INDETERMINATE
+            code in 400..499 -> ValidationStatus.INVALID
+            else -> ValidationStatus.INDETERMINATE
+        }
+    }
+
+    /**
+     * Reads up to maxBytes from an InputStream safely without loading full media files into memory.
+     */
+    fun readBoundedBytes(inputStream: InputStream, maxBytes: Int = MAX_READ_BYTES): ByteArray {
+        val buffer = ByteArray(maxBytes)
+        var totalRead = 0
+        try {
+            while (totalRead < maxBytes) {
+                val read = inputStream.read(buffer, totalRead, maxBytes - totalRead)
+                if (read == -1) break
+                totalRead += read
+            }
+        } catch (_: Exception) {
+            // Return whatever was read before exception
+        }
+        return if (totalRead == maxBytes) buffer else buffer.copyOf(totalRead)
+    }
 
     /**
      * Checks if the given byte array matches known container/manifest magic headers.
@@ -41,7 +110,7 @@ object StreamValidator {
             return ExtractorLinkType.VIDEO
         }
 
-        // MP4: 'ftyp' at offset 4..7
+        // MP4: 'ftyp' at offset 4..7 or 'moov'
         if (bytes.size >= 8) {
             val ftyp = String(bytes.sliceArray(4..7), Charsets.US_ASCII)
             if (ftyp == "ftyp" || ftyp == "moov") {
@@ -49,8 +118,11 @@ object StreamValidator {
             }
         }
 
-        // MPEG-TS sync byte 0x47
-        if (bytes.size >= 188 && bytes[0] == 0x47.toByte() && bytes[188] == 0x47.toByte()) {
+        // MPEG-TS sync byte 0x47 (packet size 188 bytes; offset 0, 188, and 376 if available)
+        if (bytes.size >= 189 && bytes[0] == 0x47.toByte() && bytes[188] == 0x47.toByte()) {
+            if (bytes.size >= 377 && bytes[376] != 0x47.toByte()) {
+                return null
+            }
             return ExtractorLinkType.VIDEO
         }
 
@@ -128,7 +200,7 @@ object StreamValidator {
     ): PreflightResult {
         if (url.isBlank() || !url.startsWith("http")) {
             return PreflightResult(
-                isValid = false,
+                status = ValidationStatus.INVALID,
                 streamType = ExtractorLinkType.VIDEO,
                 failureReason = "INVALID_URL_FORMAT",
                 media3ErrorCode = 2004
@@ -142,30 +214,43 @@ object StreamValidator {
                     putIfAbsent("Range", "bytes=0-1024")
                 }
 
-                val response = app.get(url, headers = reqHeaders)
-                val code = response.code
-                val ct = response.headers["Content-Type"] ?: response.headers["content-type"]
-                val bytes = response.body.bytes()
-                val bodySample = String(bytes.take(256).toByteArray(), Charsets.UTF_8)
+                var response = transport.get(url, reqHeaders)
+                var code = response.code
 
-                if (code in listOf(401, 403, 404, 410, 429) || code >= 500) {
+                // Dedicated 416 branch: retry ONCE without Range header in case server rejects ranges
+                if (code == 416) {
+                    val retryHeaders = reqHeaders.toMutableMap().apply { remove("Range") }
+                    response = transport.get(url, retryHeaders)
+                    code = response.code
+                }
+
+                val status = classifyHttpStatus(code)
+                if (status != ValidationStatus.VALID) {
+                    val media3Err = if (status == ValidationStatus.INVALID) 2004 else 2001
                     DiagnosticLogger.log(
                         provider = provider,
                         stage = DiagnosticStage.STREAM_PREFLIGHT,
                         category = DiagnosticCategory.HTTP,
-                        message = "Preflight HTTP $code received for stream: ${DiagnosticLogger.redactUrl(url)}",
+                        message = "Preflight HTTP $code received (classified as $status) for: ${DiagnosticLogger.redactUrl(url)}",
                         url = url,
                         httpStatus = code,
-                        media3ErrorCode = 2004
+                        media3ErrorCode = media3Err
                     )
                     return@withTimeoutOrNull PreflightResult(
-                        isValid = false,
+                        status = status,
                         streamType = ExtractorLinkType.VIDEO,
                         statusCode = code,
                         failureReason = "HTTP_STATUS_$code",
-                        media3ErrorCode = 2004
+                        media3ErrorCode = media3Err
                     )
                 }
+
+                val ct = response.contentType
+                // Bounded body read: read at most MAX_READ_BYTES directly from byteStream
+                val bytes = response.openStream().use { stream ->
+                    readBoundedBytes(stream, MAX_READ_BYTES)
+                }
+                val bodySample = String(bytes.take(256).toByteArray(), Charsets.UTF_8)
 
                 if (isInvalidMediaBody(bodySample, ct)) {
                     DiagnosticLogger.log(
@@ -178,7 +263,7 @@ object StreamValidator {
                         media3ErrorCode = 3003
                     )
                     return@withTimeoutOrNull PreflightResult(
-                        isValid = false,
+                        status = ValidationStatus.INVALID,
                         streamType = ExtractorLinkType.VIDEO,
                         statusCode = code,
                         failureReason = "INVALID_MEDIA_CONTAINER_HTML",
@@ -190,18 +275,19 @@ object StreamValidator {
                 val finalType = inferredFromBytes ?: inferTypeFromMetadata(ct, url)
 
                 PreflightResult(
-                    isValid = true,
+                    status = ValidationStatus.VALID,
                     streamType = finalType,
                     detectedMime = ct,
                     statusCode = code
                 )
             } ?: run {
-                // Timeout elapsed: Fall back safely to metadata inference without blocking player
+                // Timeout elapsed: Fail-closed with INDETERMINATE status (never emit blindly)
                 val fallbackType = inferTypeFromMetadata(null, url)
                 PreflightResult(
-                    isValid = true,
+                    status = ValidationStatus.INDETERMINATE,
                     streamType = fallbackType,
-                    failureReason = "PREFLIGHT_TIMEOUT_FALLBACK"
+                    failureReason = "PREFLIGHT_TIMEOUT",
+                    media3ErrorCode = 2004
                 )
             }
         } catch (e: Exception) {
@@ -214,11 +300,12 @@ object StreamValidator {
                 throwable = e,
                 media3ErrorCode = 2001
             )
-            // If preflight failed with a network error, allow playback attempt with metadata type
+            // Exception: Fail-closed with INDETERMINATE status (never emit blindly)
             PreflightResult(
-                isValid = true,
+                status = ValidationStatus.INDETERMINATE,
                 streamType = inferTypeFromMetadata(null, url),
-                failureReason = "PREFLIGHT_EXCEPTION_FALLBACK"
+                failureReason = "PREFLIGHT_EXCEPTION",
+                media3ErrorCode = 2001
             )
         }
     }

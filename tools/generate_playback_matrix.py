@@ -3,8 +3,9 @@
 generate_playback_matrix.py
 
 Generates the truthful, machine-readable playback matrix for all active providers in CloudStreamHub:
-- Integrates L1 domain, L3 search, L4 load, L5 player discovery from provider configuration
-- Evaluates L6 extractor resolution, L7 media preflight, and L8 first segment
+- Integrates L1 domain, L3 search, L4 load, L5 player discovery from provider configuration/health
+- Evaluates real L6 extractor resolution, L7 media preflight, and L8 first segment when a real embed is discovered
+- Strictly records UNVERIFIED for providers without real live probes (never simulates fake PASS)
 - Injects anti-staleness metadata (generatedAt, sourceCommitSha, configHash, providerCount)
 - Saves output to reports/playback_matrix.json
 """
@@ -20,7 +21,7 @@ if REPO_ROOT not in sys.path:
 
 from tools.playback_verifier import PlaybackVerifier
 
-def generate_matrix(output_file: str = "reports/playback_matrix.json"):
+def generate_matrix(output_file: str = "reports/playback_matrix.json", runtime_l5_candidates: dict = None):
     verifier = PlaybackVerifier(timeout=8)
     meta = verifier.get_repo_metadata()
 
@@ -30,47 +31,21 @@ def generate_matrix(output_file: str = "reports/playback_matrix.json"):
     with open(os.path.join(REPO_ROOT, "config/domains.json"), encoding="utf-8") as f:
         domains_cfg = json.load(f).get("providers", {})
 
-    matrix_entries = []
+    # Ephemeral in-memory L5 player candidates passed from runner or health check
+    l5_sources = runtime_l5_candidates or {}
 
-    # Map of verified representative sample embeds and sources per provider family
-    representative_samples = {
+    # Verified representative real live embeds (no fake sample123 placeholders)
+    # SinemaCX has a verified working embed from player.filmizle.in
+    verified_probes = {
         "SinemaCX": {
             "embed": "https://player.filmizle.in/video/6e3b0bf8b7d5956ae572b15cd7ddb0e1?lng=tur",
             "referer": "https://sinemacc.com/",
             "sourceHost": "player.filmizle.in",
             "streamType": "HLS"
-        },
-        "FilmModu": {
-            "embed": "https://closeload.com/embed/sample123",
-            "referer": "https://www.filmmodu.one/",
-            "sourceHost": "closeload.com",
-            "streamType": "HLS"
-        },
-        "FullHDFilmizlesene": {
-            "embed": "https://rapidvid.org/embed/sample456",
-            "referer": "https://www.fullhdfilmizlesene.now/",
-            "sourceHost": "rapidvid.org",
-            "streamType": "HLS"
-        },
-        "DiziMom": {
-            "embed": "https://peacemakerst.com/video/sample789",
-            "referer": "https://www.dizimom.diy/",
-            "sourceHost": "peacemakerst.com",
-            "streamType": "HLS"
-        },
-        "Dizilla": {
-            "embed": "https://four.pichive.online/player/sample012",
-            "referer": "https://dizilla.now/",
-            "sourceHost": "four.pichive.online",
-            "streamType": "HLS"
-        },
-        "FilmMakinesi": {
-            "embed": "https://closeload.com/video/sample345",
-            "referer": "https://filmmakinesi.to/",
-            "sourceHost": "closeload.com",
-            "streamType": "HLS"
         }
     }
+
+    matrix_entries = []
 
     for p in providers_cfg:
         if not p.get("enabled"):
@@ -81,45 +56,51 @@ def generate_matrix(output_file: str = "reports/playback_matrix.json"):
         canonical = dom_info.get("canonical")
         status = dom_info.get("status", "active")
 
-        # Baseline evaluation
+        # Baseline evaluation from repo metadata
         l1_stat = "PASS" if canonical and status == "active" else "FAIL"
         l3_stat = "PASS" if p.get("smokeTest", {}).get("searchQuery") else "SKIPPED"
         l4_stat = "PASS" if p.get("smokeTest", {}).get("knownDetail") else "SKIPPED"
         l5_stat = "PASS" if p.get("monitoring", {}).get("playerProbe") else "SKIPPED"
 
-        # Check for representative sample testing
-        sample = representative_samples.get(name)
-        if sample:
-            source_host = sample["sourceHost"]
-            stream_type = sample["streamType"]
+        # Check for real probe: either ephemeral L5 candidate or verified probe
+        candidate = l5_sources.get(name) or verified_probes.get(name)
+
+        if candidate and "embed" in candidate:
+            embed_url = candidate["embed"]
+            ref = candidate.get("referer", canonical)
+            source_host = candidate.get("sourceHost", "embed-host")
+            stream_type = candidate.get("streamType", "UNKNOWN")
+
             l6_stat, stream_url, ext_name = verifier.verify_l6_extractor_resolution(
-                sample["embed"],
-                referer=sample["referer"]
+                embed_url,
+                referer=ref
             )
             if l6_stat == "PASS" and stream_url:
                 l7_stat, detected_type, l7_meta = verifier.verify_l7_media_preflight(
                     stream_url,
-                    referer=sample["referer"]
+                    referer=ref
                 )
                 if l7_stat == "PASS":
                     l8_stat, l8_meta = verifier.verify_l8_first_segment(
                         stream_url,
                         detected_type,
-                        referer=sample["referer"]
+                        referer=ref
                     )
+                    stream_type = detected_type
                 else:
                     l8_stat = "UNVERIFIED"
             else:
                 l7_stat = "UNVERIFIED"
                 l8_stat = "UNVERIFIED"
-            notes = [f"Tested with representative extractor: {sample['sourceHost']}"]
+            notes = [f"Tested with real embed probe: {source_host}"]
         else:
-            l6_stat = "PASS" if l5_stat == "PASS" else "UNVERIFIED"
-            l7_stat = "PASS" if l6_stat == "PASS" else "UNVERIFIED"
-            l8_stat = "PASS" if l7_stat == "PASS" else "UNVERIFIED"
-            source_host = "provider-cdn"
-            stream_type = "HLS"
-            notes = ["Standard provider resolution"]
+            # Strictly UNVERIFIED: never fabricate PASS when no real stream was fetched!
+            l6_stat = "UNVERIFIED"
+            l7_stat = "UNVERIFIED"
+            l8_stat = "UNVERIFIED"
+            source_host = "none"
+            stream_type = "UNKNOWN"
+            notes = ["Awaiting real player probe / device test"]
 
         rec = verifier.build_matrix_record(
             provider_name=name,
@@ -136,12 +117,19 @@ def generate_matrix(output_file: str = "reports/playback_matrix.json"):
         )
         matrix_entries.append(rec)
 
+    reachability_pass = sum(1 for e in matrix_entries if e["mediaReachability"] == "PASS")
+    reachability_unverified = sum(1 for e in matrix_entries if e["mediaReachability"] == "UNVERIFIED")
+    reachability_fail = sum(1 for e in matrix_entries if e["mediaReachability"] == "FAIL")
+
     output = {
         "metadata": meta,
         "summary": {
             "totalActive": len(matrix_entries),
-            "fullyPlayable": sum(1 for e in matrix_entries if e["runtimePlayback"] == "PLAYABLE"),
-            "unverifiedOrDegraded": sum(1 for e in matrix_entries if e["runtimePlayback"] != "PLAYABLE")
+            "mediaReachabilityVerified": reachability_pass,
+            "mediaReachabilityUnverified": reachability_unverified,
+            "mediaReachabilityFailed": reachability_fail,
+            "runtimePlaybackVerified": 0,
+            "runtimePlaybackNotice": "ExoPlayer / Media3 device verification required for runtime playback status"
         },
         "providers": matrix_entries
     }
@@ -151,7 +139,8 @@ def generate_matrix(output_file: str = "reports/playback_matrix.json"):
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=2, ensure_ascii=False)
 
-    print(f"[SUCCESS] Playback matrix generated at {out_path} ({len(matrix_entries)} providers)")
+    print(f"[SUCCESS] Truthful playback matrix generated at {output_file}")
+    print(f"Summary: {len(matrix_entries)} active, {reachability_pass} reachability PASS, {reachability_unverified} UNVERIFIED")
     return output
 
 if __name__ == "__main__":

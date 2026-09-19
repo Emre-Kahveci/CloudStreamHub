@@ -4,7 +4,11 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.diagnostics.DiagnosticCategory
+import com.cloudstream.tr.core.diagnostics.DiagnosticLogger
+import com.cloudstream.tr.core.diagnostics.DiagnosticStage
 import com.cloudstream.tr.core.model.ProviderModels
+import com.cloudstream.tr.core.network.StreamValidator
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
@@ -178,29 +182,44 @@ class FilmModu : MainAPI() {
 
                     apiResp?.sources?.forEach { s ->
                         val streamUrl = s.src?.ifBlank { null } ?: return@forEach
-                        val qualStr = s.res ?: s.label ?: "1080"
-                        val quality = qualStr.filter { it.isDigit() }.toIntOrNull() ?: Qualities.P1080.value
-                        val streamType = if (streamUrl.contains(".m3u8") || s.type?.contains("mpegURL") == true) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
+                        val qualStr = s.res ?: s.label ?: ""
+                        val quality = qualStr.filter { it.isDigit() }.toIntOrNull() ?: Qualities.Unknown.value
 
-                        callback(
-                            newExtractorLink(
-                                source = name,
-                                name = "$name $langTag ${s.label ?: "${quality}p"}".trim(),
-                                url = streamUrl,
-                                type = streamType
-                            ) {
-                                this.referer = "${mainUrl}/"
-                                this.quality = quality
-                            }
+                        val preflight = StreamValidator.validateStream(
+                            url = streamUrl,
+                            headers = mapOf("Referer" to "${mainUrl}/"),
+                            provider = name
                         )
-                        linksFound = true
+                        if (preflight.isValid) {
+                            val qualityLabel = if (quality == Qualities.Unknown.value) (s.label ?: "HD") else "${quality}p"
+                            callback(
+                                newExtractorLink(
+                                    source = name,
+                                    name = "$name $langTag $qualityLabel".trim(),
+                                    url = streamUrl,
+                                    type = preflight.streamType
+                                ) {
+                                    this.referer = "${mainUrl}/"
+                                    this.quality = quality
+                                }
+                            )
+                            linksFound = true
+                        }
                     }
 
                     apiResp?.subtitle?.ifBlank { null }?.let { sub ->
                         val subUrl = fixUrl(sub)
                         subtitleCallback(SubtitleFile("Türkçe", subUrl))
                     }
-                } catch (_: Exception) {}
+                } catch (e: Exception) {
+                    DiagnosticLogger.log(
+                        provider = name,
+                        stage = DiagnosticStage.EXTRACTOR,
+                        category = DiagnosticCategory.EXTRACTOR,
+                        message = "FilmModu get-source failed: ${e.message}",
+                        throwable = e
+                    )
+                }
             }
         }
 

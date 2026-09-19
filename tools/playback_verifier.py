@@ -243,11 +243,69 @@ class PlaybackVerifier:
             except Exception as e:
                 return "FAIL", {"reason": str(e)}
 
-        # For HLS: Fetch playlist, find first variant or segment
+        # For DASH (MPD)
+        if stream_type == "DASH" or stream_url.endswith(".mpd") or ".mpd" in stream_url:
+            try:
+                req = urllib.request.Request(stream_url, headers=headers)
+                with urllib.request.urlopen(req, timeout=self.timeout, context=self.ssl_ctx) as resp:
+                    mpd_content = resp.read().decode("utf-8", errors="ignore")
+                init_match = re.search(r'<Initialization[^>]+sourceURL=["\']([^"\']+)["\']', mpd_content)
+                seg_match = re.search(r'<SegmentURL[^>]+media=["\']([^"\']+)["\']', mpd_content)
+                base_match = re.search(r'<BaseURL[^>]*>([^<]+)</BaseURL>', mpd_content)
+                base_url = stream_url
+                if base_match:
+                    base_url = urllib.parse.urljoin(stream_url, base_match.group(1).strip())
+                target = init_match.group(1) if init_match else (seg_match.group(1) if seg_match else None)
+                if target:
+                    target_url = urllib.parse.urljoin(base_url, target)
+                    headers["Range"] = "bytes=0-2048"
+                    s_req = urllib.request.Request(target_url, headers=headers)
+                    with urllib.request.urlopen(s_req, timeout=self.timeout, context=self.ssl_ctx) as s_resp:
+                        chunk = s_resp.read(1024)
+                        if len(chunk) > 0:
+                            return "PASS", {"dashInitFetched": len(chunk)}
+                return "PASS", {"dashManifestValid": True}
+            except Exception as e:
+                return "FAIL", {"reason": f"DASH_FETCH_ERROR: {e}"}
+
+        # For HLS: Real playlist parsing with extensionless support, EXT-X-STREAM-INF, and EXT-X-MAP
         req = urllib.request.Request(stream_url, headers=headers)
         try:
             with urllib.request.urlopen(req, timeout=self.timeout, context=self.ssl_ctx) as resp:
                 playlist = resp.read().decode("utf-8", errors="ignore")
+
+            # Check if master playlist
+            if "#EXT-X-STREAM-INF" in playlist:
+                variant_lines = []
+                take_next = False
+                for line in playlist.splitlines():
+                    line = line.strip()
+                    if not line:
+                        continue
+                    if line.startswith("#EXT-X-STREAM-INF"):
+                        take_next = True
+                    elif take_next and not line.startswith("#"):
+                        variant_lines.append(line)
+                        take_next = False
+                if not variant_lines:
+                    variant_lines = [l.strip() for l in playlist.splitlines() if l.strip() and not l.startswith("#")]
+                if variant_lines:
+                    first_variant = urllib.parse.urljoin(stream_url, variant_lines[0])
+                    v_req = urllib.request.Request(first_variant, headers=headers)
+                    with urllib.request.urlopen(v_req, timeout=self.timeout, context=self.ssl_ctx) as v_resp:
+                        playlist = v_resp.read().decode("utf-8", errors="ignore")
+                    stream_url = first_variant
+
+            # In media playlist: check for initialization map (#EXT-X-MAP:URI="...")
+            map_match = re.search(r'#EXT-X-MAP:URI=["\']([^"\']+)["\']', playlist)
+            if map_match:
+                init_url = urllib.parse.urljoin(stream_url, map_match.group(1))
+                headers["Range"] = "bytes=0-2048"
+                init_req = urllib.request.Request(init_url, headers=headers)
+                with urllib.request.urlopen(init_req, timeout=self.timeout, context=self.ssl_ctx) as init_resp:
+                    chunk = init_resp.read(1024)
+                    if len(chunk) > 0:
+                        return "PASS", {"initMap": init_url.split("?")[0], "bytes": len(chunk)}
 
             lines = [l.strip() for l in playlist.splitlines() if l.strip() and not l.startswith("#")]
             if not lines:
@@ -255,23 +313,14 @@ class PlaybackVerifier:
 
             first_target = urllib.parse.urljoin(stream_url, lines[0])
 
-            # If first target is a variant playlist, fetch media playlist
-            if first_target.endswith(".m3u8") or ".m3u8" in first_target:
-                v_req = urllib.request.Request(first_target, headers=headers)
-                with urllib.request.urlopen(v_req, timeout=self.timeout, context=self.ssl_ctx) as v_resp:
-                    v_playlist = v_resp.read().decode("utf-8", errors="ignore")
-                v_lines = [l.strip() for l in v_playlist.splitlines() if l.strip() and not l.startswith("#")]
-                if not v_lines:
-                    return "FAIL", {"reason": "NO_MEDIA_SEGMENTS_IN_VARIANT"}
-                first_target = urllib.parse.urljoin(first_target, v_lines[0])
-
-            # Now fetch the first segment
+            # Fetch the first segment chunk
             headers["Range"] = "bytes=0-2048"
             seg_req = urllib.request.Request(first_target, headers=headers)
             with urllib.request.urlopen(seg_req, timeout=self.timeout, context=self.ssl_ctx) as seg_resp:
                 seg_bytes = seg_resp.read(1024)
                 if len(seg_bytes) > 0:
-                    return "PASS", {"segmentUrl": first_target[:60] + "...", "bytes": len(seg_bytes)}
+                    redacted_target = first_target.split("?")[0]
+                    return "PASS", {"segmentUrl": redacted_target, "bytes": len(seg_bytes)}
                 return "FAIL", {"reason": "EMPTY_SEGMENT_RESPONSE"}
         except Exception as e:
             return "FAIL", {"reason": str(e)}
@@ -290,7 +339,14 @@ class PlaybackVerifier:
         stream_type: Optional[str] = None,
         notes: Optional[List[str]] = None
     ) -> Dict[str, Any]:
-        """Creates a standardized provider playback matrix entry."""
+        """Creates a standardized provider playback matrix entry with truthful reachability semantics."""
+        if l7_stat == "PASS" and l8_stat == "PASS":
+            reachability = "PASS"
+        elif l7_stat == "FAIL" or l8_stat == "FAIL":
+            reachability = "FAIL"
+        else:
+            reachability = "UNVERIFIED"
+
         return {
             "provider": provider_name,
             "domain": l1_stat,
@@ -300,7 +356,8 @@ class PlaybackVerifier:
             "extractorResolution": l6_stat,
             "mediaPreflight": l7_stat,
             "firstSegment": l8_stat,
-            "runtimePlayback": "PLAYABLE" if (l7_stat == "PASS" and l8_stat == "PASS") else "UNVERIFIED",
+            "mediaReachability": reachability,
+            "runtimePlayback": "UNVERIFIED_BY_DEVICE",
             "sourceHost": source_host or "none",
             "streamType": stream_type or "UNKNOWN",
             "notes": notes or []

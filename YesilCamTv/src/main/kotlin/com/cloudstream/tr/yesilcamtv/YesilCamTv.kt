@@ -5,6 +5,7 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
 import com.cloudstream.tr.core.model.ProviderModels
+import com.cloudstream.tr.core.network.StreamValidator
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
@@ -131,22 +132,22 @@ class YesilCamTv : MainAPI() {
         // 1. Direct HTML5 video / mp4 / m3u8
         doc.select("video source[src], video[src]").forEach { v ->
             val src = fixUrlNull(v.attr("src")) ?: return@forEach
-            if (!src.startsWith("http") || (!src.contains(".mp4") && !src.contains(".m3u8") && !src.contains(".webm"))) {
-                return@forEach
+            val preflight = StreamValidator.validateStream(src, mapOf("Referer" to mainUrl), name)
+            if (preflight.isValid) {
+                val typeTag = if (preflight.streamType == ExtractorLinkType.M3U8) "HLS" else "MP4"
+                callback(
+                    newExtractorLink(
+                        source = name,
+                        name = "$name $typeTag",
+                        url = src,
+                        type = preflight.streamType
+                    ) {
+                        this.referer = mainUrl
+                        this.quality = Qualities.Unknown.value
+                    }
+                )
+                linksFound = true
             }
-            val isM3u8 = src.contains(".m3u8")
-            callback(
-                newExtractorLink(
-                    source = name,
-                    name = "$name HD",
-                    url = src,
-                    type = if (isM3u8) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
-                ) {
-                    this.referer = mainUrl
-                    this.quality = Qualities.P1080.value
-                }
-            )
-            linksFound = true
         }
 
         // 2. Check embedded iframe players (Rumble, YouTube, Ok.ru, Mail.ru, etc.)

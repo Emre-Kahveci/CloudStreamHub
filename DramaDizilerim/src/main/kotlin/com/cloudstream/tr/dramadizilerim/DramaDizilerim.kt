@@ -4,6 +4,7 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
 import com.cloudstream.tr.core.model.ProviderModels
+import com.cloudstream.tr.core.network.StreamValidator
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
@@ -163,18 +164,21 @@ class DramaDizilerim : MainAPI() {
                     val rawVideoUrl = sourceMatch?.groupValues?.getOrNull(1)
 
                     if (!rawVideoUrl.isNullOrBlank()) {
-                        val isM3u8 = rawVideoUrl.contains(".m3u8")
-                        emitLink(
-                            newExtractorLink(
-                                source = name,
-                                name = "$name CDN",
-                                url = rawVideoUrl,
-                                type = if (isM3u8) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
-                            ) {
-                                this.referer = embedUrl
-                                this.quality = Qualities.P1080.value
-                            }
-                        )
+                        val preflight = StreamValidator.validateStream(rawVideoUrl, mapOf("Referer" to embedUrl), name)
+                        if (preflight.isValid) {
+                            val typeTag = if (preflight.streamType == ExtractorLinkType.M3U8) "HLS" else "MP4"
+                            emitLink(
+                                newExtractorLink(
+                                    source = name,
+                                    name = "$name $typeTag",
+                                    url = rawVideoUrl,
+                                    type = preflight.streamType
+                                ) {
+                                    this.referer = embedUrl
+                                    this.quality = Qualities.Unknown.value
+                                }
+                            )
+                        }
                     }
 
                     // Extract subtitles

@@ -1,7 +1,11 @@
 package com.cloudstream.tr.kultfilmler
 
 import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.diagnostics.DiagnosticCategory
+import com.cloudstream.tr.core.diagnostics.DiagnosticLogger
+import com.cloudstream.tr.core.diagnostics.DiagnosticStage
 import com.cloudstream.tr.core.model.ProviderModels
+import com.cloudstream.tr.core.network.StreamValidator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
@@ -227,21 +231,37 @@ class KultFilmler : MainAPI() {
                             val streamCandidate = apiResp?.videoSource?.ifBlank { null }
                                 ?: apiResp?.securedLink?.ifBlank { null }
 
-                            if (streamCandidate != null && (streamCandidate.contains(".m3u8") || streamCandidate.contains(".txt") || streamCandidate.contains("/hls/"))) {
-                                emitLink(
-                                    newExtractorLink(
-                                        source = name,
-                                        name = "$name HLS",
-                                        url = streamCandidate,
-                                        type = ExtractorLinkType.M3U8
-                                    ) {
-                                        this.referer = "https://vidpapi.xyz/"
-                                        this.quality = Qualities.P1080.value
-                                    }
+                            if (streamCandidate != null) {
+                                val preflight = StreamValidator.validateStream(
+                                    url = streamCandidate,
+                                    headers = mapOf("Referer" to "https://vidpapi.xyz/"),
+                                    provider = name
                                 )
+                                if (preflight.isValid) {
+                                    val typeTag = if (preflight.streamType == ExtractorLinkType.M3U8) "HLS" else "MP4"
+                                    emitLink(
+                                        newExtractorLink(
+                                            source = name,
+                                            name = "$name $typeTag",
+                                            url = streamCandidate,
+                                            type = preflight.streamType
+                                        ) {
+                                            this.referer = "https://vidpapi.xyz/"
+                                            this.quality = Qualities.Unknown.value
+                                        }
+                                    )
+                                }
                             }
                         }
-                    } catch (_: Exception) {}
+                    } catch (e: Exception) {
+                        DiagnosticLogger.log(
+                            provider = name,
+                            stage = DiagnosticStage.EXTRACTOR,
+                            category = DiagnosticCategory.EXTRACTOR,
+                            message = "Vidpapi resolution failed: ${e.message}",
+                            throwable = e
+                        )
+                    }
                 } else {
                     loadExtractor(iframeUrl, referer = mainUrl, subtitleCallback, emitLink)
                 }

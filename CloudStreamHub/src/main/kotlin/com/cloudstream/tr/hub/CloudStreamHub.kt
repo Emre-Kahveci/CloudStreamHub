@@ -10,6 +10,11 @@ import com.cloudstream.tr.core.diagnostics.DiagnosticLogger
 import com.cloudstream.tr.core.diagnostics.DiagnosticStage
 import com.cloudstream.tr.core.model.ProviderModels
 import com.cloudstream.tr.core.network.StreamValidator
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import java.util.concurrent.ConcurrentHashMap
 
 class CloudStreamHub : MainAPI() {
     override var mainUrl = "https://api.themoviedb.org/3"
@@ -25,6 +30,9 @@ class CloudStreamHub : MainAPI() {
         TvType.Documentary
     )
 
+    // TMDB Credential Policy: Public read-only client credential model.
+    // Client-side plugins (.cs3) cannot achieve zero-knowledge secret storage against decompilation.
+    // Tokens are redacted from all diagnostic logs and network traces by DiagnosticLogger.
     private val tmdbApiKey = "90ad3ec891e5923150283b99719d890f"
     private val tmdbToken = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5MGFkM2VjODkxZTU5MjMxNTAyODNiOTk3MTlkODkwZiIsIm5iZiI6MTc4OTgxODY1Mi40NzksInN1YiI6IjZhYWU3NzFjOTZlY2VmMDkzYmExZGU4NSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.2iN-8AMjIO4zMGL60TwvBY0sVdDThmf66GRfkanrtvc"
     private val imageBase = "https://image.tmdb.org/t/p/w500"
@@ -216,7 +224,8 @@ class CloudStreamHub : MainAPI() {
                     val matched = HubMatchingEngine.findConfidentMatch(
                         candidates = searchList,
                         targetTitle = payload.title,
-                        targetYear = payload.year
+                        targetYear = payload.year,
+                        isMovie = payload.isMovie
                     ) ?: run {
                         DiagnosticLogger.log(
                             provider = provider.name,
@@ -229,7 +238,7 @@ class CloudStreamHub : MainAPI() {
 
                     val loadRes = provider.load(matched.url) ?: return@resolveProgressive
                     val targetLinkData: String? = if (payload.isMovie) {
-                        matched.url
+                        (loadRes as? MovieLoadResponse)?.dataUrl?.takeIf { it.isNotBlank() } ?: matched.url
                     } else {
                         val epList = (loadRes as? TvSeriesLoadResponse)?.episodes ?: emptyList()
                         val ep = epList.firstOrNull { it.season == payload.season && it.episode == payload.episode }
@@ -245,42 +254,102 @@ class CloudStreamHub : MainAPI() {
                     }
 
                     if (targetLinkData != null) {
-                        provider.loadLinks(
-                            data = targetLinkData,
-                            isCasting = isCasting,
-                            subtitleCallback = subtitleCallback,
-                            callback = { rawLink ->
-                                val rawUrl = rawLink.url
-                                if (rawUrl.isBlank() || rawUrl.contains("youtube.com") || rawUrl.contains("youtu.be")) {
-                                    return@loadLinks
-                                }
+                        val channel = Channel<ExtractorLink>(capacity = 16)
+                        val seenUrls = ConcurrentHashMap.newKeySet<String>()
+                        var rawLinksReceived = 0
+                        var duplicatesDropped = 0
+                        var channelOverflowDropped = 0
+                        var preflightValid = 0
+                        var preflightInvalid = 0
+                        var preflightIndeterminate = 0
+                        var linksEmitted = 0
 
-                                kotlinx.coroutines.runBlocking {
+                        coroutineScope {
+                            val consumerJob = launch {
+                                for (rawLink in channel) {
+                                    val rawUrl = rawLink.url
+                                    if (rawUrl.isBlank() || rawUrl.contains("youtube.com") || rawUrl.contains("youtu.be")) {
+                                        continue
+                                    }
+                                    if (!seenUrls.add(rawUrl)) {
+                                        duplicatesDropped++
+                                        continue
+                                    }
+
+                                    val reqHeaders = rawLink.headers.toMutableMap()
+                                    if (rawLink.referer.isNotBlank() && !reqHeaders.containsKey("Referer") && !reqHeaders.containsKey("referer")) {
+                                        reqHeaders["Referer"] = rawLink.referer
+                                    }
+
                                     val preflight = StreamValidator.validateStream(
                                         url = rawUrl,
-                                        headers = rawLink.headers,
+                                        headers = reqHeaders,
                                         provider = provider.name
                                     )
+                                    when (preflight.status) {
+                                        com.cloudstream.tr.core.network.ValidationStatus.VALID -> preflightValid++
+                                        com.cloudstream.tr.core.network.ValidationStatus.INVALID -> preflightInvalid++
+                                        com.cloudstream.tr.core.network.ValidationStatus.INDETERMINATE -> preflightIndeterminate++
+                                    }
+
                                     if (preflight.isValid) {
                                         val formattedName = ProviderModels.formatSourceTitle(
                                             sourceName = provider.name,
                                             resolution = rawLink.name
                                         )
-                                        val taggedLink = ExtractorLink(
+                                        val taggedLink = newExtractorLink(
                                             source = provider.name,
                                             name = formattedName,
                                             url = rawLink.url,
-                                            referer = rawLink.referer,
-                                            quality = rawLink.quality,
-                                            type = preflight.streamType,
-                                            headers = rawLink.headers
-                                        )
+                                            type = preflight.streamType
+                                        ) {
+                                            this.referer = rawLink.referer
+                                            this.quality = rawLink.quality
+                                            this.headers = reqHeaders
+                                        }
                                         emitLink(taggedLink)
+                                        linksEmitted++
                                     }
                                 }
                             }
-                        )
+
+                            try {
+                                provider.loadLinks(
+                                    data = targetLinkData,
+                                    isCasting = isCasting,
+                                    subtitleCallback = subtitleCallback,
+                                    callback = { rawLink ->
+                                        rawLinksReceived++
+                                        val result = channel.trySend(rawLink)
+                                        if (!result.isSuccess) {
+                                            channelOverflowDropped++
+                                            DiagnosticLogger.log(
+                                                provider = provider.name,
+                                                stage = DiagnosticStage.STREAM_PREFLIGHT,
+                                                category = DiagnosticCategory.NETWORK,
+                                                message = "Channel buffer overflow (capacity 16 exceeded) for link: ${DiagnosticLogger.redactUrl(rawLink.url)}"
+                                            )
+                                        }
+                                    }
+                                )
+                            } finally {
+                                channel.close()
+                            }
+
+                            consumerJob.join()
+
+                            if (channelOverflowDropped > 0) {
+                                DiagnosticLogger.log(
+                                    provider = provider.name,
+                                    stage = DiagnosticStage.STREAM_PREFLIGHT,
+                                    category = DiagnosticCategory.NETWORK,
+                                    message = "Provider '${provider.name}' completed with dropped links: $channelOverflowDropped dropped due to capacity 16. Metrics: received=$rawLinksReceived, duplicatesDropped=$duplicatesDropped, valid=$preflightValid, invalid=$preflightInvalid, indeterminate=$preflightIndeterminate, emitted=$linksEmitted"
+                                )
+                            }
+                        }
                     }
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     DiagnosticLogger.log(
                         provider = provider.name,

@@ -1,6 +1,9 @@
 package com.cloudstream.tr.core.model
 
+import com.lagradost.cloudstream3.AnimeSearchResponse
+import com.lagradost.cloudstream3.MovieSearchResponse
 import com.lagradost.cloudstream3.SearchResponse
+import com.lagradost.cloudstream3.TvSeriesSearchResponse
 import java.util.Locale
 
 object ProviderModels {
@@ -38,22 +41,31 @@ object ProviderModels {
     }
 
     /**
-     * Deduplicates search results across multiple queries or providers by URL and normalized title
+     * Deduplicates search results across multiple queries or providers by URL and compound key
+     * (normalized title + year + type) so remakes and cross-type titles are preserved.
      */
     fun dedupSearchResults(results: List<SearchResponse>): List<SearchResponse> {
         val seenUrls = mutableSetOf<String>()
-        val seenTitles = mutableSetOf<String>()
+        val seenKeys = mutableSetOf<String>()
         val output = mutableListOf<SearchResponse>()
 
         for (item in results) {
             val normUrl = item.url.trim().removeSuffix("/")
             val normTitle = normalizeTitle(item.name)
+            val itemYear: Int? = when (item) {
+                is MovieSearchResponse -> item.year
+                is TvSeriesSearchResponse -> item.year
+                is AnimeSearchResponse -> item.year
+                else -> null
+            }
+            val itemType = item.type?.name ?: "unknown"
+            val dedupKey = "$normTitle:${itemYear ?: "any"}:$itemType"
 
-            if (seenUrls.contains(normUrl) || seenTitles.contains(normTitle)) {
+            if (seenUrls.contains(normUrl) || seenKeys.contains(dedupKey)) {
                 continue
             }
             seenUrls.add(normUrl)
-            seenTitles.add(normTitle)
+            seenKeys.add(dedupKey)
             output.add(item)
         }
         return output

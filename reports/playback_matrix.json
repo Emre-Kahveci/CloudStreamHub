@@ -1,15 +1,18 @@
 {
   "metadata": {
-    "generatedAt": "2026-09-19T16:23:59.121300+00:00",
-    "sourceCommitSha": "d1041127c716522c78f18f1cdcb7d44ee3c8c935",
+    "generatedAt": "2026-09-19T21:43:19.759344+00:00",
+    "sourceCommitSha": "97d6c5175d41a10dc75ac46b225c883206a1e727",
     "configHash": "3d83265fbc513919",
     "providerCount": 30,
     "cloudStreamVersion": "v4.8.0"
   },
   "summary": {
     "totalActive": 30,
-    "fullyPlayable": 25,
-    "unverifiedOrDegraded": 5
+    "mediaReachabilityVerified": 1,
+    "mediaReachabilityUnverified": 29,
+    "mediaReachabilityFailed": 0,
+    "runtimePlaybackVerified": 0,
+    "runtimePlaybackNotice": "ExoPlayer / Media3 device verification required for runtime playback status"
   },
   "providers": [
     {
@@ -18,14 +21,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -34,14 +38,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -50,14 +55,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -66,14 +72,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNSUPPORTED_HOST",
+      "extractorResolution": "UNVERIFIED",
       "mediaPreflight": "UNVERIFIED",
       "firstSegment": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED",
-      "sourceHost": "closeload.com",
-      "streamType": "HLS",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Tested with representative extractor: closeload.com"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -82,14 +89,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -98,14 +106,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -114,14 +123,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -130,14 +140,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -146,14 +157,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -165,11 +177,12 @@
       "extractorResolution": "PASS",
       "mediaPreflight": "PASS",
       "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
+      "mediaReachability": "PASS",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
       "sourceHost": "player.filmizle.in",
       "streamType": "HLS",
       "notes": [
-        "Tested with representative extractor: player.filmizle.in"
+        "Tested with real embed probe: player.filmizle.in"
       ]
     },
     {
@@ -178,14 +191,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNSUPPORTED_HOST",
+      "extractorResolution": "UNVERIFIED",
       "mediaPreflight": "UNVERIFIED",
       "firstSegment": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED",
-      "sourceHost": "peacemakerst.com",
-      "streamType": "HLS",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Tested with representative extractor: peacemakerst.com"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -194,14 +208,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -210,14 +225,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNSUPPORTED_HOST",
+      "extractorResolution": "UNVERIFIED",
       "mediaPreflight": "UNVERIFIED",
       "firstSegment": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED",
-      "sourceHost": "four.pichive.online",
-      "streamType": "HLS",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Tested with representative extractor: four.pichive.online"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -226,14 +242,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNSUPPORTED_HOST",
+      "extractorResolution": "UNVERIFIED",
       "mediaPreflight": "UNVERIFIED",
       "firstSegment": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED",
-      "sourceHost": "rapidvid.org",
-      "streamType": "HLS",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Tested with representative extractor: rapidvid.org"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -242,14 +259,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNSUPPORTED_HOST",
+      "extractorResolution": "UNVERIFIED",
       "mediaPreflight": "UNVERIFIED",
       "firstSegment": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED",
-      "sourceHost": "closeload.com",
-      "streamType": "HLS",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Tested with representative extractor: closeload.com"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -258,14 +276,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -274,14 +293,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -290,14 +310,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -306,14 +327,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -322,14 +344,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -338,14 +361,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -354,14 +378,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -370,14 +395,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -386,14 +412,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -402,14 +429,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -418,14 +446,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -434,14 +463,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -450,14 +480,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -466,14 +497,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     },
     {
@@ -482,14 +514,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "runtimePlayback": "PLAYABLE",
-      "sourceHost": "provider-cdn",
-      "streamType": "HLS",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Standard provider resolution"
+        "Awaiting real player probe / device test"
       ]
     }
   ]

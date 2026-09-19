@@ -25,10 +25,23 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: "src"
+          fetch-depth: 0
 
       - name: Fast Fail — Validate Pre-Build Repository Consistency
         run: |
           python src/tools/validate_repo.py
+
+      - name: Enforce Version Bump Invariant
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            BASE_SHA="${{ github.event.before }}"
+          else
+            BASE_SHA="HEAD^"
+          fi
+          echo "Determined BASE_SHA: $BASE_SHA"
+          python src/tools/verify_version_bumps.py --base "$BASE_SHA"
 
       - name: Set up JDK 17 with Gradle Cache
         uses: actions/setup-java@v5
@@ -53,6 +66,11 @@ jobs:
         run: |
           cd src
           python tools/validate_repo.py --verify-artifacts
+
+      - name: Generate Dynamic Build Report
+        run: |
+          cd src
+          python tools/generate_build_report.py
 
       - name: Stage Artifacts Atomically
         run: |

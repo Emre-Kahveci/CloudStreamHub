@@ -5,6 +5,7 @@ import com.lagradost.cloudstream3.AnimeSearchResponse
 import com.lagradost.cloudstream3.MovieSearchResponse
 import com.lagradost.cloudstream3.SearchResponse
 import com.lagradost.cloudstream3.TvSeriesSearchResponse
+import com.lagradost.cloudstream3.TvType
 import kotlin.math.abs
 import kotlin.math.max
 
@@ -23,7 +24,7 @@ object HubMatchingEngine {
     }
 
     /**
-     * Matches search candidates against target title and year with high confidence.
+     * Matches search candidates against target title, year, and media type with high confidence.
      * Returns null if no candidate reaches the confidence threshold (>= 0.80).
      * NEVER falls back to an arbitrary first result.
      */
@@ -31,6 +32,7 @@ object HubMatchingEngine {
         candidates: List<SearchResponse>,
         targetTitle: String,
         targetYear: Int? = null,
+        isMovie: Boolean? = null,
         minConfidence: Double = 0.80
     ): SearchResponse? {
         if (candidates.isEmpty()) return null
@@ -73,6 +75,25 @@ object HubMatchingEngine {
                 }
             } else if (score >= 0.80) {
                 score += 0.05
+            }
+
+            // 3. Media type validation (prevent cross-matching movie with tv series)
+            if (isMovie != null) {
+                val candidateIsMovie = when (item) {
+                    is MovieSearchResponse -> true
+                    is TvSeriesSearchResponse -> false
+                    else -> item.type == TvType.Movie
+                }
+                val candidateIsSeries = when (item) {
+                    is TvSeriesSearchResponse -> true
+                    is MovieSearchResponse -> false
+                    else -> item.type == TvType.TvSeries
+                }
+                if (isMovie && candidateIsSeries) {
+                    score -= 0.50
+                } else if (!isMovie && candidateIsMovie) {
+                    score -= 0.50
+                }
             }
 
             if (score > highestScore) {

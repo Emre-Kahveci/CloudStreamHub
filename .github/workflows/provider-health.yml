@@ -38,6 +38,10 @@ jobs:
         run: |
           python tools/provider_health.py
 
+      - name: Generate Truthful Playback Matrix (Tiers L6-L8)
+        run: |
+          python tools/generate_playback_matrix.py
+
       - name: Generate Health Summary Matrix
         run: |
           python tools/report_health_summary.py
