@@ -131,6 +131,9 @@ class YesilCamTv : MainAPI() {
         // 1. Direct HTML5 video / mp4 / m3u8
         doc.select("video source[src], video[src]").forEach { v ->
             val src = fixUrlNull(v.attr("src")) ?: return@forEach
+            if (!src.startsWith("http") || (!src.contains(".mp4") && !src.contains(".m3u8") && !src.contains(".webm"))) {
+                return@forEach
+            }
             val isM3u8 = src.contains(".m3u8")
             callback(
                 newExtractorLink(
@@ -150,7 +153,7 @@ class YesilCamTv : MainAPI() {
         val iframes = mutableListOf<String>()
         doc.select("iframe").forEach { iframe ->
             val src = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
-            if (src.isNotBlank() && !src.contains("wp-embedded-content")) {
+            if (src.isNotBlank() && !src.contains("wp-embedded-content") && !src.contains("youtube.com") && !src.contains("youtu.be")) {
                 fixUrlNull(src)?.let { iframes.add(it) }
             }
         }
@@ -160,7 +163,30 @@ class YesilCamTv : MainAPI() {
             maxConcurrency = 4,
             resolver = { iframeUrl, emitLink ->
                 val fixed = fixUrl(iframeUrl)
-                loadExtractor(fixed, referer = mainUrl, subtitleCallback, emitLink)
+                if (fixed.contains("rumble.com/embed/")) {
+                    try {
+                        val rumbleHtml = app.get(fixed, referer = mainUrl).text
+                        val mp4Matches = Regex("""https?:[\\/]+[^\s"\'<>]+\.mp4[^\s"\'<>]*""").findAll(rumbleHtml)
+                        mp4Matches.forEach { match ->
+                            val cleanUrl = match.value.replace("""\/""", "/")
+                            if (cleanUrl.startsWith("http")) {
+                                emitLink(
+                                    newExtractorLink(
+                                        source = name,
+                                        name = "$name Rumble MP4",
+                                        url = cleanUrl,
+                                        type = ExtractorLinkType.VIDEO
+                                    ) {
+                                        this.referer = "https://rumble.com/"
+                                        this.quality = Qualities.P1080.value
+                                    }
+                                )
+                            }
+                        }
+                    } catch (_: Exception) {}
+                } else {
+                    loadExtractor(fixed, referer = mainUrl, subtitleCallback, emitLink)
+                }
             },
             onLinkFound = { link ->
                 callback(link)

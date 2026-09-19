@@ -181,32 +181,79 @@ class CloudStreamHub : MainAPI() {
     }
 
     private fun getRegisteredTurkishProviders(): List<MainAPI> {
-        return try {
-            val holderClass = Class.forName("com.lagradost.cloudstream3.APIHolder")
-            val candidateFields = listOf("allProviders", "apis", "loadedPlugins")
-            var rawList: List<MainAPI> = emptyList()
+        val discovered = mutableListOf<MainAPI>()
 
-            for (fieldName in candidateFields) {
+        // 1. Try Reflection on APIHolder (support INSTANCE, methods, fields)
+        try {
+            val holderClass = Class.forName("com.lagradost.cloudstream3.APIHolder")
+            val holderInstance = try {
+                holderClass.getField("INSTANCE").get(null)
+            } catch (_: Exception) {
+                null
+            }
+
+            val getterNames = listOf("getAllProviders", "getApis", "getPlugins")
+            for (mName in getterNames) {
                 try {
-                    val field = holderClass.getDeclaredField(fieldName)
-                    field.isAccessible = true
-                    val obj = field.get(null)
+                    val m = holderClass.getMethod(mName)
+                    m.isAccessible = true
+                    val obj = m.invoke(holderInstance)
                     val items = when (obj) {
                         is Array<*> -> obj.filterIsInstance<MainAPI>()
                         is Collection<*> -> obj.filterIsInstance<MainAPI>()
                         else -> emptyList()
                     }
                     if (items.isNotEmpty()) {
-                        rawList = items
+                        discovered.addAll(items)
                         break
                     }
                 } catch (_: Exception) {}
             }
 
-            rawList.filter { it.lang == "tr" && it.name != this.name }
-        } catch (_: Exception) {
-            emptyList()
+            if (discovered.isEmpty()) {
+                val candidateFields = listOf("allProviders", "apis", "loadedPlugins")
+                for (fieldName in candidateFields) {
+                    try {
+                        val field = holderClass.getDeclaredField(fieldName)
+                        field.isAccessible = true
+                        val obj = field.get(holderInstance)
+                        val items = when (obj) {
+                            is Array<*> -> obj.filterIsInstance<MainAPI>()
+                            is Collection<*> -> obj.filterIsInstance<MainAPI>()
+                            else -> emptyList()
+                        }
+                        if (items.isNotEmpty()) {
+                            discovered.addAll(items)
+                            break
+                        }
+                    } catch (_: Exception) {}
+                }
+            }
+        } catch (_: Exception) {}
+
+        // 2. Direct ClassLoader fallback for known providers in current runtime
+        if (discovered.isEmpty()) {
+            val knownClassNames = listOf(
+                "com.cloudstream.tr.filmmodu.FilmModu",
+                "com.cloudstream.tr.kultfilmler.KultFilmler",
+                "com.cloudstream.tr.hdfilmcehennemi.HDFilmCehennemi",
+                "com.cloudstream.tr.yesilcamtv.YesilCamTv",
+                "com.cloudstream.tr.dizipal.DiziPal",
+                "com.cloudstream.tr.dizilla.Dizilla",
+                "com.cloudstream.tr.sezonlukdizi.SezonlukDizi"
+            )
+            for (cName in knownClassNames) {
+                try {
+                    val clazz = Class.forName(cName)
+                    val instance = clazz.getDeclaredConstructor().newInstance() as? MainAPI
+                    if (instance != null) {
+                        discovered.add(instance)
+                    }
+                } catch (_: Exception) {}
+            }
         }
+
+        return discovered.distinctBy { it.name }.filter { it.lang == "tr" && it.name != this.name }
     }
 
     override suspend fun loadLinks(
@@ -253,6 +300,11 @@ class CloudStreamHub : MainAPI() {
                             isCasting = isCasting,
                             subtitleCallback = subtitleCallback,
                             callback = { rawLink ->
+                                val rawUrl = rawLink.url
+                                if (rawUrl.isBlank() || rawUrl.contains("youtube.com") || rawUrl.contains("youtu.be")) {
+                                    return@loadLinks
+                                }
+
                                 val formattedName = ProviderModels.formatSourceTitle(
                                     sourceName = provider.name,
                                     resolution = rawLink.name

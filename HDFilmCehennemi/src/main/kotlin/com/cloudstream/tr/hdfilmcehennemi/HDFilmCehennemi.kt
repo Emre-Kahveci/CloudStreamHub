@@ -207,7 +207,7 @@ class HDFilmCehennemi : MainAPI() {
         val iframes = mutableListOf<String>()
         doc.select("iframe").forEach { iframe ->
             val src = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
-            if (src.isNotEmpty()) {
+            if (src.isNotEmpty() && !src.contains("youtube.com") && !src.contains("youtu.be")) {
                 fixUrlNull(src)?.let { iframes.add(it) }
             }
         }

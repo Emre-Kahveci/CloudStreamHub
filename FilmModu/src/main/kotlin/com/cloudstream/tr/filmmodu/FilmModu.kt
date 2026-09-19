@@ -123,6 +123,18 @@ class FilmModu : MainAPI() {
         }
     }
 
+    data class FilmModuSource(
+        val type: String? = null,
+        val src: String? = null,
+        val label: String? = null,
+        val res: String? = null
+    )
+
+    data class FilmModuSourceResponse(
+        val sources: List<FilmModuSource>? = null,
+        val subtitle: String? = null
+    )
+
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
@@ -132,31 +144,73 @@ class FilmModu : MainAPI() {
         var linksFound = false
         val doc = app.get(data).document
 
-        // Check embedded iframes and sources
-        val iframes = mutableListOf<String>()
-        doc.select("iframe").forEach { iframe ->
-            val src = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
-            if (src.isNotBlank() && !src.contains("wp-embedded-content")) {
-                fixUrlNull(src)?.let { iframes.add(it) }
+        // 1. FilmModu Native /get-source API (Extracts genuine HLS streams and subtitles)
+        val scriptText = doc.select("script").joinToString("\n") { it.data() }
+        val defaultVideoId = Regex("""var\s+videoId\s*=\s*['"](\d+)['"]""").find(scriptText)?.groupValues?.get(1)
+        val defaultVideoType = Regex("""var\s+videoType\s*=\s*['"]([^'"]*)['"]""").find(scriptText)?.groupValues?.get(1) ?: ""
+
+        // Collect audio/subtitle versions if available (e.g. altyazili or dublaj links)
+        val pagesToProbe = mutableListOf(data)
+        doc.select("a[href*='-film-izle']").forEach { a ->
+            val href = fixUrlNull(a.attr("href")) ?: return@forEach
+            if (!href.contains("uyelik") && !href.contains("kategori") && href != data) {
+                pagesToProbe.add(href)
             }
         }
 
-        // Direct video elements
-        doc.select("video source[src], video[src]").forEach { v ->
-            val src = fixUrlNull(v.attr("src")) ?: return@forEach
-            val isM3u8 = src.contains(".m3u8")
-            callback(
-                newExtractorLink(
-                    source = name,
-                    name = "$name HD",
-                    url = src,
-                    type = if (isM3u8) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
-                ) {
-                    this.referer = mainUrl
-                    this.quality = Qualities.P1080.value
-                }
-            )
-            linksFound = true
+        for (targetPage in pagesToProbe.distinct().take(3)) {
+            val pageDoc = if (targetPage == data) doc else app.get(targetPage).document
+            val pageScript = pageDoc.select("script").joinToString("\n") { it.data() }
+            val vId = Regex("""var\s+videoId\s*=\s*['"](\d+)['"]""").find(pageScript)?.groupValues?.get(1) ?: defaultVideoId
+            val vType = Regex("""var\s+videoType\s*=\s*['"]([^'"]*)['"]""").find(pageScript)?.groupValues?.get(1) ?: defaultVideoType
+
+            if (!vId.isNullOrBlank()) {
+                try {
+                    val apiResp = app.get(
+                        url = "${mainUrl}/get-source?movie_id=${vId}&type=${vType}",
+                        headers = mapOf(
+                            "Referer" to targetPage,
+                            "X-Requested-With" to "XMLHttpRequest"
+                        )
+                    ).parsedSafe<FilmModuSourceResponse>()
+
+                    val langTag = if (vType.contains("en")) "Altyazılı" else if (vType.contains("tr")) "Dublaj" else ""
+
+                    apiResp?.sources?.forEach { s ->
+                        val streamUrl = s.src?.ifBlank { null } ?: return@forEach
+                        val qualStr = s.res ?: s.label ?: "1080"
+                        val quality = qualStr.filter { it.isDigit() }.toIntOrNull() ?: Qualities.P1080.value
+                        val streamType = if (streamUrl.contains(".m3u8") || s.type?.contains("mpegURL") == true) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
+
+                        callback(
+                            newExtractorLink(
+                                source = name,
+                                name = "$name $langTag ${s.label ?: "${quality}p"}".trim(),
+                                url = streamUrl,
+                                type = streamType
+                            ) {
+                                this.referer = "${mainUrl}/"
+                                this.quality = quality
+                            }
+                        )
+                        linksFound = true
+                    }
+
+                    apiResp?.subtitle?.ifBlank { null }?.let { sub ->
+                        val subUrl = fixUrl(sub)
+                        subtitleCallback(SubtitleFile("Türkçe", subUrl))
+                    }
+                } catch (_: Exception) {}
+            }
+        }
+
+        // 2. Check embedded iframes, EXCLUDING YouTube trailers
+        val iframes = mutableListOf<String>()
+        doc.select("iframe").forEach { iframe ->
+            val src = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
+            if (src.isNotBlank() && !src.contains("wp-embedded-content") && !src.contains("youtube.com") && !src.contains("youtu.be")) {
+                fixUrlNull(src)?.let { iframes.add(it) }
+            }
         }
 
         val resolved = BoundedParallelResolver.resolveProgressive(
