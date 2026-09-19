@@ -35,4 +35,4 @@ jobs:
       - name: Compile and Run All Provider Unit Tests
         run: |
           chmod +x gradlew
-          ./gradlew test --continue
+          ./gradlew testDebugUnitTest --parallel --continue

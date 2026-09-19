@@ -42,7 +42,7 @@ jobs:
         run: |
           cd src
           chmod +x gradlew
-          ./gradlew test --continue
+          ./gradlew testDebugUnitTest --parallel --continue
 
       - name: Build Plugins (.cs3) & Generate plugins.json
         run: |

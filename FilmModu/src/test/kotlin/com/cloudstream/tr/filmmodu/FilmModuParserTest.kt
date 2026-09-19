@@ -21,13 +21,13 @@ class FilmModuParserTest {
         val item1 = provider.parseSearchItem(cards[0]) as? MovieSearchResponse
         assertNotNull("Item 1 failed to parse", item1)
         assertEquals("Yıldızlararası", item1?.name)
-        assertEquals("https://www.filmmodu15.com/film/interstellar-turkce-dublaj-altyazili-izle", item1?.url)
+        assertEquals("${provider.mainUrl}/film/interstellar-turkce-dublaj-altyazili-izle", item1?.url)
         assertEquals(2014, item1?.year)
 
         val item2 = provider.parseSearchItem(cards[1]) as? MovieSearchResponse
         assertNotNull("Item 2 failed to parse", item2)
         assertEquals("Başlangıç", item2?.name)
-        assertEquals("https://www.filmmodu15.com/film/inception-turkce-dublaj-altyazili-izle", item2?.url)
+        assertEquals("${provider.mainUrl}/film/inception-turkce-dublaj-altyazili-izle", item2?.url)
         assertEquals(2010, item2?.year)
     }
 }

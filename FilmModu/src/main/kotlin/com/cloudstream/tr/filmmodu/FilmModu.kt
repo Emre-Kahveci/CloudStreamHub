@@ -9,7 +9,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
 class FilmModu : MainAPI() {
-    override var mainUrl = "https://www.filmmodu15.com"
+    override var mainUrl = "https://www.filmmodu.one"
     override var name = "FilmModu"
     override val hasMainPage = true
     override var lang = "tr"
@@ -17,14 +17,13 @@ class FilmModu : MainAPI() {
     override val supportedTypes = setOf(TvType.Movie)
 
     override val mainPage = mainPageOf(
-        "${mainUrl}/filmler" to "Son Filmler",
-        "${mainUrl}/filmler/tur/aksiyon" to "Aksiyon",
-        "${mainUrl}/filmler/tur/bilim-kurgu" to "Bilim Kurgu",
-        "${mainUrl}/filmler/tur/komedi" to "Komedi",
-        "${mainUrl}/filmler/tur/korku" to "Korku",
-        "${mainUrl}/filmler/tur/gerilim" to "Gerilim",
-        "${mainUrl}/filmler/tur/dram" to "Dram",
-        "${mainUrl}/filmler/tur/animasyon" to "Animasyon"
+        "${mainUrl}/" to "Son Filmler",
+        "${mainUrl}/turkce-dublaj-hd-film-izle" to "Türkçe Dublaj",
+        "${mainUrl}/turkce-altyazili-hd-filmler-izle" to "Türkçe Altyazılı",
+        "${mainUrl}/film-tur/aksiyon-filmleri-izle" to "Aksiyon",
+        "${mainUrl}/film-tur/komedi-filmleri-izle" to "Komedi",
+        "${mainUrl}/film-tur/korku-filmleri-izle" to "Korku",
+        "${mainUrl}/film-tur/bilim-kurgu-filmleri-izle" to "Bilim Kurgu"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
@@ -67,7 +66,7 @@ class FilmModu : MainAPI() {
         if (href == mainUrl || href == "${mainUrl}/") return null
 
         val imgEl = element.selectFirst("img")
-        val title = element.selectFirst(".title, h2, h3, .movie-title")?.text()?.trim()
+        val title = element.selectFirst(".turkish-name, .original-name, .title, h2, h3, .movie-title")?.text()?.trim()
             ?: imgEl?.attr("alt")?.trim()
             ?: linkEl.attr("title").trim()
         if (title.isBlank()) return null

@@ -21,8 +21,14 @@ class CloudStreamHub : MainAPI() {
         TvType.Documentary
     )
 
-    private val tmdbApiKey = "b0f2a969335a4d434220b33215284eb1"
+    private val tmdbApiKey = "90ad3ec891e5923150283b99719d890f"
+    private val tmdbToken = "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5MGFkM2VjODkxZTU5MjMxNTAyODNiOTk3MTlkODkwZiIsIm5iZiI6MTc4OTgxODY1Mi40NzksInN1YiI6IjZhYWU3NzFjOTZlY2VmMDkzYmExZGU4NSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.2iN-8AMjIO4zMGL60TwvBY0sVdDThmf66GRfkanrtvc"
     private val imageBase = "https://image.tmdb.org/t/p/w500"
+
+    private val authHeaders = mapOf(
+        "Authorization" to "Bearer $tmdbToken",
+        "Accept" to "application/json"
+    )
 
     override val mainPage = mainPageOf(
         "${mainUrl}/trending/all/day?language=tr-TR&api_key=${tmdbApiKey}" to "Günün Trendleri",
@@ -34,7 +40,7 @@ class CloudStreamHub : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val targetUrl = "${request.data}&page=${page}"
-        val resp = app.get(targetUrl).parsedSafe<TmdbPageResponse>()
+        val resp = app.get(targetUrl, headers = authHeaders).parsedSafe<TmdbPageResponse>()
         val items = resp?.results?.mapNotNull { parseTmdbItem(it) } ?: emptyList()
         val totalPages = resp?.totalPages ?: 1
 
@@ -43,7 +49,7 @@ class CloudStreamHub : MainAPI() {
 
     override suspend fun search(query: String, page: Int): SearchResponseList {
         val targetUrl = "${mainUrl}/search/multi?query=${query}&language=tr-TR&page=${page}&api_key=${tmdbApiKey}"
-        val resp = app.get(targetUrl).parsedSafe<TmdbPageResponse>()
+        val resp = app.get(targetUrl, headers = authHeaders).parsedSafe<TmdbPageResponse>()
         val items = resp?.results?.mapNotNull { parseTmdbItem(it) } ?: emptyList()
         val deduped = ProviderModels.dedupSearchResults(items)
         val totalPages = resp?.totalPages ?: 1
@@ -94,7 +100,7 @@ class CloudStreamHub : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val resp = app.get(url).parsedSafe<TmdbDetailResponse>() ?: return null
+        val resp = app.get(url, headers = authHeaders).parsedSafe<TmdbDetailResponse>() ?: return null
         return parseTmdbDetail(resp, url)
     }
 
@@ -176,15 +182,28 @@ class CloudStreamHub : MainAPI() {
 
     private fun getRegisteredTurkishProviders(): List<MainAPI> {
         return try {
-            val field = Class.forName("com.lagradost.cloudstream3.APIHolder").getDeclaredField("allProviders")
-            field.isAccessible = true
-            val obj = field.get(null)
-            val list = when (obj) {
-                is Array<*> -> obj.filterIsInstance<MainAPI>()
-                is Collection<*> -> obj.filterIsInstance<MainAPI>()
-                else -> emptyList()
+            val holderClass = Class.forName("com.lagradost.cloudstream3.APIHolder")
+            val candidateFields = listOf("allProviders", "apis", "loadedPlugins")
+            var rawList: List<MainAPI> = emptyList()
+
+            for (fieldName in candidateFields) {
+                try {
+                    val field = holderClass.getDeclaredField(fieldName)
+                    field.isAccessible = true
+                    val obj = field.get(null)
+                    val items = when (obj) {
+                        is Array<*> -> obj.filterIsInstance<MainAPI>()
+                        is Collection<*> -> obj.filterIsInstance<MainAPI>()
+                        else -> emptyList()
+                    }
+                    if (items.isNotEmpty()) {
+                        rawList = items
+                        break
+                    }
+                } catch (_: Exception) {}
             }
-            list.filter { it.lang == "tr" && it.name != this.name }
+
+            rawList.filter { it.lang == "tr" && it.name != this.name }
         } catch (_: Exception) {
             emptyList()
         }

@@ -1,4 +1,4 @@
-version = 1
+version = 2
 
 cloudstream {
     authors     = listOf("CloudStreamTR", "Emre-Kahveci")
@@ -6,5 +6,5 @@ cloudstream {
     description = "FilmModu - Yüksek kaliteli yerli ve yabancı film arşivi"
     status      = 1
     tvTypes     = listOf("Movie")
-    iconUrl     = "https://www.google.com/s2/favicons?sz=128&domain=filmmodu15.com"
+    iconUrl     = "https://www.google.com/s2/favicons?sz=128&domain=filmmodu.one"
 }
