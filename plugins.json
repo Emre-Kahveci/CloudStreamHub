@@ -88,10 +88,10 @@
     },
     {
         "iconUrl": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/main/assets/icon.png",
-        "fileHash": "sha256-11cc8056afd8da896c740e4ff70db17d3c25c072c263cfdd454981fd9e44a37a",
+        "fileHash": "sha256-be96c30f436d917cba2f16426b8798954111efaa5a2676eb5d0283aabbaf26f0",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 60035,
+        "fileSize": 60678,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -105,7 +105,7 @@
             "Cartoon",
             "Documentary"
         ],
-        "version": 1,
+        "version": 2,
         "internalName": "CloudStreamHub",
         "description": "CloudStreamHub Aggregator - TMDB Ke\u015fif & T\u00fcm T\u00fcrk\u00e7e Sa\u011flay\u0131c\u0131lar\u0131 Birle\u015ftiren S\u00fcper Eklenti",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/CloudStreamHub.cs3",
@@ -348,11 +348,11 @@
         "name": "FilmMakinesi"
     },
     {
-        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=filmmodu15.com",
-        "fileHash": "sha256-7823fc6a9e2d47fa3d332127deb81f975734295444c4fdaef8d9509c4ef8f684",
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=filmmodu.one",
+        "fileHash": "sha256-32cf0ef92919622ee688e06a44cb05031841ad63f0530588e0fb16adfb330d59",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 46258,
+        "fileSize": 46291,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -362,7 +362,7 @@
         "tvTypes": [
             "Movie"
         ],
-        "version": 1,
+        "version": 2,
         "internalName": "FilmModu",
         "description": "FilmModu - Y\u00fcksek kaliteli yerli ve yabanc\u0131 film ar\u015fivi",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/FilmModu.cs3",
