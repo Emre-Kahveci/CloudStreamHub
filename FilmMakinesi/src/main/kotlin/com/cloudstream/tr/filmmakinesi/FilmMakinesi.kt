@@ -1,5 +1,7 @@
 package com.cloudstream.tr.filmmakinesi
 
+import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.model.ProviderModels
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
@@ -88,7 +90,7 @@ class FilmMakinesi : MainAPI() {
             doc.select("a.item, div.item-relative a.item").forEach { a ->
                 parseSearchElement(a)?.let { searchResponses.add(it) }
             }
-            searchResponses.distinctBy { it.url }
+            ProviderModels.dedupSearchResults(searchResponses)
         } catch (e: Exception) {
             emptyList()
         }
@@ -174,19 +176,23 @@ class FilmMakinesi : MainAPI() {
         }
 
         val closeloadExtractor = CloseLoadExtractor()
+        val candidates = iframes.distinct().filter { !it.contains("youtube.com") && !it.contains("youtu.be") }
 
-        for (iframeUrl in iframes.distinct()) {
-            if (iframeUrl.contains("youtube.com") || iframeUrl.contains("youtu.be")) {
-                // Trailer iframe, skip
-                continue
+        val count = BoundedParallelResolver.resolveProgressive(
+            candidates = candidates,
+            resolver = { iframeUrl, emitLink ->
+                if (iframeUrl.contains("closeload.filmmakinesi.to") || iframeUrl.contains("closeload")) {
+                    closeloadExtractor.getUrl(iframeUrl, data, subtitleCallback, emitLink)
+                } else {
+                    loadExtractor(iframeUrl, data, subtitleCallback, emitLink)
+                }
+            },
+            onLinkFound = { link ->
+                callback(link)
+                found = true
             }
-            if (iframeUrl.contains("closeload.filmmakinesi.to") || iframeUrl.contains("closeload")) {
-                closeloadExtractor.getUrl(iframeUrl, data, subtitleCallback, wrappedCallback)
-            } else {
-                loadExtractor(iframeUrl, data, subtitleCallback, wrappedCallback)
-            }
-        }
+        )
 
-        return found
+        return found || count > 0
     }
 }

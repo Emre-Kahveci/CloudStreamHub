@@ -2,6 +2,8 @@ package com.cloudstream.tr.belgeselx
 
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.model.ProviderModels
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.net.URLEncoder
@@ -101,7 +103,8 @@ class BelgeselX : MainAPI() {
                 )
             }
 
-            newSearchResponseList(searchResponses.distinctBy { it.url }, hasNext = false)
+            val deduped = ProviderModels.dedupSearchResults(searchResponses)
+            newSearchResponseList(deduped, hasNext = false)
         } catch (e: Exception) {
             newSearchResponseList(emptyList(), hasNext = false)
         }
@@ -218,12 +221,19 @@ class BelgeselX : MainAPI() {
         } else {
             // Full documentary page fallback
             val doc = app.get(data, referer = "${mainUrl}/").document
-            for (iframe in doc.select("iframe[src]")) {
-                val src = fixUrl(iframe.attr("src"))
-                if (loadExtractor(src, "${mainUrl}/", subtitleCallback, callback)) {
+            val iframes = doc.select("iframe[src]").mapNotNull { fixUrlNull(it.attr("src")) }
+            val resolved = BoundedParallelResolver.resolveProgressive(
+                candidates = iframes,
+                maxConcurrency = 3,
+                resolver = { src, emitLink ->
+                    loadExtractor(src, "${mainUrl}/", subtitleCallback, emitLink)
+                },
+                onLinkFound = { link ->
+                    callback(link)
                     found = true
                 }
-            }
+            )
+            if (resolved > 0) found = true
         }
 
         return found

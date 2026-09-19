@@ -1,5 +1,8 @@
-﻿package com.cloudstream.tr.dizilla
+package com.cloudstream.tr.dizilla
 
+import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.extractors.PichiveExtractor
+import com.cloudstream.tr.core.model.ProviderModels
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
@@ -150,7 +153,8 @@ class Dizilla : MainAPI() {
             } catch (ignored: Exception) {}
         }
 
-        return newSearchResponseList(items.distinctBy { it.url }, hasNext = false)
+        val deduped = ProviderModels.dedupSearchResults(items)
+        return newSearchResponseList(deduped, hasNext = false)
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query, 1).items
@@ -293,70 +297,22 @@ class Dizilla : MainAPI() {
             }
         }
 
-        for (iframeUrl in iframes.distinct()) {
-            if (iframeUrl.contains("pichive.online")) {
-                try {
-                    val playerResp = app.get(
-                        iframeUrl,
-                        headers = mapOf("Referer" to "${mainUrl}/")
-                    ).text
-
-                    val openPlayerMatch = Regex("""openPlayer\s*\(\s*['"]([^'"]+)['"]""").find(playerResp)
-                    val playlistToken = openPlayerMatch?.groupValues?.get(1)
-
-                    Regex("""\{\s*["']file["']\s*:\s*["']([^"']+)["'].*?["']lang["']\s*:\s*["']([^"']+)["']""").findAll(playerResp).forEach { sm ->
-                        val subFile = sm.groupValues[1].replace("""\/""", "/")
-                        val subLang = sm.groupValues[2]
-                        subtitleCallback(
-                            SubtitleFile(
-                                lang = if (subLang == "tr") "Türkçe" else "İngilizce",
-                                url = subFile
-                            )
-                        )
-                    }
-
-                    if (!playlistToken.isNullOrBlank()) {
-                        val host = Regex("""https?://[^/]+""").find(iframeUrl)?.value ?: "https://four.pichive.online"
-                        val sourceUrl = "${host}/source2.php?v=${URLEncoder.encode(playlistToken, "UTF-8")}"
-                        val pichiveJson = app.get(
-                            sourceUrl,
-                            headers = mapOf(
-                                "Referer" to iframeUrl,
-                                "X-Requested-With" to "XMLHttpRequest"
-                            )
-                        ).parsedSafe<PichiveResponse>()
-
-                        pichiveJson?.playlist?.forEach { pl ->
-                            pl.sources?.forEach { s ->
-                                val fileUrl = s.file ?: return@forEach
-                                val masterUrl = fileUrl.replace("m.php", "master.m3u8")
-                                callback(
-                                    newExtractorLink(
-                                        source = name,
-                                        name = "$name ${s.title ?: "HLS"}",
-                                        url = masterUrl,
-                                        type = ExtractorLinkType.M3U8
-                                    ) {
-                                        this.referer = "${host}/"
-                                        this.quality = Qualities.P1080.value
-                                    }
-                                )
-                                linksFound = true
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    // continue
+        val distinctIframes = iframes.distinct()
+        val count = BoundedParallelResolver.resolveProgressive(
+            candidates = distinctIframes,
+            resolver = { iframeUrl, emitLink ->
+                if (iframeUrl.contains("pichive.online")) {
+                    PichiveExtractor().getUrl(iframeUrl, referer = mainUrl, subtitleCallback, emitLink)
+                } else {
+                    loadExtractor(iframeUrl, referer = data, subtitleCallback, emitLink)
                 }
-            } else {
-                val success = loadExtractor(iframeUrl, referer = data, subtitleCallback) { link ->
-                    callback(link)
-                    linksFound = true
-                }
-                if (success) linksFound = true
+            },
+            onLinkFound = { link ->
+                callback(link)
+                linksFound = true
             }
-        }
+        )
 
-        return linksFound
+        return linksFound || count > 0
     }
 }

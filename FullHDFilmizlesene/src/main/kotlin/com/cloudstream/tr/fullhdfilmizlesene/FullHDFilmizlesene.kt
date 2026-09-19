@@ -1,5 +1,8 @@
-﻿package com.cloudstream.tr.fullhdfilmizlesene
+package com.cloudstream.tr.fullhdfilmizlesene
 
+import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.extractors.RapidVidExtractor
+import com.cloudstream.tr.core.model.ProviderModels
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
@@ -103,9 +106,9 @@ class FullHDFilmizlesene : MainAPI() {
                 this.posterUrl = fixUrlNull(item.vidresim)
                 this.year = item.yil?.toIntOrNull()
             }
-        }.distinctBy { it.url }
-
-        return newSearchResponseList(results, hasNext = false)
+        }
+        val deduped = ProviderModels.dedupSearchResults(results)
+        return newSearchResponseList(deduped, hasNext = false)
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query, 1).items
@@ -154,22 +157,29 @@ class FullHDFilmizlesene : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val html = app.get(data).text
-        val iframes = extractScxIframeUrls(html)
+        val iframes = extractScxIframeUrls(html).distinct()
         var anyFound = false
 
-        for (iframe in iframes) {
-            if (iframe.contains("rapidvid.org")) {
-                if (resolveRapidvid(iframe, subtitleCallback, callback)) {
-                    anyFound = true
+        val count = BoundedParallelResolver.resolveProgressive(
+            candidates = iframes,
+            resolver = { iframe, emitLink ->
+                if (iframe.contains("rapidvid.org")) {
+                    if (resolveRapidvid(iframe, subtitleCallback, emitLink)) {
+                        anyFound = true
+                    }
+                } else {
+                    if (loadExtractor(iframe, referer = data, subtitleCallback, emitLink)) {
+                        anyFound = true
+                    }
                 }
-            } else {
-                if (loadExtractor(iframe, referer = data, subtitleCallback, callback)) {
-                    anyFound = true
-                }
+            },
+            onLinkFound = { link ->
+                callback(link)
+                anyFound = true
             }
-        }
+        )
 
-        return anyFound
+        return anyFound || count > 0
     }
 
     companion object {
@@ -238,6 +248,14 @@ class FullHDFilmizlesene : MainAPI() {
         }
     }
 
+    internal suspend fun parseRapidvidResponse(
+        res: String,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
+        return RapidVidExtractor.parseHtmlResponse(res, subtitleCallback, callback)
+    }
+
     private suspend fun resolveRapidvid(
         url: String,
         subtitleCallback: (SubtitleFile) -> Unit,
@@ -245,45 +263,7 @@ class FullHDFilmizlesene : MainAPI() {
     ): Boolean {
         return try {
             val res = app.get(url, referer = "${mainUrl}/").text
-
-            val avPattern = Pattern.compile("""file:\s*av\(['"]([^'"]+)['"]\)""")
-            val avMatcher = avPattern.matcher(res)
-            var foundStream = false
-
-            if (avMatcher.find()) {
-                val token = avMatcher.group(1)
-                if (!token.isNullOrBlank()) {
-                    val streamUrl = decryptRapidvidAv(token)
-                    if (streamUrl.isNotBlank()) {
-                        callback(
-                            newExtractorLink(
-                                source = "RapidVid",
-                                name = "RapidVid",
-                                url = streamUrl,
-                                type = INFER_TYPE
-                            ) {
-                                this.referer = "https://rapidvid.org/"
-                            }
-                        )
-                        foundStream = true
-                    }
-                }
-            }
-
-            val tracksPattern = Pattern.compile("""jwSetup\.tracks\s*=\s*(\[.+?\]);""", Pattern.DOTALL)
-            val tracksMatcher = tracksPattern.matcher(res)
-            if (tracksMatcher.find()) {
-                val tracksJson = tracksMatcher.group(1)
-                val trackPattern = Pattern.compile(""""file"\s*:\s*"([^"]+)"[^}]+?"label"\s*:\s*"([^"]+)"""")
-                val trackMatcher = trackPattern.matcher(tracksJson ?: "")
-                while (trackMatcher.find()) {
-                    val file = trackMatcher.group(1)?.replace("\\/", "/") ?: continue
-                    val label = trackMatcher.group(2) ?: "Türkçe"
-                    subtitleCallback(SubtitleFile(lang = label.trim(), url = file))
-                }
-            }
-
-            foundStream
+            parseRapidvidResponse(res, subtitleCallback, callback)
         } catch (e: Exception) {
             false
         }

@@ -1,5 +1,8 @@
-﻿package com.cloudstream.tr.sinemacx
+package com.cloudstream.tr.sinemacx
 
+import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.extractors.FilmizleInExtractor
+import com.cloudstream.tr.core.model.ProviderModels
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
@@ -73,9 +76,9 @@ class SinemaCX : MainAPI() {
         val doc = app.get(targetUrl).document
         val items = doc.select("div.frag-k, div.film-k, article.film").mapNotNull { el ->
             parseFragCard(el)
-        }.distinctBy { it.url }
-
-        return newSearchResponseList(items, hasNext = items.isNotEmpty())
+        }
+        val deduped = ProviderModels.dedupSearchResults(items)
+        return newSearchResponseList(deduped, hasNext = deduped.isNotEmpty())
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query, 1).items
@@ -154,53 +157,22 @@ class SinemaCX : MainAPI() {
             }
         }
 
-        for (iframeUrl in allIframes.distinct()) {
-            if (iframeUrl.contains("filmizle.in")) {
-                try {
-                    val videoId = Regex("""/(?:video|embed)/([a-zA-Z0-9_-]+)""").find(iframeUrl)?.groupValues?.get(1)
-                    if (!videoId.isNullOrBlank()) {
-                        val apiUrl = "https://player.filmizle.in/player/index.php?data=${videoId}&do=getVideo"
-                        val resp = app.post(
-                            apiUrl,
-                            data = mapOf(
-                                "hash" to videoId,
-                                "r" to "https://www.sinema.gg/"
-                            ),
-                            headers = mapOf(
-                                "X-Requested-With" to "XMLHttpRequest",
-                                "Referer" to iframeUrl,
-                                "Origin" to "https://player.filmizle.in"
-                            )
-                        ).parsedSafe<FilmizleVideoResponse>()
-
-                        val streamUrl = resp?.securedLink?.ifBlank { null } ?: resp?.videoSource?.ifBlank { null }
-                        if (!streamUrl.isNullOrBlank() && streamUrl.contains(".m3u8")) {
-                            callback(
-                                newExtractorLink(
-                                    source = name,
-                                    name = "$name HLS",
-                                    url = streamUrl,
-                                    type = ExtractorLinkType.M3U8
-                                ) {
-                                    this.referer = "https://player.filmizle.in/"
-                                    this.quality = Qualities.P1080.value
-                                }
-                            )
-                            linksFound = true
-                        }
-                    }
-                } catch (e: Exception) {
-                    // continue
+        val distinctIframes = allIframes.distinct()
+        val count = BoundedParallelResolver.resolveProgressive(
+            candidates = distinctIframes,
+            resolver = { iframeUrl, emitLink ->
+                if (iframeUrl.contains("filmizle.in")) {
+                    FilmizleInExtractor().getUrl(iframeUrl, referer = "https://sinemacc.com/", subtitleCallback, emitLink)
+                } else {
+                    loadExtractor(iframeUrl, referer = data, subtitleCallback, emitLink)
                 }
-            } else {
-                val success = loadExtractor(iframeUrl, referer = data, subtitleCallback) { link ->
-                    callback(link)
-                    linksFound = true
-                }
-                if (success) linksFound = true
+            },
+            onLinkFound = { link ->
+                callback(link)
+                linksFound = true
             }
-        }
+        )
 
-        return linksFound
+        return linksFound || count > 0
     }
 }

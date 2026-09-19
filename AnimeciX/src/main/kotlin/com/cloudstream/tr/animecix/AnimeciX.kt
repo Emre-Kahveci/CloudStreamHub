@@ -4,6 +4,7 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.lagradost.cloudstream3.LoadResponse.Companion.addTrailer
+import com.cloudstream.tr.core.model.ProviderModels
 
 class AnimeciX : MainAPI() {
     override var mainUrl = "https://animecix.tv"
@@ -63,7 +64,8 @@ class AnimeciX : MainAPI() {
             }
         } ?: emptyList()
 
-        return newSearchResponseList(items, hasNext = false)
+        val deduped = ProviderModels.dedupSearchResults(items)
+        return newSearchResponseList(deduped, hasNext = false)
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query, 1).items

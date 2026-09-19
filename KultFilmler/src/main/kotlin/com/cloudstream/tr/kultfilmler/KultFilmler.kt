@@ -1,5 +1,7 @@
 package com.cloudstream.tr.kultfilmler
 
+import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.model.ProviderModels
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
@@ -48,9 +50,9 @@ class KultFilmler : MainAPI() {
         val doc = app.get(targetUrl).document
         val items = doc.select("a.mcard, a.dcard, article, div.item").mapNotNull { el ->
             parseSearchElement(el)
-        }.distinctBy { it.url }
-
-        return newSearchResponseList(items, hasNext = items.isNotEmpty())
+        }
+        val deduped = ProviderModels.dedupSearchResults(items)
+        return newSearchResponseList(deduped, hasNext = deduped.isNotEmpty())
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query, 1).items
@@ -187,68 +189,69 @@ class KultFilmler : MainAPI() {
             fixUrlNull(clean)?.let { iframes.add(it) }
         }
 
-        for (iframeUrl in iframes.distinct()) {
-            if (iframeUrl.contains("vidpapi.xyz")) {
-                try {
-                    val vidpapiDoc = app.get(iframeUrl, referer = mainUrl).text
+        val candidates = iframes.distinct()
+        val count = BoundedParallelResolver.resolveProgressive(
+            candidates = candidates,
+            resolver = { iframeUrl, emitLink ->
+                if (iframeUrl.contains("vidpapi.xyz")) {
+                    try {
+                        val vidpapiDoc = app.get(iframeUrl, referer = mainUrl).text
 
-                    // Subtitle discovery from playerjsSubtitle
-                    Regex("""playerjsSubtitle\s*=\s*["']([^"']+)["']""").find(vidpapiDoc)?.let { match ->
-                        val rawSub = match.groupValues[1]
-                        val subLang = Regex("""\[(.*?)\]""").find(rawSub)?.groupValues?.get(1) ?: "Türkçe"
-                        val subUrl = rawSub.replace(Regex("""\[.*?\]"""), "").trim()
-                        if (subUrl.startsWith("http")) {
-                            subtitleCallback(
-                                SubtitleFile(
-                                    lang = subLang,
-                                    url = subUrl
+                        // Subtitle discovery from playerjsSubtitle
+                        Regex("""playerjsSubtitle\s*=\s*["']([^"']+)["']""").find(vidpapiDoc)?.let { match ->
+                            val rawSub = match.groupValues[1]
+                            val subLang = Regex("""\[(.*?)\]""").find(rawSub)?.groupValues?.get(1) ?: "Türkçe"
+                            val subUrl = rawSub.replace(Regex("""\[.*?\]"""), "").trim()
+                            if (subUrl.startsWith("http")) {
+                                subtitleCallback(
+                                    SubtitleFile(
+                                        lang = subLang,
+                                        url = subUrl
+                                    )
                                 )
-                            )
+                            }
                         }
-                    }
 
-                    // Request direct video stream via vidpapi getVideo API
-                    val dataId = iframeUrl.substringAfter("/video/").substringBefore("/").substringBefore("?")
-                    if (dataId.isNotBlank()) {
-                        val apiUrl = "https://vidpapi.xyz/player/index.php?data=${dataId}&do=getVideo"
-                        val apiResp = app.post(
-                            apiUrl,
-                            headers = mapOf(
-                                "Referer" to iframeUrl,
-                                "X-Requested-With" to "XMLHttpRequest"
-                            )
-                        ).parsedSafe<VidpapiResponse>()
+                        // Request direct video stream via vidpapi getVideo API
+                        val dataId = iframeUrl.substringAfter("/video/").substringBefore("/").substringBefore("?")
+                        if (dataId.isNotBlank()) {
+                            val apiUrl = "https://vidpapi.xyz/player/index.php?data=${dataId}&do=getVideo"
+                            val apiResp = app.post(
+                                apiUrl,
+                                headers = mapOf(
+                                    "Referer" to iframeUrl,
+                                    "X-Requested-With" to "XMLHttpRequest"
+                                )
+                            ).parsedSafe<VidpapiResponse>()
 
-                        val streamCandidate = apiResp?.videoSource?.ifBlank { null }
-                            ?: apiResp?.securedLink?.ifBlank { null }
+                            val streamCandidate = apiResp?.videoSource?.ifBlank { null }
+                                ?: apiResp?.securedLink?.ifBlank { null }
 
-                        if (streamCandidate != null && (streamCandidate.contains(".m3u8") || streamCandidate.contains(".txt") || streamCandidate.contains("/hls/"))) {
-                            callback(
-                                newExtractorLink(
-                                    source = name,
-                                    name = "$name HLS",
-                                    url = streamCandidate,
-                                    type = ExtractorLinkType.M3U8
-                                ) {
-                                    this.referer = "https://vidpapi.xyz/"
-                                    this.quality = Qualities.P1080.value
-                                }
-                            )
-                            linksFound = true
+                            if (streamCandidate != null && (streamCandidate.contains(".m3u8") || streamCandidate.contains(".txt") || streamCandidate.contains("/hls/"))) {
+                                emitLink(
+                                    newExtractorLink(
+                                        source = name,
+                                        name = "$name HLS",
+                                        url = streamCandidate,
+                                        type = ExtractorLinkType.M3U8
+                                    ) {
+                                        this.referer = "https://vidpapi.xyz/"
+                                        this.quality = Qualities.P1080.value
+                                    }
+                                )
+                            }
                         }
-                    }
-                } catch (e: Exception) {
-                    // continue to next candidate
+                    } catch (_: Exception) {}
+                } else {
+                    loadExtractor(iframeUrl, referer = mainUrl, subtitleCallback, emitLink)
                 }
-            } else {
-                val success = loadExtractor(iframeUrl, referer = mainUrl, subtitleCallback) { link ->
-                    callback(link)
-                    linksFound = true
-                }
-                if (success) linksFound = true
+            },
+            onLinkFound = { link ->
+                callback(link)
+                linksFound = true
             }
-        }
+        )
 
-        return linksFound
+        return linksFound || count > 0
     }
 }

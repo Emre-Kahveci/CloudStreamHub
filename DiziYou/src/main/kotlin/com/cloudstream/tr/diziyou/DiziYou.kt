@@ -1,5 +1,7 @@
-﻿package com.cloudstream.tr.diziyou
+package com.cloudstream.tr.diziyou
 
+import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.model.ProviderModels
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Document
@@ -84,7 +86,8 @@ class DiziYou : MainAPI() {
             }
         }.distinctBy { it.url }
 
-        return newSearchResponseList(items, hasNext = items.isNotEmpty())
+        val deduped = ProviderModels.dedupSearchResults(items)
+        return newSearchResponseList(deduped, hasNext = deduped.isNotEmpty())
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query, 1).items
@@ -151,6 +154,72 @@ class DiziYou : MainAPI() {
         }
     }
 
+    internal fun extractPlayerId(doc: Document): String? {
+        val playerIframe = doc.selectFirst("iframe#diziyouPlayer, iframe[src*='/player/']")?.attr("src")
+        return if (!playerIframe.isNullOrBlank()) {
+            Regex("""/player/([a-zA-Z0-9_-]+)\.html""").find(playerIframe)?.groupValues?.get(1)
+        } else {
+            Regex("""itemId\s*=\s*['"]([a-zA-Z0-9_-]+)['"]""").find(doc.html())?.groupValues?.get(1)
+                ?: Regex("""data-id=['"]([a-zA-Z0-9_-]+)['"]""").find(doc.html())?.groupValues?.get(1)
+        }
+    }
+
+    internal suspend fun emitNativeLinks(
+        itemId: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
+        if (itemId.isNullOrBlank()) return false
+
+        val streamUrl = "https://storage.diziyou.one/episodes/${itemId}/play.m3u8"
+        callback(
+            newExtractorLink(
+                source = name,
+                name = "$name HLS",
+                url = streamUrl,
+                type = ExtractorLinkType.M3U8
+            ) {
+                this.referer = "https://www.diziyou.one/"
+                this.quality = Qualities.P1080.value
+            }
+        )
+
+        subtitleCallback(
+            SubtitleFile(
+                lang = "Türkçe",
+                url = "https://storage.diziyou.one/episodes/${itemId}/tr.vtt"
+            )
+        )
+        subtitleCallback(
+            SubtitleFile(
+                lang = "İngilizce",
+                url = "https://storage.diziyou.one/episodes/${itemId}/en.vtt"
+            )
+        )
+
+        val dubUrl = "https://storage.diziyou.one/episodes/${itemId}_tr/play.m3u8"
+        callback(
+            newExtractorLink(
+                source = name,
+                name = "$name Dublaj HLS",
+                url = dubUrl,
+                type = ExtractorLinkType.M3U8
+            ) {
+                this.referer = "https://www.diziyou.one/"
+                this.quality = Qualities.P1080.value
+            }
+        )
+
+        return true
+    }
+
+    internal fun getFallbackIframeCandidates(doc: Document): List<String> {
+        return doc.select("iframe").mapNotNull { iframe ->
+            val src = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
+            if (src.isNotBlank() && !src.contains("diziyouPlayer")) src else null
+        }
+    }
+
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
@@ -160,69 +229,23 @@ class DiziYou : MainAPI() {
         var linksFound = false
         val doc = app.get(data).document
 
-        val playerIframe = doc.selectFirst("iframe#diziyouPlayer, iframe[src*='/player/']")?.attr("src")
-        val itemId = if (!playerIframe.isNullOrBlank()) {
-            Regex("""/player/([a-zA-Z0-9_-]+)\.html""").find(playerIframe)?.groupValues?.get(1)
-        } else {
-            Regex("""itemId\s*=\s*['"]([a-zA-Z0-9_-]+)['"]""").find(doc.html())?.groupValues?.get(1)
-                ?: Regex("""data-id=['"]([a-zA-Z0-9_-]+)['"]""").find(doc.html())?.groupValues?.get(1)
-        }
-
-        if (!itemId.isNullOrBlank()) {
-            val streamUrl = "https://storage.diziyou.one/episodes/${itemId}/play.m3u8"
-            callback(
-                newExtractorLink(
-                    source = name,
-                    name = "$name HLS",
-                    url = streamUrl,
-                    type = ExtractorLinkType.M3U8
-                ) {
-                    this.referer = "https://www.diziyou.one/"
-                    this.quality = Qualities.P1080.value
-                }
-            )
+        val itemId = extractPlayerId(doc)
+        if (emitNativeLinks(itemId, subtitleCallback, callback)) {
             linksFound = true
-
-            subtitleCallback(
-                SubtitleFile(
-                    lang = "Türkçe",
-                    url = "https://storage.diziyou.one/episodes/${itemId}/tr.vtt"
-                )
-            )
-            subtitleCallback(
-                SubtitleFile(
-                    lang = "İngilizce",
-                    url = "https://storage.diziyou.one/episodes/${itemId}/en.vtt"
-                )
-            )
-
-            val dubUrl = "https://storage.diziyou.one/episodes/${itemId}_tr/play.m3u8"
-            callback(
-                newExtractorLink(
-                    source = name,
-                    name = "$name Dublaj HLS",
-                    url = dubUrl,
-                    type = ExtractorLinkType.M3U8
-                ) {
-                    this.referer = "https://www.diziyou.one/"
-                    this.quality = Qualities.P1080.value
-                }
-            )
         }
 
-        doc.select("iframe").forEach { iframe ->
-            val src = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
-            if (src.isNotBlank() && !src.contains("diziyouPlayer")) {
-                fixUrlNull(src)?.let { fixed ->
-                    val success = loadExtractor(fixed, referer = data, subtitleCallback) { link ->
-                        callback(link)
-                        linksFound = true
-                    }
-                    if (success) linksFound = true
-                }
+        val fallbacks = getFallbackIframeCandidates(doc).mapNotNull { fixUrlNull(it) }
+        val fallbackCount = BoundedParallelResolver.resolveProgressive(
+            candidates = fallbacks,
+            resolver = { fixed, emitLink ->
+                loadExtractor(fixed, referer = data, subtitleCallback, emitLink)
+            },
+            onLinkFound = { link ->
+                callback(link)
+                linksFound = true
             }
-        }
+        )
 
-        return linksFound
+        return linksFound || fallbackCount > 0
     }
 }

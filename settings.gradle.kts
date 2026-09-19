@@ -9,7 +9,8 @@ val ignoredDirs = listOf(
     ".github",
     "gradle",
     "reports",
-    "site"
+    "site",
+    "core"
 )
 
 val disabled = listOf<String>()

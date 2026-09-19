@@ -77,4 +77,51 @@ class FullHDFilmizleseneParserTest {
         assertNotNull(decrypted)
         assertEquals(target, decrypted)
     }
+
+    @Test
+    fun testOfflineRapidvidParsing() = runBlocking {
+        val target = "https://example.invalid/rapidvid.m3u8"
+        // Generate synthetic token for `target`
+        val inner = java.util.Base64.getEncoder().encodeToString(target.toByteArray(Charsets.UTF_8))
+        val key = "K9L"
+        val sb = java.lang.StringBuilder()
+        for (i in inner.indices) {
+            val r = key[i % 3]
+            val c = (inner[i].code + (r.code % 5 + 1)).toChar()
+            sb.append(c)
+        }
+        val encodedBytes = sb.toString().toByteArray(Charsets.ISO_8859_1)
+        val b64 = java.util.Base64.getEncoder().encodeToString(encodedBytes)
+        val token = b64.reversed().trimStart('=')
+
+        val stream = javaClass.classLoader?.getResourceAsStream("fullhdfilmizlesene_rapidvid_response.html")
+        assertNotNull("fixture missing", stream)
+        val rawHtml = stream!!.bufferedReader().readText()
+        val html = rawHtml.replace("SYNTHETIC_TOKEN", token)
+
+        val extLinks = mutableListOf<com.lagradost.cloudstream3.utils.ExtractorLink>()
+        val subFiles = mutableListOf<com.lagradost.cloudstream3.SubtitleFile>()
+
+        val result = provider.parseRapidvidResponse(html, { subFiles.add(it) }, { extLinks.add(it) })
+        assertTrue(result)
+
+        assertEquals(1, extLinks.size)
+        assertEquals("RapidVid", extLinks[0].name)
+        assertEquals(target, extLinks[0].url)
+        assertEquals("https://rapidvid.org/", extLinks[0].referer)
+
+        assertEquals(1, subFiles.size)
+        assertEquals("Türkçe", subFiles[0].lang)
+        assertEquals("https://example.invalid/tr.vtt", subFiles[0].url)
+    }
+
+    @Test
+    fun testOfflineRapidvidMalformed() = runBlocking {
+        val stream = javaClass.classLoader?.getResourceAsStream("fullhdfilmizlesene_rapidvid_malformed.html")
+        assertNotNull("fixture missing", stream)
+        val html = stream!!.bufferedReader().readText()
+
+        val result = provider.parseRapidvidResponse(html, { fail() }, { fail() })
+        assertFalse(result)
+    }
 }

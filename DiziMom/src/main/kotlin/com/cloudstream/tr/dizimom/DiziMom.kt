@@ -1,5 +1,8 @@
-﻿package com.cloudstream.tr.dizimom
+package com.cloudstream.tr.dizimom
 
+import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.extractors.PeacemakerExtractor
+import com.cloudstream.tr.core.model.ProviderModels
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
@@ -72,9 +75,9 @@ class DiziMom : MainAPI() {
         val doc = app.get(targetUrl).document
         val items = doc.select("article.post, div.post, div.video-item, div.search-result").mapNotNull { el ->
             parseSearchElement(el)
-        }.distinctBy { it.url }
-
-        return newSearchResponseList(items, hasNext = items.isNotEmpty())
+        }
+        val deduped = ProviderModels.dedupSearchResults(items)
+        return newSearchResponseList(deduped, hasNext = deduped.isNotEmpty())
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query, 1).items
@@ -171,70 +174,22 @@ class DiziMom : MainAPI() {
             }
         }
 
-        for (iframeUrl in iframes.distinct()) {
-            if (iframeUrl.contains("peacemakerst.com")) {
-                try {
-                    val videoId = Regex("""/video/([a-zA-Z0-9_-]+)""").find(iframeUrl)?.groupValues?.get(1)
-                    if (!videoId.isNullOrBlank()) {
-                        val apiUrl = "https://peacemakerst.com/tv/video/${videoId}?do=getVideo"
-                        val resp = app.post(
-                            apiUrl,
-                            data = mapOf(
-                                "hash" to videoId,
-                                "r" to "https://www.dizimom.diy/",
-                                "s" to ""
-                            ),
-                            headers = mapOf(
-                                "X-Requested-With" to "XMLHttpRequest",
-                                "Referer" to iframeUrl
-                            )
-                        ).parsedSafe<PeacemakerResponse>()
-
-                        resp?.videoSources?.forEach { vs ->
-                            val fileUrl = vs.file ?: return@forEach
-                            val isM3u8 = fileUrl.contains(".m3u8") || vs.type == "hls"
-                            callback(
-                                newExtractorLink(
-                                    source = name,
-                                    name = "$name ${vs.label ?: "HLS"}",
-                                    url = fileUrl,
-                                    type = if (isM3u8) ExtractorLinkType.M3U8 else ExtractorLinkType.VIDEO
-                                ) {
-                                    this.referer = "https://peacemakerst.com/"
-                                    this.quality = Qualities.P1080.value
-                                }
-                            )
-                            linksFound = true
-                        }
-
-                        val secLink = resp?.securedLink
-                        if (!secLink.isNullOrBlank()) {
-                            callback(
-                                newExtractorLink(
-                                    source = name,
-                                    name = "$name HLS",
-                                    url = secLink,
-                                    type = ExtractorLinkType.M3U8
-                                ) {
-                                    this.referer = "https://peacemakerst.com/"
-                                    this.quality = Qualities.P1080.value
-                                }
-                            )
-                            linksFound = true
-                        }
-                    }
-                } catch (e: Exception) {
-                    // continue
+        val distinctIframes = iframes.distinct()
+        val count = BoundedParallelResolver.resolveProgressive(
+            candidates = distinctIframes,
+            resolver = { iframeUrl, emitLink ->
+                if (iframeUrl.contains("peacemakerst.com")) {
+                    PeacemakerExtractor().getUrl(iframeUrl, referer = "https://www.dizimom.diy/", subtitleCallback, emitLink)
+                } else {
+                    loadExtractor(iframeUrl, referer = data, subtitleCallback, emitLink)
                 }
-            } else {
-                val success = loadExtractor(iframeUrl, referer = data, subtitleCallback) { link ->
-                    callback(link)
-                    linksFound = true
-                }
-                if (success) linksFound = true
+            },
+            onLinkFound = { link ->
+                callback(link)
+                linksFound = true
             }
-        }
+        )
 
-        return linksFound
+        return linksFound || count > 0
     }
 }

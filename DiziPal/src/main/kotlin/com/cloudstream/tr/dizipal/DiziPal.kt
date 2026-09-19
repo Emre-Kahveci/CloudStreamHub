@@ -1,5 +1,7 @@
 package com.cloudstream.tr.dizipal
 
+import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.model.ProviderModels
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
@@ -112,7 +114,8 @@ class DiziPal : MainAPI() {
             }
         }?.distinctBy { it.url } ?: emptyList()
 
-        return newSearchResponseList(items, hasNext = false)
+        val deduped = ProviderModels.dedupSearchResults(items)
+        return newSearchResponseList(deduped, hasNext = false)
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query, 1).items
@@ -188,6 +191,8 @@ class DiziPal : MainAPI() {
     ): Boolean {
         val doc = app.get(data, referer = "${mainUrl}/").document
 
+        val candidateUrls = mutableListOf<String>()
+
         // Try base64 encodedContent in script
         for (s in doc.select("script")) {
             val text = s.data()
@@ -197,13 +202,7 @@ class DiziPal : MainAPI() {
                 val decoded = String(base64DecodeArray(b64), StandardCharsets.UTF_8)
                 val iframeSrc = Regex("src=\"([^\"]+)\"").find(decoded)?.groupValues?.get(1)
                 if (iframeSrc != null) {
-                    val fullIframe = fixUrl(iframeSrc)
-                    if (resolveVideoPlay(fullIframe, data, subtitleCallback, callback)) {
-                        return true
-                    }
-                    if (loadExtractor(fullIframe, "${mainUrl}/", subtitleCallback, callback)) {
-                        return true
-                    }
+                    candidateUrls.add(fixUrl(iframeSrc))
                 }
             }
         }
@@ -211,15 +210,30 @@ class DiziPal : MainAPI() {
         // Direct iframes fallback
         for (iframe in doc.select("iframe[src]")) {
             val src = fixUrlNull(iframe.attr("src")) ?: continue
-            if (src.contains("videoplay.vip")) {
-                if (resolveVideoPlay(src, data, subtitleCallback, callback)) return true
-            }
-            if (loadExtractor(src, "${mainUrl}/", subtitleCallback, callback)) {
-                return true
-            }
+            candidateUrls.add(src)
         }
 
-        return false
+        var anyFound = false
+        val count = BoundedParallelResolver.resolveProgressive(
+            candidates = candidateUrls.distinct(),
+            resolver = { candidate, emitLink ->
+                if (candidate.contains("videoplay.vip")) {
+                    if (resolveVideoPlay(candidate, data, subtitleCallback, emitLink)) {
+                        anyFound = true
+                    }
+                } else {
+                    if (loadExtractor(candidate, "${mainUrl}/", subtitleCallback, emitLink)) {
+                        anyFound = true
+                    }
+                }
+            },
+            onLinkFound = { link ->
+                callback(link)
+                anyFound = true
+            }
+        )
+
+        return anyFound || count > 0
     }
 
     private suspend fun resolveVideoPlay(

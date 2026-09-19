@@ -30,20 +30,40 @@ https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/repo.json
 
 ---
 
-## 📦 Mevcut Eklentiler (Active Providers)
+## 📦 Mevcut Eklentiler (Active Providers — 30 Eklenti)
 
-| Eklenti Adı | Modül Adı | Güncel Sürüm | Eski Sürüm | Türler | Canonical Domain | Durum |
-|---|---|---|---|---|---|---|
-| **Kült Filmler** | `KultFilmler` | **32** | 31 | Film, Dizi | [kultfilmler.net](https://kultfilmler.net) | `1 (Aktif)` |
-| **Yeşilçam TV** | `YesilCamTv` | **10** | 9 | Film | [yesilcamtv.com.tr](https://yesilcamtv.com.tr) | `1 (Aktif)` |
-| **DiziPal** | `DiziPal` | **90** | 89 | Dizi, Film | [dizipal1430.com](https://dizipal1430.com) | `1 (Aktif)` |
-| **Türk Anime TV** | `TurkAnime` | **90** | 34 | Anime | [turkanime.tv](https://www.turkanime.tv) | `1 (Aktif)` |
-| **AnimeciX** | `AnimeciX` | **90** | 88 | Anime | [animecix.tv](https://animecix.tv) | `1 (Aktif)` |
-| **BelgeselX** | `BelgeselX` | **90** | 41 | Belgesel | [belgeselx.com](https://belgeselx.com) | `1 (Aktif)` |
-| **HDFilmCehennemi** | `HDFilmCehennemi` | **90** | 97 | Film, Dizi | [hdfilmcehennemi.nl](https://www.hdfilmcehennemi.nl) | `1 (Aktif)` |
-| **FilmMakinesi** | `FilmMakinesi` | **90** | 70 | Film, Dizi | [filmmakinesi.to](https://filmmakinesi.to) | `1 (Aktif)` |
-
-> Tam 67 legacy eklentinin durum dökümü ve canlandırma matrisi için [docs/LEGACY_INVENTORY.md](docs/LEGACY_INVENTORY.md) ve [legacy/migration-matrix.json](legacy/migration-matrix.json) dosyalarını inceleyebilirsiniz.
+| Eklenti Adı | Modül Adı | Türler | Canonical Domain | Açıklama |
+|---|---|---|---|---|
+| 🌟 **CloudStreamHub Aggregator** | `CloudStreamHub` | Film, Dizi, Anime, Çizgi Dizi, Belgesel | [api.themoviedb.org](https://api.themoviedb.org) | **Süper Eklenti**: TMDB Keşif & Tüm Türkçe Sağlayıcıları Birleştiren Federated Motor |
+| **HDFilmCehennemi** | `HDFilmCehennemi` | Film, Dizi | [hdfilmcehennemi.nl](https://www.hdfilmcehennemi.nl) | Güncel yabancı ve yerli filmler, hızlı CDN yayınları |
+| **FullHDFilmizlesene** | `FullHDFilmizlesene` | Film | [fullhdfilmizlesene.now](https://www.fullhdfilmizlesene.now) | RapidVid & Turbovid yerli/yabancı film arşivi |
+| **Film Modu** | `FilmModu` | Film | [filmmodu15.com](https://www.filmmodu15.com) | Yüksek kaliteli 1080p yerli ve yabancı film arşivi |
+| **Film Makinesi** | `FilmMakinesi` | Film, Dizi | [filmmakinesi.to](https://filmmakinesi.to) | CloseLoad & Vidmoly entegrasyonlu geniş film arşivi |
+| **JetFilmİzle** | `JetFilmIzle` | Film | [jetfilmizle.vip](https://jetfilmizle.vip) | Güncel sinema ve film arşivi |
+| **SinemaCX** | `SinemaCX` | Film | [sinemacc.com](https://sinemacc.com) | FilmizleIn & Vidmoly alternatifli film arşivi |
+| **Kült Filmler** | `KultFilmler` | Film, Dizi | [kultfilmler.net](https://kultfilmler.net) | Klasik ve kült filmler arşivi |
+| **Yeşilçam TV** | `YesilCamTv` | Film | [yesilcamtv.com.tr](https://yesilcamtv.com.tr) | Nostaljik Yeşilçam klasik Türk sineması |
+| **Dizilla** | `Dizilla` | Dizi | [dizilla.now](https://dizilla.now) | Pichive & FourPichive güncel yabancı dizi arşivi |
+| **Sezonluk Dizi** | `SezonlukDizi` | Dizi | [sezonlukdizi.cc](https://sezonlukdizi.cc) | Kapsamlı yabancı dizi ve sezon takibi |
+| **DiziMom** | `DiziMom` | Dizi | [dizimom.diy](https://www.dizimom.diy) | Peacemaker & Vidmoly yabancı dizi arşivi |
+| **DiziYou** | `DiziYou` | Dizi | [diziyou.one](https://www.diziyou.one) | Popüler yabancı diziler ve hızlı oynatıcılar |
+| **DDizi** | `DDizi` | Dizi | [ddizi.pro](https://www.ddizi.pro) | Yerli ve yabancı dizi arşivi, güncel bölüm takibi |
+| **DiziPal** | `DiziPal` | Dizi, Film | [dizipal1430.com](https://dizipal1430.com) | Popüler dijital platform dizileri ve filmleri |
+| **Sinewix** | `Sinewix` | Film, Dizi | [sinewix.net](https://sinewix.net) | Geniş film ve dizi arşivi, dublaj & altyazı seçenekleri |
+| **ÇizgiMax** | `CizgiMax` | Çizgi Dizi, Anime, Çizgi Film | [cizgimax.online](https://cizgimax.online) | Nostaljik ve güncel çizgi dizi & animasyon arşivi |
+| **Türk Anime TV** | `TurkAnime` | Anime, Anime Film | [turkanime.tv](https://www.turkanime.tv) | Türkiye'nin en büyük anime platformu |
+| **AnimeciX** | `AnimeciX` | Anime | [animecix.tv](https://animecix.tv) | Modern anime arşivi ve hızlı API entegrasyonu |
+| **BelgeselX** | `BelgeselX` | Belgesel | [belgeselx.com](https://belgeselx.com) | Türkçe dublajlı doğa, tarih, bilim belgeselleri |
+| **DiziKorea** | `DiziKorea` | Asya Dizisi, Kore Dizisi | [dizikorea3.com](https://dizikorea3.com) | Güncel Asya ve Kore dizileri, hızlı oynatıcılar |
+| **DramaDizilerim** | `DramaDizilerim` | Asya Draması | [dramadizilerim.com](https://dramadizilerim.com) | Özel Asya dizileri, doğrudan CDN ve Türkçe altyazı |
+| **WebDramaTurkey** | `WebDramaTurkey` | Asya Draması | [webdramaturkey2.com](https://webdramaturkey2.com) | Web Drama dizileri ve bridge player video akışı |
+| **Animeler** | `Animeler` | Anime, Anime Film | [animeler.pw](https://animeler.pw) | Geniş anime dizileri ve AnizmPlayer video akışı |
+| **SetFilmİzle** | `SetFilmIzle` | Film, Dizi | [setfilmizle.ltd](https://www.setfilmizle.ltd) | Dev film ve dizi arşivi, SetPlay (FastPlay) akışları |
+| **DiziLife** | `DiziLife` | Dizi, Film | [dizi74.life](https://dizi74.life) | Yerli ve yabancı dizi arşivi, alternatif playerlar |
+| **HDFilmDelisi** | `HDFilmDelisi` | Film | [hdfilmdelisi.one](https://hdfilmdelisi.one) | Geniş film arşivi, doğrudan embed & iframe oynatıcılar |
+| **Dizigecesi** | `Dizigecesi` | Dizi, Film | [dizigecesi.com](https://dizigecesi.com) | Güncel yabancı dizi ve film arşivi, Vidmoly & AJAX player |
+| **RareFilmm** | `RareFilmm` | Film | [rarefilmm.com](https://rarefilmm.com) | Nadir ve klasik dünya sineması filmleri, OkRu akışları |
+| **FilmHane** | `FilmHane` | Film, Dizi | [filmhane.shop](https://www.filmhane.shop) | Full HD film ve dizi arşivi, hızlı Vidmoly CDN akışları |
 
 ---
 

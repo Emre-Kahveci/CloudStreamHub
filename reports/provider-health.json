@@ -2,7 +2,7 @@
   {
     "schemaVersion": 1,
     "provider": "AnimeciX",
-    "checkedAt": "2026-09-16T22:39:04.473510+00:00",
+    "checkedAt": "2026-09-18T21:19:24.762397+00:00",
     "canonical": "https://animecix.tv",
     "finalUrl": "https://animecix.tv/",
     "tierResults": {
@@ -22,13 +22,13 @@
       "L4": "Loaded: AnimeciX - Türkçe Anime Bilgi ve Paylaşı (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] No player iframe, video tag, or player script discovered at https://animecix.tv/titles/naruto"
     },
-    "durationMs": 1162,
+    "durationMs": 2857,
     "candidateHost": null
   },
   {
     "schemaVersion": 1,
     "provider": "BelgeselX",
-    "checkedAt": "2026-09-16T22:39:05.635710+00:00",
+    "checkedAt": "2026-09-18T21:19:27.619748+00:00",
     "canonical": "https://belgeselx.com",
     "finalUrl": "https://belgeselx.com/",
     "tierResults": {
@@ -43,44 +43,41 @@
     "healthScore": 45,
     "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
-      "L2": "Found 15 items. Top: ANTİK UZAYLILAR\nUzaylılar ve Kuts16",
-      "L3": "Found 44 content results. Top: ANTİK UZAYLILAR\nUzaylılar ve Kuts16",
+      "L2": "Found 15 items. Top: DEHA STEPHAN HAWKİNG\nNeredeyiz15",
+      "L3": "Found 44 content results. Top: DEHA STEPHAN HAWKİNG\nNeredeyiz15",
       "L4": "SOFT_404_PAGE: 404 — Sayfa Bulunamadı | Belgeselx",
       "L5": "[NONE] No target content body available to inspect at https://belgeselx.com/belgesel/gezegenimiz"
     },
-    "durationMs": 2370,
+    "durationMs": 2708,
     "candidateHost": null
   },
   {
     "schemaVersion": 1,
     "provider": "DiziPal",
-    "checkedAt": "2026-09-16T22:39:08.006202+00:00",
+    "checkedAt": "2026-09-18T21:19:30.328036+00:00",
     "canonical": "https://dizipal1430.com",
-    "finalUrl": "https://dizipal1430.com/",
+    "finalUrl": "https://dizipalorjinal8.com/",
     "tierResults": {
       "L0_config": "pass",
-      "L1_domain": "pass",
-      "L2_homepage": "pass",
-      "L3_search": "pass",
-      "L4_load": "pass",
-      "L5_player_discovery": "player_discovered"
+      "L1_domain": "untrusted_redirect",
+      "L2_homepage": "skipped",
+      "L3_search": "skipped",
+      "L4_load": "skipped",
+      "L5_player_discovery": "skipped"
     },
-    "overallStatus": "healthy",
-    "healthScore": 100,
+    "overallStatus": "critical",
+    "healthScore": 0,
     "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
-      "L2": "Found 15 items. Top: Dublaj & Altyazı\n\n\r\n                                            Reacher",
-      "L3": "Found 1 API results. Top: Silo",
-      "L4": "Loaded: Silo izle - Dizipal (Episodes: 30, Mode: STRICT_CONFIG)",
-      "L5": "[STRICT_CONFIG] Discovered 1 iframes, 0 videos at https://dizipal1430.com/bolum/silo-1-sezon-1-bolum"
+      "L1": "Untrusted redirect candidate: dizipalorjinal8.com"
     },
-    "durationMs": 1214,
-    "candidateHost": null
+    "durationMs": 759,
+    "candidateHost": "dizipalorjinal8.com"
   },
   {
     "schemaVersion": 1,
     "provider": "FilmMakinesi",
-    "checkedAt": "2026-09-16T22:39:09.221199+00:00",
+    "checkedAt": "2026-09-18T21:19:31.089316+00:00",
     "canonical": "https://filmmakinesi.to",
     "finalUrl": "https://filmmakinesi.to/",
     "tierResults": {
@@ -100,13 +97,13 @@
       "L4": "Loaded: Forgotten Island 2026 Filmi 1080p Full H (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 2 iframes, 5 videos at https://filmmakinesi.to/film/forgotten-island-2026/"
     },
-    "durationMs": 829,
+    "durationMs": 1179,
     "candidateHost": null
   },
   {
     "schemaVersion": 1,
     "provider": "HDFilmCehennemi",
-    "checkedAt": "2026-09-16T22:39:10.050543+00:00",
+    "checkedAt": "2026-09-18T21:19:32.269168+00:00",
     "canonical": "https://www.hdfilmcehennemi.nl",
     "finalUrl": "https://www.hdfilmcehennemi.nl/",
     "tierResults": {
@@ -126,13 +123,13 @@
       "L4": "Loaded: Örümcek Adam Yepyeni Bir Gün - Spider Ma (Episodes: 1, Mode: GENERIC_FALLBACK)",
       "L5": "[GENERIC_FALLBACK] Discovered 1 iframes, 0 videos at https://www.hdfilmcehennemi.nl/spider-man-brand-new-day/"
     },
-    "durationMs": 940,
+    "durationMs": 1120,
     "candidateHost": null
   },
   {
     "schemaVersion": 1,
     "provider": "KultFilmler",
-    "checkedAt": "2026-09-16T22:39:10.991496+00:00",
+    "checkedAt": "2026-09-18T21:19:33.389982+00:00",
     "canonical": "https://kultfilmler.net",
     "finalUrl": "https://kultfilmler.net/",
     "tierResults": {
@@ -152,13 +149,13 @@
       "L4": "Loaded: Soldier - Asker İzle HD İzle - Kült Film (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 1 iframes, 0 videos at https://kultfilmler.net/soldier-asker/"
     },
-    "durationMs": 831,
+    "durationMs": 1216,
     "candidateHost": null
   },
   {
     "schemaVersion": 1,
     "provider": "TurkAnime",
-    "checkedAt": "2026-09-16T22:39:11.823457+00:00",
+    "checkedAt": "2026-09-18T21:19:34.606947+00:00",
     "canonical": "https://www.turkanime.tv",
     "finalUrl": "https://www.turkanime.tv/",
     "tierResults": {
@@ -178,13 +175,13 @@
       "L4": "Loaded: Death Note izle | Konusu, Bölümleri ve K (Episodes: 37, Mode: STRICT_CONFIG)",
       "L5": "[STRICT_CONFIG] Discovered 1 iframes, 0 videos at https://www.turkanime.tv/ajax/videosec&<REDACTED_QUERY>"
     },
-    "durationMs": 2736,
+    "durationMs": 2944,
     "candidateHost": null
   },
   {
     "schemaVersion": 1,
     "provider": "YesilCamTv",
-    "checkedAt": "2026-09-16T22:39:14.560404+00:00",
+    "checkedAt": "2026-09-18T21:19:37.552175+00:00",
     "canonical": "https://yesilcamtv.com.tr",
     "finalUrl": "https://yesilcamtv.com.tr/",
     "tierResults": {
@@ -204,13 +201,13 @@
       "L4": "Loaded: Sahte Kabadayı | YESILCAM TV (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 1 iframes, 0 videos at https://yesilcamtv.com.tr/sahte-kabadayi-izle/"
     },
-    "durationMs": 1152,
+    "durationMs": 1330,
     "candidateHost": null
   },
   {
     "schemaVersion": 1,
     "provider": "SezonlukDizi",
-    "checkedAt": "2026-09-16T22:39:15.712864+00:00",
+    "checkedAt": "2026-09-18T21:19:38.882856+00:00",
     "canonical": "https://sezonlukdizi.cc",
     "finalUrl": "https://sezonlukdizi.cc/",
     "tierResults": {
@@ -230,13 +227,13 @@
       "L4": "Loaded: Breaking Bad izle - Sezonluk Dizi izle (Episodes: 20, Mode: STRICT_CONFIG)",
       "L5": "[STRICT_CONFIG] No player iframe, video tag, or player script discovered at https://sezonlukdizi.cc/breaking-bad/5-sezon-16-bolum.html"
     },
-    "durationMs": 1403,
+    "durationMs": 2324,
     "candidateHost": null
   },
   {
     "schemaVersion": 1,
     "provider": "SinemaCX",
-    "checkedAt": "2026-09-16T22:39:17.116810+00:00",
+    "checkedAt": "2026-09-18T21:19:41.207196+00:00",
     "canonical": "https://sinemacc.com",
     "finalUrl": "https://sinemacc.com/",
     "tierResults": {
@@ -256,13 +253,13 @@
       "L4": "Loaded: Bulvar izle (2026) (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 1 iframes, 0 videos at https://sinemacc.com/film/bulvar-boulevard-2026/"
     },
-    "durationMs": 1383,
+    "durationMs": 1916,
     "candidateHost": null
   },
   {
     "schemaVersion": 1,
     "provider": "DiziMom",
-    "checkedAt": "2026-09-16T22:39:18.500643+00:00",
+    "checkedAt": "2026-09-18T21:19:43.124562+00:00",
     "canonical": "https://www.dizimom.diy",
     "finalUrl": "https://www.dizimom.diy/",
     "tierResults": {
@@ -277,18 +274,18 @@
     "healthScore": 50,
     "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
-      "L2": "Found 15 items. Top: Güneşin Doğduğu Yer izle",
+      "L2": "Found 15 items. Top: The Scandal izle",
       "L3": "Found 23 content results. Top: Ángel Di María: Breaking Down the Wall i",
       "L4": "Loaded: Bangkok Breaking izle | DiziMOM (Episodes: 15, Mode: GENERIC_FALLBACK)",
       "L5": "[GENERIC_FALLBACK] No player iframe, video tag, or player script discovered at https://www.dizimom.diy/turkce-dublaj-bolumler-hd/"
     },
-    "durationMs": 2709,
+    "durationMs": 2972,
     "candidateHost": null
   },
   {
     "schemaVersion": 1,
     "provider": "DiziYou",
-    "checkedAt": "2026-09-16T22:39:21.209861+00:00",
+    "checkedAt": "2026-09-18T21:19:46.097557+00:00",
     "canonical": "https://www.diziyou.one",
     "finalUrl": "https://www.diziyou.one/",
     "tierResults": {
@@ -308,13 +305,13 @@
       "L4": "Loaded: Arcane izle - Türkçe Dublaj & Altyazılı  (Episodes: 18, Mode: STRICT_CONFIG)",
       "L5": "[STRICT_CONFIG] Discovered 1 iframes, 1 videos at https://www.diziyou.one/arcane-1-sezon-1-bolum/"
     },
-    "durationMs": 3423,
+    "durationMs": 3866,
     "candidateHost": null
   },
   {
     "schemaVersion": 1,
     "provider": "Dizilla",
-    "checkedAt": "2026-09-16T22:39:24.633075+00:00",
+    "checkedAt": "2026-09-18T21:19:49.964092+00:00",
     "canonical": "https://dizilla.now",
     "finalUrl": "https://dizilla.now/",
     "tierResults": {
@@ -334,13 +331,13 @@
       "L4": "Loaded: Breaking Bad izle | Türkçe Dublaj & Alty (Episodes: 13, Mode: STRICT_CONFIG)",
       "L5": "[STRICT_CONFIG] No player iframe, video tag, or player script discovered at https://dizilla.now/breaking-bad-5-sezon-16-bolum-c02"
     },
-    "durationMs": 4228,
+    "durationMs": 3863,
     "candidateHost": null
   },
   {
     "schemaVersion": 1,
     "provider": "FullHDFilmizlesene",
-    "checkedAt": "2026-09-16T22:39:28.861891+00:00",
+    "checkedAt": "2026-09-18T21:19:53.827890+00:00",
     "canonical": "https://www.fullhdfilmizlesene.now",
     "finalUrl": "https://www.fullhdfilmizlesene.now/",
     "tierResults": {
@@ -360,7 +357,151 @@
       "L4": "Loaded: Hızlı Ve Öfkeli 10 - Fast X 2023 Film iz (Episodes: 0, Mode: NONE)",
       "L5": "[NONE] Discovered 1 iframes, 0 videos at https://www.fullhdfilmizlesene.now/film/hizli-ve-ofkeli-10/"
     },
-    "durationMs": 783,
+    "durationMs": 1023,
     "candidateHost": null
+  },
+  {
+    "schemaVersion": 1,
+    "provider": "FilmModu",
+    "checkedAt": "2026-09-18T21:19:54.851725+00:00",
+    "canonical": "https://www.filmmodu.one",
+    "finalUrl": "https://www.filmmodu.one/",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "fail",
+      "L3_search": "fail",
+      "L4_load": "fail",
+      "L5_player_discovery": "player_not_found"
+    },
+    "overallStatus": "degraded",
+    "healthScore": 35,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
+    "diagnostic": {
+      "L2": "NO_HOMEPAGE_ITEMS_PARSED",
+      "L3": "Search returned HTTP 404 or no valid content matches",
+      "L4": "Detail load failed (HTTP None)",
+      "L5": "[NONE] No target content body available to inspect at https://www.filmmodu15.com/film/avatar-turkce-dublaj-izle"
+    },
+    "durationMs": 48107,
+    "candidateHost": null
+  },
+  {
+    "schemaVersion": 1,
+    "provider": "JetFilmIzle",
+    "checkedAt": "2026-09-18T21:20:42.959046+00:00",
+    "canonical": "https://jetfilmizle.vip",
+    "finalUrl": "https://jetfilmizle.now/",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "untrusted_redirect",
+      "L2_homepage": "skipped",
+      "L3_search": "skipped",
+      "L4_load": "skipped",
+      "L5_player_discovery": "skipped"
+    },
+    "overallStatus": "critical",
+    "healthScore": 0,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
+    "diagnostic": {
+      "L1": "Untrusted redirect candidate: jetfilmizle.now"
+    },
+    "durationMs": 805,
+    "candidateHost": "jetfilmizle.now"
+  },
+  {
+    "schemaVersion": 1,
+    "provider": "CizgiMax",
+    "checkedAt": "2026-09-18T21:20:43.766721+00:00",
+    "canonical": "https://cizgimax.online",
+    "finalUrl": "https://cizgimax.online/",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "pass",
+      "L2_homepage": "fail",
+      "L3_search": "fail",
+      "L4_load": "fail",
+      "L5_player_discovery": "player_not_found"
+    },
+    "overallStatus": "degraded",
+    "healthScore": 35,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
+    "diagnostic": {
+      "L2": "NO_HOMEPAGE_ITEMS_PARSED",
+      "L3": "Search returned HTTP 200 or no valid content matches",
+      "L4": "SOFT_404_PAGE: None",
+      "L5": "[NONE] No target content body available to inspect at https://cizgimax.online/cizgi-dizi/avatar-son-hava-bukucu/"
+    },
+    "durationMs": 5186,
+    "candidateHost": null
+  },
+  {
+    "schemaVersion": 1,
+    "provider": "DDizi",
+    "checkedAt": "2026-09-18T21:20:48.953268+00:00",
+    "canonical": "https://www.ddizi.pro",
+    "finalUrl": "https://www.ddizi.im/",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "untrusted_redirect",
+      "L2_homepage": "skipped",
+      "L3_search": "skipped",
+      "L4_load": "skipped",
+      "L5_player_discovery": "skipped"
+    },
+    "overallStatus": "critical",
+    "healthScore": 0,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
+    "diagnostic": {
+      "L1": "Untrusted redirect candidate: www.ddizi.im"
+    },
+    "durationMs": 562,
+    "candidateHost": "www.ddizi.im"
+  },
+  {
+    "schemaVersion": 1,
+    "provider": "Sinewix",
+    "checkedAt": "2026-09-18T21:20:49.517939+00:00",
+    "canonical": "https://sinewix.net",
+    "finalUrl": "https://sinewix.net",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "fail (HTTP_None)",
+      "L2_homepage": "skipped",
+      "L3_search": "skipped",
+      "L4_load": "skipped",
+      "L5_player_discovery": "skipped"
+    },
+    "overallStatus": "failed",
+    "healthScore": 100,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
+    "diagnostic": {
+      "L1": "Failed to perform, curl: (6) Could not resolve host: sinewix.net. See https://curl.se/libcurl/c/libcurl-errors.html first for more details."
+    },
+    "durationMs": 2168,
+    "candidateHost": null
+  },
+  {
+    "schemaVersion": 1,
+    "provider": "CloudStreamHub",
+    "checkedAt": "2026-09-18T21:20:51.686621+00:00",
+    "canonical": "https://api.themoviedb.org",
+    "finalUrl": "https://developer.themoviedb.org/docs/getting-started",
+    "tierResults": {
+      "L0_config": "pass",
+      "L1_domain": "untrusted_redirect",
+      "L2_homepage": "skipped",
+      "L3_search": "skipped",
+      "L4_load": "skipped",
+      "L5_player_discovery": "skipped"
+    },
+    "overallStatus": "critical",
+    "healthScore": 0,
+    "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
+    "diagnostic": {
+      "L1": "Untrusted redirect candidate: developer.themoviedb.org"
+    },
+    "durationMs": 1305,
+    "candidateHost": "developer.themoviedb.org"
   }
 ]

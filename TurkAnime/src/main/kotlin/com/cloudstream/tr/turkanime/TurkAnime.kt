@@ -4,6 +4,8 @@ import java.util.Base64
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
+import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.model.ProviderModels
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import java.security.MessageDigest
@@ -72,7 +74,8 @@ class TurkAnime : MainAPI() {
         ).document
 
         val items = document.select("div#orta-icerik div.panel").mapNotNull { toMainPageResult(it) }
-        return newSearchResponseList(items, hasNext = false)
+        val deduped = ProviderModels.dedupSearchResults(items)
+        return newSearchResponseList(deduped, hasNext = false)
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query, 1).items
@@ -240,7 +243,7 @@ class TurkAnime : MainAPI() {
                                 "X-Requested-With" to "XMLHttpRequest",
                                 "Referer" to "${mainUrl}/"
                             )
-                        ).document
+                            ).document
                         resolveIframesAndExtract(hostDoc, subtitleCallback, callback)
                     } catch (_: Exception) {}
                 }
@@ -267,13 +270,23 @@ class TurkAnime : MainAPI() {
 
         // Buttons (fansubs or direct video hosts)
         val buttons = document.select("button[onclick*='ajax/videosec']")
-        for (button in buttons) {
+        val buttonUrls = buttons.mapNotNull { button ->
             val onclick = button.attr("onclick")
             val subPath = onclick.substringAfter("IndexIcerik('").substringBefore("'")
-            val buttonLink = fixUrlNull(subPath) ?: continue
-            processVideosecUrl(buttonLink, subtitleCallback, wrappedCallback)
-        }
+            fixUrlNull(subPath)
+        }.distinct()
 
-        return found
+        val resolved = BoundedParallelResolver.resolveProgressive(
+            candidates = buttonUrls,
+            maxConcurrency = 3,
+            resolver = { buttonLink, emitLink ->
+                processVideosecUrl(buttonLink, subtitleCallback, emitLink)
+            },
+            onLinkFound = { link ->
+                wrappedCallback(link)
+            }
+        )
+
+        return found || resolved > 0
     }
 }

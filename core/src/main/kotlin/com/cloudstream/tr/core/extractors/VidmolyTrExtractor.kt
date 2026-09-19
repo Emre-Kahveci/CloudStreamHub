@@ -1,0 +1,49 @@
+package com.cloudstream.tr.core.extractors
+
+import com.cloudstream.tr.core.network.SafeHttpClient
+import com.lagradost.cloudstream3.*
+import com.lagradost.cloudstream3.utils.*
+
+open class VidmolyTrExtractor : ExtractorApi() {
+    override val name = "Vidmoly"
+    override val mainUrl = "https://vidmoly.to"
+    override val requiresReferer = true
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        try {
+            val fullUrl = if (url.contains("/w/")) url.replace("/w/", "/embed-") else url
+            val host = Regex("""https?://[^/]+""").find(fullUrl)?.value ?: mainUrl
+            val resp = app.get(
+                fullUrl,
+                headers = mapOf(
+                    "User-Agent" to SafeHttpClient.DEFAULT_USER_AGENT,
+                    "Referer" to (referer ?: host)
+                )
+            ).text
+
+            val m3u8Match = Regex("""sources:\s*\[\s*\{\s*file:\s*["']([^"']+\.m3u8[^"']*)["']""").find(resp)
+                ?: Regex("""file:\s*["']([^"']+\.m3u8[^"']*)["']""").find(resp)
+                ?: Regex("""https?://[^"'\s<>]+\.m3u8[^"'\s<>]*""").find(resp)
+
+            val m3u8Url = m3u8Match?.groupValues?.getOrNull(1) ?: m3u8Match?.value
+            if (!m3u8Url.isNullOrBlank()) {
+                callback(
+                    newExtractorLink(
+                        source = name,
+                        name = "$name HLS",
+                        url = m3u8Url,
+                        type = ExtractorLinkType.M3U8
+                    ) {
+                        this.referer = "${host}/"
+                        this.quality = Qualities.P1080.value
+                    }
+                )
+            }
+        } catch (_: Exception) {}
+    }
+}

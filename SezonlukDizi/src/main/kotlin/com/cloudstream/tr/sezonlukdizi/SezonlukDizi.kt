@@ -1,5 +1,7 @@
-﻿package com.cloudstream.tr.sezonlukdizi
+package com.cloudstream.tr.sezonlukdizi
 
+import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.model.ProviderModels
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
@@ -105,7 +107,8 @@ class SezonlukDizi : MainAPI() {
             }
         } ?: emptyList()
 
-        return newSearchResponseList(items, hasNext = false)
+        val deduped = ProviderModels.dedupSearchResults(items)
+        return newSearchResponseList(deduped, hasNext = false)
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query, 1).items
@@ -198,9 +201,12 @@ class SezonlukDizi : MainAPI() {
         val bid = doc.selectFirst("div#dilsec")?.attr("data-id")
             ?: Regex("""data-id=["'](\d+)["']""").find(doc.html())?.groupValues?.get(1)
 
+        data class SourceCandidate(val id: Long, val isDubbed: Boolean, val isSubbed: Boolean)
+        val candidates = mutableListOf<SourceCandidate>()
+
         if (!bid.isNullOrBlank()) {
-            val languages = listOf("1", "0") // 1: Altyazılı, 0: Dublaj
-            for (dil in languages) {
+            val languages = listOf("1" to false, "0" to true) // 1: Altyazılı, 0: Dublaj
+            for ((dil, isDubbed) in languages) {
                 try {
                     val altResp = app.post(
                         "${mainUrl}/ajax/dataAlternatif22.asp",
@@ -211,37 +217,51 @@ class SezonlukDizi : MainAPI() {
                         )
                     ).parsedSafe<AlternatifResponse>()
 
-                    val items = altResp?.data ?: emptyList()
-                    for (item in items) {
-                        val sourceId = item.id ?: continue
-                        try {
-                            val embedHtml = app.post(
-                                "${mainUrl}/ajax/dataEmbed22.asp",
-                                data = mapOf("id" to sourceId.toString()),
-                                headers = mapOf(
-                                    "X-Requested-With" to "XMLHttpRequest",
-                                    "Referer" to data
-                                )
-                            ).text
-
-                            val iframeSrc = Jsoup.parse(embedHtml).selectFirst("iframe")?.attr("src")
-                            if (!iframeSrc.isNullOrBlank() && !iframeSrc.contains("reCAPTCHA", ignoreCase = true)) {
-                                val fixedSrc = fixUrl(iframeSrc)
-                                val success = loadExtractor(fixedSrc, referer = data, subtitleCallback) { link ->
-                                    callback(link)
-                                    linksFound = true
-                                }
-                                if (success) linksFound = true
-                            }
-                        } catch (e: Exception) {
-                            // continue to next source
-                        }
+                    altResp?.data?.forEach { item ->
+                        val sourceId = item.id ?: return@forEach
+                        candidates.add(SourceCandidate(sourceId, isDubbed = isDubbed, isSubbed = !isDubbed))
                     }
-                } catch (e: Exception) {
-                    // continue to next language
-                }
+                } catch (_: Exception) {}
             }
         }
+
+        val count = BoundedParallelResolver.resolveProgressive(
+            candidates = candidates,
+            resolver = { cand, emitLink ->
+                try {
+                    val embedHtml = app.post(
+                        "${mainUrl}/ajax/dataEmbed22.asp",
+                        data = mapOf("id" to cand.id.toString()),
+                        headers = mapOf(
+                            "X-Requested-With" to "XMLHttpRequest",
+                            "Referer" to data
+                        )
+                    ).text
+
+                    val iframeSrc = Jsoup.parse(embedHtml).selectFirst("iframe")?.attr("src")
+                    if (!iframeSrc.isNullOrBlank() && !iframeSrc.contains("reCAPTCHA", ignoreCase = true)) {
+                        val fixedSrc = fixUrl(iframeSrc)
+                        loadExtractor(fixedSrc, referer = data, subtitleCallback) { link ->
+                            val tagged = ExtractorLink(
+                                source = link.source,
+                                name = ProviderModels.formatSourceTitle(link.name, isDubbed = cand.isDubbed, isSubbed = cand.isSubbed),
+                                url = link.url,
+                                referer = link.referer,
+                                quality = link.quality,
+                                type = link.type,
+                                headers = link.headers,
+                                extractorData = link.extractorData
+                            )
+                            emitLink(tagged)
+                        }
+                    }
+                } catch (_: Exception) {}
+            },
+            onLinkFound = { link ->
+                callback(link)
+                linksFound = true
+            }
+        )
 
         // Also check any existing iframes directly on page
         doc.select("iframe").forEach { iframe ->
@@ -256,6 +276,6 @@ class SezonlukDizi : MainAPI() {
             }
         }
 
-        return linksFound
+        return linksFound || count > 0
     }
 }

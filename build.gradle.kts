@@ -52,6 +52,17 @@ subprojects {
             targetCompatibility = JavaVersion.VERSION_1_8
         }
 
+        sourceSets {
+            getByName("main") {
+                java.srcDir(rootProject.file("core/src/main/kotlin"))
+            }
+            if (project.name == "AnimeciX") {
+                getByName("test") {
+                    java.srcDir(rootProject.file("core/src/test/kotlin"))
+                }
+            }
+        }
+
         tasks.withType<KotlinJvmCompile> {
             compilerOptions {
                 jvmTarget.set(JvmTarget.JVM_1_8)
@@ -70,6 +81,7 @@ subprojects {
 
         implementation("com.github.recloudstream.cloudstream:library:v4.8.0")
         implementation(kotlin("stdlib"))
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
         implementation("com.github.Blatzar:NiceHttp:0.4.11")
         implementation("org.jsoup:jsoup:1.18.3")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.1")

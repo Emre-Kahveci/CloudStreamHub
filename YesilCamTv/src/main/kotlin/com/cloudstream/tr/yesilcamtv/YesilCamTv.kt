@@ -3,6 +3,8 @@ package com.cloudstream.tr.yesilcamtv
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
+import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.model.ProviderModels
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
@@ -50,9 +52,10 @@ class YesilCamTv : MainAPI() {
         val doc = app.get(targetUrl).document
         val items = doc.select(".listmovie, article, div.item, div.post, div.search-result").mapNotNull { el ->
             parseSearchItem(el)
-        }.distinctBy { it.url }
+        }
+        val deduped = ProviderModels.dedupSearchResults(items)
 
-        return newSearchResponseList(items, hasNext = items.isNotEmpty())
+        return newSearchResponseList(deduped, hasNext = deduped.isNotEmpty())
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query, 1).items
@@ -125,25 +128,7 @@ class YesilCamTv : MainAPI() {
         val doc = app.get(data).document
         var linksFound = false
 
-        // 1. Check embedded iframe players (Rumble, YouTube, Ok.ru, Mail.ru, etc.)
-        val iframes = mutableListOf<String>()
-        doc.select("iframe").forEach { iframe ->
-            val src = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
-            if (src.isNotBlank() && !src.contains("wp-embedded-content")) {
-                fixUrlNull(src)?.let { iframes.add(it) }
-            }
-        }
-
-        for (iframeUrl in iframes.distinct()) {
-            val fixed = fixUrl(iframeUrl)
-            val success = loadExtractor(fixed, referer = mainUrl, subtitleCallback) { link ->
-                callback(link)
-                linksFound = true
-            }
-            if (success) linksFound = true
-        }
-
-        // 2. Direct HTML5 video / mp4 / m3u8
+        // 1. Direct HTML5 video / mp4 / m3u8
         doc.select("video source[src], video[src]").forEach { v ->
             val src = fixUrlNull(v.attr("src")) ?: return@forEach
             val isM3u8 = src.contains(".m3u8")
@@ -161,6 +146,28 @@ class YesilCamTv : MainAPI() {
             linksFound = true
         }
 
-        return linksFound
+        // 2. Check embedded iframe players (Rumble, YouTube, Ok.ru, Mail.ru, etc.)
+        val iframes = mutableListOf<String>()
+        doc.select("iframe").forEach { iframe ->
+            val src = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
+            if (src.isNotBlank() && !src.contains("wp-embedded-content")) {
+                fixUrlNull(src)?.let { iframes.add(it) }
+            }
+        }
+
+        val resolved = BoundedParallelResolver.resolveProgressive(
+            candidates = iframes.distinct(),
+            maxConcurrency = 4,
+            resolver = { iframeUrl, emitLink ->
+                val fixed = fixUrl(iframeUrl)
+                loadExtractor(fixed, referer = mainUrl, subtitleCallback, emitLink)
+            },
+            onLinkFound = { link ->
+                callback(link)
+                linksFound = true
+            }
+        )
+
+        return linksFound || resolved > 0
     }
 }

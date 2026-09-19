@@ -1,5 +1,7 @@
 package com.cloudstream.tr.hdfilmcehennemi
 
+import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.model.ProviderModels
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
@@ -120,7 +122,7 @@ class HDFilmCehennemi : MainAPI() {
                     }
                 }
             }
-            searchResponses.distinctBy { it.url }
+            ProviderModels.dedupSearchResults(searchResponses)
         } catch (e: Exception) {
             emptyList()
         }
@@ -211,15 +213,23 @@ class HDFilmCehennemi : MainAPI() {
         }
 
         val rapidrameExtractor = RapidrameExtractor()
+        val distinctIframes = iframes.distinct()
 
-        for (iframeUrl in iframes.distinct()) {
-            if (iframeUrl.contains("rapidrame") || iframeUrl.contains("hdfilmcehennemi.mobi")) {
-                rapidrameExtractor.getUrl(iframeUrl, data, subtitleCallback, wrappedCallback)
-            } else {
-                loadExtractor(iframeUrl, data, subtitleCallback, wrappedCallback)
+        val count = BoundedParallelResolver.resolveProgressive(
+            candidates = distinctIframes,
+            resolver = { iframeUrl, emitLink ->
+                if (iframeUrl.contains("rapidrame") || iframeUrl.contains("hdfilmcehennemi.mobi")) {
+                    rapidrameExtractor.getUrl(iframeUrl, data, subtitleCallback, emitLink)
+                } else {
+                    loadExtractor(iframeUrl, data, subtitleCallback, emitLink)
+                }
+            },
+            onLinkFound = { link ->
+                callback(link)
+                found = true
             }
-        }
+        )
 
-        return found
+        return found || count > 0
     }
 }
