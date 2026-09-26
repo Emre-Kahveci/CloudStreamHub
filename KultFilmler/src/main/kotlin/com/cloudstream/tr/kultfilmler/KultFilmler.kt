@@ -162,6 +162,7 @@ class KultFilmler : MainAPI() {
         }
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
     data class VidpapiResponse(
         @JsonProperty("videoSource") val videoSource: String? = null,
         @JsonProperty("securedLink") val securedLink: String? = null,
@@ -219,37 +220,65 @@ class KultFilmler : MainAPI() {
                         // Request direct video stream via vidpapi getVideo API
                         val dataId = iframeUrl.substringAfter("/video/").substringBefore("/").substringBefore("?")
                         if (dataId.isNotBlank()) {
+                            val hash = Regex("""(?:hash|FirePlayer)\s*[:=\(]\s*["']([^"']+)["']""").find(vidpapiDoc)?.groupValues?.get(1) ?: dataId
                             val apiUrl = "https://vidpapi.xyz/player/index.php?data=${dataId}&do=getVideo"
                             val apiResp = app.post(
                                 apiUrl,
+                                data = mapOf(
+                                    "hash" to hash,
+                                    "r" to data,
+                                    "s" to ""
+                                ),
                                 headers = mapOf(
                                     "Referer" to iframeUrl,
+                                    "Origin" to "https://vidpapi.xyz",
                                     "X-Requested-With" to "XMLHttpRequest"
                                 )
                             ).parsedSafe<VidpapiResponse>()
 
-                            val streamCandidate = apiResp?.videoSource?.ifBlank { null }
-                                ?: apiResp?.securedLink?.ifBlank { null }
+                            val candidateList = listOfNotNull(
+                                apiResp?.securedLink?.ifBlank { null },
+                                apiResp?.videoSource?.ifBlank { null }
+                            )
 
-                            if (streamCandidate != null) {
+                            for (streamCandidate in candidateList) {
                                 val preflight = StreamValidator.validateStream(
                                     url = streamCandidate,
-                                    headers = mapOf("Referer" to "https://vidpapi.xyz/"),
+                                    headers = mapOf("Referer" to iframeUrl),
                                     provider = name
                                 )
-                                if (preflight.isValid) {
-                                    val typeTag = if (preflight.streamType == ExtractorLinkType.M3U8) "HLS" else "MP4"
-                                    emitLink(
-                                        newExtractorLink(
-                                            source = name,
-                                            name = "$name $typeTag",
-                                            url = streamCandidate,
-                                            type = preflight.streamType
-                                        ) {
-                                            this.referer = "https://vidpapi.xyz/"
-                                            this.quality = Qualities.Unknown.value
-                                        }
-                                    )
+                                when (preflight.status) {
+                                    com.cloudstream.tr.core.network.ValidationStatus.VALID -> {
+                                        val typeTag = if (preflight.streamType == ExtractorLinkType.M3U8) "HLS" else "MP4"
+                                        emitLink(
+                                            newExtractorLink(
+                                                source = name,
+                                                name = "$name $typeTag",
+                                                url = streamCandidate,
+                                                type = preflight.streamType
+                                            ) {
+                                                this.referer = iframeUrl
+                                                this.quality = Qualities.Unknown.value
+                                            }
+                                        )
+                                        break
+                                    }
+                                    com.cloudstream.tr.core.network.ValidationStatus.INDETERMINATE -> {
+                                        DiagnosticLogger.log(
+                                            provider = name,
+                                            stage = DiagnosticStage.STREAM_PREFLIGHT,
+                                            category = DiagnosticCategory.NETWORK,
+                                            message = "Indeterminate preflight for $streamCandidate (${preflight.failureReason})"
+                                        )
+                                    }
+                                    com.cloudstream.tr.core.network.ValidationStatus.INVALID -> {
+                                        DiagnosticLogger.log(
+                                            provider = name,
+                                            stage = DiagnosticStage.STREAM_PREFLIGHT,
+                                            category = DiagnosticCategory.NETWORK,
+                                            message = "Rejected invalid stream $streamCandidate (${preflight.failureReason})"
+                                        )
+                                    }
                                 }
                             }
                         }

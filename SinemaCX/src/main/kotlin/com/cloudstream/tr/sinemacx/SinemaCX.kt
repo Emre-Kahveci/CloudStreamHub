@@ -36,8 +36,8 @@ class SinemaCX : MainAPI() {
 
     override val mainPage = mainPageOf(
         "${mainUrl}/" to "Son Eklenen Filmler",
-        "${mainUrl}/kategori/turkce-dublaj-filmler/" to "Türkçe Dublaj",
-        "${mainUrl}/kategori/turkce-altyazili-filmler/" to "Türkçe Altyazılı",
+        "${mainUrl}/dil/turkce-dublaj/" to "Türkçe Dublaj",
+        "${mainUrl}/dil/turkce-altyazi/" to "Türkçe Altyazılı",
         "${mainUrl}/en-cok-izlenen-filmler/" to "En Çok İzlenenler"
     )
 
@@ -167,7 +167,7 @@ class SinemaCX : MainAPI() {
         val allIframes = mutableListOf<String>()
         for (pageDoc in pagesToCheck) {
             pageDoc.select("iframe").forEach { iframe ->
-                val rawSrc = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
+                val rawSrc = iframe.attr("data-vsrc").ifEmpty { iframe.attr("data-src").ifEmpty { iframe.attr("src") } }
                 if (rawSrc.isNotBlank() && !rawSrc.contains("youtube", ignoreCase = true)) {
                     val resolved = decodeIframeUrl(rawSrc)
                     if (resolved != null && !resolved.contains("vr_set=") && !resolved.contains("/fragman")) {

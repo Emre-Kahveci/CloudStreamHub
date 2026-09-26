@@ -104,6 +104,7 @@ def main():
 
     # If static gradle_modules found, check against physical
     if gradle_modules:
+        active_gradle_modules = gradle_modules
         for mod in physical_modules:
             if mod not in gradle_modules:
                 errors.append(f"Module directory '{mod}' exists but is not included in settings.gradle.kts!")
@@ -111,10 +112,11 @@ def main():
             if mod not in physical_modules:
                 errors.append(f"Module '{mod}' included in settings.gradle.kts does not exist on disk!")
     else:
-        # Dynamic discovery check: ensure none of the physical modules are in settings_disabled
-        for mod in physical_modules:
-            if mod in settings_disabled:
-                errors.append(f"Active module '{mod}' is marked disabled in settings.gradle.kts!")
+        # Dynamic discovery check: active modules are physical modules minus settings_disabled
+        active_gradle_modules = physical_modules - settings_disabled
+        for mod in settings_disabled:
+            if mod not in physical_modules:
+                errors.append(f"Disabled module '{mod}' in settings.gradle.kts does not exist on disk!")
 
     # 4. Check config/domains.json
     domains_path = os.path.join(repo_root, "config", "domains.json")
@@ -189,11 +191,11 @@ def main():
         if mod not in configured_modules:
             errors.append(f"Physical module '{mod}' has no entry in config/providers.json!")
 
-    # Check enabled providers count matches physical modules
+    # Check enabled providers count matches active Gradle modules
     enabled_module_names = {p["module"] for p in enabled_providers}
-    if physical_modules != enabled_module_names:
-        diff = physical_modules.symmetric_difference(enabled_module_names)
-        errors.append(f"Mismatch between physical modules and enabled providers in config: {diff}")
+    if active_gradle_modules != enabled_module_names:
+        diff = active_gradle_modules.symmetric_difference(enabled_module_names)
+        errors.append(f"Mismatch between active Gradle modules and enabled providers in config: {diff}")
 
     # 6. Check each module's code, metadata and annotations
     seen_internal_names = set()
@@ -298,7 +300,6 @@ def main():
             print(f" - [ERROR] {e}")
         sys.exit(1)
 
-    print(f"\n[SUCCESS] Repository validation passed with 0 errors! ({len(physical_modules)} active providers verified)")
-
+    print(f"\n[SUCCESS] Repository validation passed with 0 errors! ({len(enabled_providers)} active providers verified, {len(physical_modules)} physical modules discovered)")
 if __name__ == "__main__":
     main()

@@ -168,7 +168,7 @@ class DiziKorea : MainAPI() {
                                         type = ExtractorLinkType.M3U8
                                     ) {
                                         this.referer = iframeUrl
-                                        this.quality = Qualities.P1080.value
+                                        this.quality = Qualities.Unknown.value
                                     }
                                 )
                             }

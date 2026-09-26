@@ -18,6 +18,7 @@ import json
 import time
 import hashlib
 import subprocess
+import base64
 import urllib.request
 import urllib.parse
 from datetime import datetime, timezone
@@ -34,6 +35,111 @@ class PlaybackVerifier:
     def __init__(self, timeout: int = DEFAULT_TIMEOUT):
         self.timeout = timeout
         self.ssl_ctx = ssl.create_default_context()
+    @staticmethod
+    def unpack_packer(script: str) -> str:
+        m = re.search(r"eval\(function\(p,a,c,k,e,d\).+?return\s+p\s*\}\s*\(\s*'((?:\\'|[^'])*)'\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*'((?:\\'|[^'])*)'\.split\('\|'\)", script, re.DOTALL)
+        if not m:
+            return script
+        payload = m.group(1).replace(r"\'", "'").replace(r"\\", "\\")
+        radix = int(m.group(2))
+        count = int(m.group(3))
+        symtab = m.group(4).split('|')
+
+        digits = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        def base_n(num, b):
+            if num == 0:
+                return "0"
+            res = []
+            while num > 0:
+                res.append(digits[num % b])
+                num //= b
+            return "".join(reversed(res))
+
+        lookup = {}
+        for i in range(count):
+            k = base_n(i, radix)
+            sym = symtab[i] if i < len(symtab) and symtab[i] else k
+            lookup[k] = sym
+
+        return re.sub(r'\b\w+\b', lambda match: lookup.get(match.group(0), match.group(0)), payload)
+
+    @staticmethod
+    def decode_closeload(parts: List[str]) -> str:
+        rkt2 = list(parts)
+        if len(rkt2) < 10:
+            return ""
+        aik4z = len(rkt2) - 2
+        ozqzr = aik4z % 7
+        ft0q0 = 8 + (aik4z % 5)
+
+        if ft0q0 >= len(rkt2) or ozqzr >= len(rkt2):
+            return ""
+
+        t2o = rkt2.pop(ft0q0)
+        xtqz = rkt2.pop(ozqzr)
+        uvhq = "".join(rkt2)
+
+        if len(xtqz) > 4096:
+            uvhq = base64.b64decode(uvhq).decode('latin1', errors='ignore')
+
+        xbgh9 = 0
+        hqbz = 0
+        for v2jhe in range(len(xtqz)):
+            xu25 = ord(xtqz[v2jhe])
+            xbgh9 = (xbgh9 * 37 + xu25) % 241
+            hqbz = (hqbz + ((xu25 << 1) ^ v2jhe)) & 255
+
+        mlr3o = (xbgh9 * 3 + hqbz) % 256
+        gjy = (hqbz % 11) + 5
+        euerq = ((hqbz * 251 + xbgh9) % 65519) + 1
+
+        for v2jhe in range(len(t2o) - 1, -1, -1):
+            k1vh = t2o[v2jhe]
+            if k1vh == '7':
+                pad_len = (4 - len(uvhq) % 4) % 4
+                uvhq = base64.b64decode(uvhq + "=" * pad_len).decode('latin1', errors='ignore')
+            elif k1vh == '3':
+                uvhq = uvhq[::-1]
+            else:
+                v29c = (26 - ((ord(k1vh) - 96) % 26)) % 26
+                chars = []
+                for ch in uvhq:
+                    c9n = ord(ch)
+                    if 'A' <= ch <= 'Z':
+                        chars.append(chr((c9n - 65 + v29c) % 26 + 65))
+                    elif 'a' <= ch <= 'z':
+                        chars.append(chr((c9n - 97 + v29c) % 26 + 97))
+                    else:
+                        chars.append(ch)
+                uvhq = "".join(chars)
+
+        if len(t2o) > 2048:
+            uvhq = uvhq[::-1]
+
+        aik4z = len(uvhq)
+        gm7n = [0] * aik4z
+        for v2jhe in range(aik4z - 1, 0, -1):
+            euerq = (euerq * 97 + 41) % 65519
+            gm7n[v2jhe] = euerq % (v2jhe + 1)
+
+        dowxc = list(uvhq)
+        for v2jhe in range(1, aik4z):
+            wrxyp = gm7n[v2jhe]
+            t2avk = dowxc[v2jhe]
+            dowxc[v2jhe] = dowxc[wrxyp]
+            dowxc[wrxyp] = t2avk
+
+        uvhq = "".join(dowxc)
+
+        uo2b0 = mlr3o
+        julf = []
+        for v2jhe in range(len(uvhq)):
+            xu25 = ord(uvhq[v2jhe])
+            uo2b0 = (uo2b0 * 5 + gjy) % 256
+            julf.append(chr(xu25 ^ uo2b0))
+            uo2b0 = (uo2b0 + xu25) % 256
+
+        return "".join(julf)
 
     def get_repo_metadata(self) -> Dict[str, Any]:
         """Collects truthful Git commit, config hash, and version metadata."""
@@ -135,15 +241,176 @@ class PlaybackVerifier:
             except Exception:
                 pass
 
-        # 5. CloseLoad
-        if "closeload" in embed_url:
-            req = urllib.request.Request(embed_url, headers=headers)
+        # 5. CloseLoad / Rapid / Rapidrame / HDFilmCehennemi
+        if any(k in embed_url for k in ["closeload", "rapid.", "rapidrame", "hdfilmcehennemi"]):
+            c_headers = dict(headers)
+            ext_label = "Rapidrame" if ("rapidrame" in embed_url or "hdfilmcehennemi" in embed_url) else "CloseLoad"
+            if "filmmakinesi" in embed_url or (referer and "filmmakinesi" in referer):
+                c_headers["Referer"] = "https://filmmakinesi.to/"
+            elif "hdfilmcehennemi" in embed_url or (referer and "hdfilmcehennemi" in referer):
+                c_headers["Referer"] = "https://www.hdfilmcehennemi.nl/"
             try:
+                req = urllib.request.Request(embed_url, headers=c_headers)
+                try:
+                    resp = urllib.request.urlopen(req, timeout=self.timeout)
+                except Exception:
+                    resp = urllib.request.urlopen(req, timeout=self.timeout, context=self.ssl_ctx)
+
+                with resp:
+                    html = resp.read().decode("utf-8", errors="ignore")
+                    m = re.search(r'file:\s*["\']([^"\']+\.(?:m3u8|mp4|txt)[^"\']*)["\']', html) or re.search(r'<source[^>]+src=["\']([^"\']+)["\']', html)
+                    if m:
+                        return "PASS", m.group(1), ext_label
+
+                    full_content = html
+                    if "eval(function(p,a,c,k,e,d)" in html:
+                        full_content = html + "\n" + self.unpack_packer(html)
+
+                    var_matches = re.findall(r'sources:\s*\[\{file:\s*([a-zA-Z0-9_]+)', full_content)
+                    valid_vars = [v_name for v_name in var_matches if v_name != "atob"]
+                    if valid_vars:
+                        t_var = valid_vars[0]
+                        p_match = re.search(rf'var\s+{t_var}\s*=\s*[a-zA-Z0-9_]+\s*\(\s*["\']([^"\']+)["\']\.split\(\s*["\']([^"\']+)["\']\s*\)\s*\);', full_content)
+                        if p_match:
+                            raw_p = p_match.group(1)
+                            delim = p_match.group(2)
+                            decoded = self.decode_closeload(raw_p.split(delim))
+                            if decoded.startswith("http"):
+                                return "PASS", decoded, ext_label
+
+                    for gen_m in re.finditer(r'var\s+[a-zA-Z0-9_]+\s*=\s*[a-zA-Z0-9_]+\s*\(\s*["\']([^"\']{100,})["\']\.split\(\s*["\']([|\^*@#~])["\']\s*\)\s*\);', full_content):
+                        raw_p = gen_m.group(1)
+                        delim = gen_m.group(2)
+                        parts = raw_p.split(delim)
+                        if len(parts) >= 10:
+                            decoded = self.decode_closeload(parts)
+                            if decoded.startswith("http"):
+                                return "PASS", decoded, ext_label
+            except Exception:
+                pass
+
+        # 6. Vidpapi (KultFilmler)
+        if "vidpapi.xyz" in embed_url:
+            m = re.search(r'/video/([a-zA-Z0-9_-]+)', embed_url)
+            if m:
+                vid = m.group(1)
+                api_url = f"https://vidpapi.xyz/player/index.php?data={vid}&do=getVideo"
+                data = urllib.parse.urlencode({
+                    "hash": vid,
+                    "r": referer or "https://kultfilmler.net/",
+                    "s": ""
+                }).encode("utf-8")
+                req = urllib.request.Request(api_url, data=data, headers={
+                    "User-Agent": USER_AGENT,
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Referer": embed_url,
+                    "Origin": "https://vidpapi.xyz"
+                })
+                try:
+                    try:
+                        resp = urllib.request.urlopen(req, timeout=self.timeout)
+                    except Exception:
+                        resp = urllib.request.urlopen(req, timeout=self.timeout, context=self.ssl_ctx)
+                    with resp:
+                        js = json.loads(resp.read().decode("utf-8", errors="ignore"))
+                        stream = js.get("securedLink") or js.get("videoSource")
+                        if stream:
+                            return "PASS", stream.replace("\\/", "/"), "Vidpapi"
+                except Exception:
+                    pass
+
+        # 7. Rumble (YesilCamTv)
+        if "rumble.com" in embed_url:
+            clean_embed = embed_url.split("#")[0]
+            req = urllib.request.Request(clean_embed, headers=headers)
+            try:
+                try:
+                    resp = urllib.request.urlopen(req, timeout=self.timeout)
+                except Exception:
+                    resp = urllib.request.urlopen(req, timeout=self.timeout, context=self.ssl_ctx)
+                with resp:
+                    html = resp.read().decode("utf-8", errors="ignore")
+                    m_hls = re.search(r'["\']hls["\']\s*:\s*\{[^}]*["\']url["\']\s*:\s*["\']([^"\']+)["\']', html) or \
+                            re.search(r'https?:\\?/\\?/[^"\'\s<>]+\.rumble\.com/hls-vod/[^"\'\s<>]+\.m3u8[^"\'\s<>]*', html)
+                    if m_hls:
+                        raw = m_hls.group(1) if m_hls.lastindex else m_hls.group(0)
+                        return "PASS", raw.replace(r"\/", "/"), "Rumble"
+                    m_mp4 = re.search(r'["\'](\d{3,4})["\']\s*:\s*\{[^}]*["\']url["\']\s*:\s*["\']([^"\']+\.mp4[^"\']*)["\']', html)
+                    if m_mp4:
+                        return "PASS", m_mp4.group(2).replace(r"\/", "/"), "Rumble"
+            except Exception:
+                pass
+
+        # 8. Pichive (Dizilla)
+        if "pichive" in embed_url:
+            m = re.search(r'/video/([a-zA-Z0-9_-]+)', embed_url)
+            if m:
+                vid = m.group(1)
+                host = urllib.parse.urlparse(embed_url).netloc
+                api_url = f"https://{host}/player/index.php?data={vid}&do=getVideo"
+                data = urllib.parse.urlencode({"hash": vid, "r": referer or "https://dizilla.now/", "s": ""}).encode("utf-8")
+                req = urllib.request.Request(api_url, data=data, headers={
+                    "User-Agent": USER_AGENT,
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Referer": embed_url
+                })
+                try:
+                    with urllib.request.urlopen(req, timeout=self.timeout, context=self.ssl_ctx) as resp:
+                        js = json.loads(resp.read().decode("utf-8", errors="ignore"))
+                        stream = js.get("securedLink") or js.get("videoSource")
+                        if stream:
+                            return "PASS", stream.replace("\\/", "/"), "Pichive"
+                except Exception:
+                    pass
+
+        # 9. RapidVid (FullHDFilmizlesene)
+        if "rapidvid.org" in embed_url:
+            try:
+                req = urllib.request.Request(embed_url, headers={"User-Agent": USER_AGENT, "Referer": referer or "https://www.fullhdfilmizlesene.now/"})
                 with urllib.request.urlopen(req, timeout=self.timeout, context=self.ssl_ctx) as resp:
                     html = resp.read().decode("utf-8", errors="ignore")
-                    m = re.search(r'file:\s*["\']([^"\']+)["\']', html) or re.search(r'<source[^>]+src=["\']([^"\']+)["\']', html)
-                    if m:
-                        return "PASS", m.group(1), "CloseLoad"
+                    av_m = re.search(r'["\']?file["\']?\s*:\s*av\((["\'])(.*?)\1\)', html)
+                    if av_m:
+                        token = av_m.group(2)
+                        rev = token[::-1]
+                        pad = (4 - len(rev) % 4) % 4
+                        padded = rev + "=" * pad
+                        raw_bytes = base64.b64decode(padded)
+                        raw_str = raw_bytes.decode('latin1', errors='ignore')
+                        key = "K9L"
+                        sb = []
+                        for i, ch in enumerate(raw_str):
+                            r = key[i % 3]
+                            n = ord(ch) - (ord(r) % 5 + 1)
+                            sb.append(chr(n))
+                        inner = "".join(sb)
+                        inner_pad = (4 - len(inner) % 4) % 4
+                        stream = base64.b64decode(inner + "=" * inner_pad).decode('utf-8', errors='ignore')
+                        if stream.startswith("http"):
+                            return "PASS", stream, "RapidVid"
+            except Exception:
+                pass
+
+        # 10. DiziYou Player
+        if "diziyou.one" in embed_url and "/player/" in embed_url:
+            m = re.search(r'/player/([a-zA-Z0-9_-]+)\.html', embed_url)
+            if m:
+                item_id = m.group(1)
+                stream = f"https://storage.diziyou.one/episodes/{item_id}/play.m3u8"
+                return "PASS", stream, "DiziYou"
+
+        # 11. HDFilmDelisi Embed
+        if "hdfilmdelisi.one/embed/" in embed_url:
+            try:
+                req = urllib.request.Request(embed_url, headers={"User-Agent": USER_AGENT, "Referer": referer or "https://hdfilmdelisi.one/"})
+                with urllib.request.urlopen(req, timeout=self.timeout, context=self.ssl_ctx) as resp:
+                    html = resp.read().decode("utf-8", errors="ignore")
+                    v_m = re.search(r'<video[^>]+src=["\']([^"\']+)["\']', html) or re.search(r'<source[^>]+src=["\']([^"\']+)["\']', html)
+                    if v_m:
+                        stream = v_m.group(1)
+                        if stream.startswith("/"):
+                            stream = f"https://hdfilmdelisi.one{stream}"
+                        return "PASS", stream, "HDFilmDelisi"
             except Exception:
                 pass
 
@@ -173,20 +440,21 @@ class PlaybackVerifier:
                 bytes_sample = resp.read(512)
                 text_sample = bytes_sample.decode("utf-8", errors="ignore").lower().strip()
 
+                # HLS detection (EXTM3U magic signature takes precedence over text/html Content-Type)
+                if text_sample.startswith("#extm3u") or "application/vnd.apple.mpegurl" in ct or "application/x-mpegurl" in ct:
+                    if not (text_sample.startswith("<!doctype html") or text_sample.startswith("<html")):
+                        return "PASS", "HLS", {
+                            "statusCode": status_code,
+                            "contentType": ct,
+                            "magicHeader": "#EXTM3U"
+                        }
+
                 # Rejection of HTML and JSON errors (3003 root cause prevention)
                 if "text/html" in ct or text_sample.startswith("<!doctype html") or text_sample.startswith("<html") or "security error" in text_sample:
                     return "FAIL", "HTML_ERROR_PAGE", {
                         "statusCode": status_code,
                         "contentType": ct,
                         "reason": "HTML_PAGE_REJECTED_3003_PREVENTION"
-                    }
-
-                # HLS detection
-                if text_sample.startswith("#extm3u") or "application/vnd.apple.mpegurl" in ct or "application/x-mpegurl" in ct:
-                    return "PASS", "HLS", {
-                        "statusCode": status_code,
-                        "contentType": ct,
-                        "magicHeader": "#EXTM3U"
                     }
 
                 # MP4 container detection (ftyp box)
@@ -226,6 +494,9 @@ class PlaybackVerifier:
         """
         L8: Verifies that the first actual media segment/chunk can be fetched and is non-empty.
         """
+        if not stream_url or not stream_url.startswith("http"):
+            return "FAIL", {"reason": "INVALID_URL"}
+
         headers = {"User-Agent": USER_AGENT}
         if referer:
             headers["Referer"] = referer

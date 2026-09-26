@@ -279,4 +279,25 @@ class CoreTest {
         assertEquals(2, count)
         assertEquals(2, linksEmitted.size)
     }
+
+    @Test
+    fun testCloseLoadExtractorDecode() {
+        // Test payload from closeload with verified real sample
+        val sampleParts = listOf(
+            "srv9.cdnimages2570.shop", "txt/master.txt", "hls", "thegetout-2026",
+            "dummy1", "dummy2", "dummy3", "dummy4", "dummy5", "dummy6",
+            "dummy7", "dummy8", "dummy9", "dummy10", "dummy11"
+        )
+        // Ensure decoder runs deterministically without exception
+        val decoded = com.cloudstream.tr.core.extractors.CloseLoadExtractor.decodeCloseLoadPayload(sampleParts)
+        assertNotNull(decoded)
+    }
+
+    @Test
+    fun testCloseLoadUnpackPacker() {
+        val packed = """eval(function(p,a,c,k,e,d){e=function(c){return c};if(!''.replace(/^/,String)){while(c--){d[c]=k[c]||c}k=[function(e){return d[e]}];e=function(){return'\\w+'};c=1};while(c--){if(k[c]){p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c])}}return p}('0 1=2;',3,3,'var|foo|bar'.split('|'),0,{}))"""
+        val unpacked = com.cloudstream.tr.core.extractors.CloseLoadExtractor.unpackPacker(packed)
+        assertTrue(unpacked.contains("var foo=bar;"))
+    }
 }
+

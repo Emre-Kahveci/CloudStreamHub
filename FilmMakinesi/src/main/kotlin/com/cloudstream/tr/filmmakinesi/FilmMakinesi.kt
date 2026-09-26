@@ -181,7 +181,7 @@ class FilmMakinesi : MainAPI() {
         val count = BoundedParallelResolver.resolveProgressive(
             candidates = candidates,
             resolver = { iframeUrl, emitLink ->
-                if (iframeUrl.contains("closeload.filmmakinesi.to") || iframeUrl.contains("closeload")) {
+                if (iframeUrl.contains("closeload.filmmakinesi.to") || iframeUrl.contains("closeload") || iframeUrl.contains("rapid.filmmakinesi.to")) {
                     closeloadExtractor.getUrl(iframeUrl, data, subtitleCallback, emitLink)
                 } else {
                     loadExtractor(iframeUrl, data, subtitleCallback, emitLink)

@@ -180,7 +180,7 @@ class DiziYou : MainAPI() {
                 type = ExtractorLinkType.M3U8
             ) {
                 this.referer = "https://www.diziyou.one/"
-                this.quality = Qualities.P1080.value
+                this.quality = Qualities.Unknown.value
             }
         )
 
@@ -206,7 +206,7 @@ class DiziYou : MainAPI() {
                 type = ExtractorLinkType.M3U8
             ) {
                 this.referer = "https://www.diziyou.one/"
-                this.quality = Qualities.P1080.value
+                this.quality = Qualities.Unknown.value
             }
         )
 

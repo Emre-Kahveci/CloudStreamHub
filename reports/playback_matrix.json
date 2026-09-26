@@ -1,86 +1,35 @@
 {
   "metadata": {
-    "generatedAt": "2026-09-19T21:43:19.759344+00:00",
-    "sourceCommitSha": "97d6c5175d41a10dc75ac46b225c883206a1e727",
-    "configHash": "3d83265fbc513919",
-    "providerCount": 30,
+    "generatedAt": "2026-09-26T19:49:26.457824+00:00",
+    "sourceCommitSha": "f532d97576aec148d106879c283925f6160cfef4",
+    "configHash": "8d16a195d6851fe8",
+    "providerCount": 12,
     "cloudStreamVersion": "v4.8.0"
   },
   "summary": {
-    "totalActive": 30,
-    "mediaReachabilityVerified": 1,
-    "mediaReachabilityUnverified": 29,
+    "totalActive": 12,
+    "mediaReachabilityVerified": 8,
+    "mediaReachabilityUnverified": 4,
     "mediaReachabilityFailed": 0,
     "runtimePlaybackVerified": 0,
     "runtimePlaybackNotice": "ExoPlayer / Media3 device verification required for runtime playback status"
   },
   "providers": [
     {
-      "provider": "AnimeciX",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "BelgeselX",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "DiziPal",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
       "provider": "FilmMakinesi",
       "domain": "PASS",
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "mediaReachability": "PASS",
       "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
+      "sourceHost": "rapid.filmmakinesi.to",
+      "streamType": "HLS",
       "notes": [
-        "Awaiting real player probe / device test"
+        "Live dynamic probe verified via rapid.filmmakinesi.to"
       ]
     },
     {
@@ -89,15 +38,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "mediaReachability": "PASS",
       "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
+      "sourceHost": "hdfilmcehennemi.mobi",
+      "streamType": "HLS",
       "notes": [
-        "Awaiting real player probe / device test"
+        "Live dynamic probe verified via hdfilmcehennemi.mobi"
       ]
     },
     {
@@ -106,32 +55,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "mediaReachability": "PASS",
       "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
+      "sourceHost": "vidpapi.xyz",
+      "streamType": "HLS",
       "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "TurkAnime",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
+        "Live dynamic probe verified via vidpapi.xyz"
       ]
     },
     {
@@ -140,15 +72,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "mediaReachability": "PASS",
       "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
+      "sourceHost": "rumble.com",
+      "streamType": "HLS",
       "notes": [
-        "Awaiting real player probe / device test"
+        "Live dynamic probe verified via rumble.com"
       ]
     },
     {
@@ -157,7 +89,7 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
+      "extractorResolution": "FAIL",
       "mediaPreflight": "UNVERIFIED",
       "firstSegment": "UNVERIFIED",
       "mediaReachability": "UNVERIFIED",
@@ -165,7 +97,7 @@
       "sourceHost": "none",
       "streamType": "UNKNOWN",
       "notes": [
-        "Awaiting real player probe / device test"
+        "Extractor resolution failed for "
       ]
     },
     {
@@ -182,24 +114,7 @@
       "sourceHost": "player.filmizle.in",
       "streamType": "HLS",
       "notes": [
-        "Tested with real embed probe: player.filmizle.in"
-      ]
-    },
-    {
-      "provider": "DiziMom",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
+        "Live dynamic probe verified via player.filmizle.in"
       ]
     },
     {
@@ -208,15 +123,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "mediaReachability": "PASS",
       "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
+      "sourceHost": "www.diziyou.one",
+      "streamType": "HLS",
       "notes": [
-        "Awaiting real player probe / device test"
+        "Live dynamic probe verified via www.diziyou.one"
       ]
     },
     {
@@ -224,7 +139,7 @@
       "domain": "PASS",
       "search": "PASS",
       "load": "PASS",
-      "playerDiscovery": "PASS",
+      "playerDiscovery": "FAIL",
       "extractorResolution": "UNVERIFIED",
       "mediaPreflight": "UNVERIFIED",
       "firstSegment": "UNVERIFIED",
@@ -233,7 +148,7 @@
       "sourceHost": "none",
       "streamType": "UNKNOWN",
       "notes": [
-        "Awaiting real player probe / device test"
+        "Player discovery found no candidate embed"
       ]
     },
     {
@@ -242,100 +157,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
+      "extractorResolution": "FAIL",
       "mediaPreflight": "UNVERIFIED",
       "firstSegment": "UNVERIFIED",
       "mediaReachability": "UNVERIFIED",
       "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
+      "sourceHost": "rapidvid.org",
       "streamType": "UNKNOWN",
       "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "FilmModu",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "JetFilmIzle",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "CizgiMax",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "DDizi",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "Sinewix",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
+        "Extractor resolution failed for rapidvid.org"
       ]
     },
     {
@@ -344,15 +174,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "mediaReachability": "PASS",
       "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
+      "sourceHost": "api.themoviedb.org+federation",
+      "streamType": "HLS",
       "notes": [
-        "Awaiting real player probe / device test"
+        "Aggregator verified: TMDB catalog + multi-provider federation"
       ]
     },
     {
@@ -360,7 +190,7 @@
       "domain": "PASS",
       "search": "PASS",
       "load": "PASS",
-      "playerDiscovery": "PASS",
+      "playerDiscovery": "FAIL",
       "extractorResolution": "UNVERIFIED",
       "mediaPreflight": "UNVERIFIED",
       "firstSegment": "UNVERIFIED",
@@ -369,92 +199,7 @@
       "sourceHost": "none",
       "streamType": "UNKNOWN",
       "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "DramaDizilerim",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "WebDramaTurkey",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "Animeler",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "SetFilmIzle",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "DiziLife",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
+        "Player discovery found no candidate embed"
       ]
     },
     {
@@ -463,66 +208,15 @@
       "search": "PASS",
       "load": "PASS",
       "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
+      "extractorResolution": "PASS",
+      "mediaPreflight": "PASS",
+      "firstSegment": "PASS",
+      "mediaReachability": "PASS",
       "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
+      "sourceHost": "hdfilmdelisi.one",
+      "streamType": "PROGRESSIVE_MP4",
       "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "Dizigecesi",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "RareFilmm",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
-      ]
-    },
-    {
-      "provider": "FilmHane",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Awaiting real player probe / device test"
+        "Live dynamic probe verified via hdfilmdelisi.one"
       ]
     }
   ]

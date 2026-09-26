@@ -1,12 +1,16 @@
 package com.cloudstream.tr.hdfilmcehennemi
 
-import java.util.Base64
+import com.cloudstream.tr.core.extractors.CloseLoadExtractor
+import com.cloudstream.tr.core.network.SafeHttpClient
+import com.cloudstream.tr.core.network.StreamValidator
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.INFER_TYPE
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.newExtractorLink
+import java.util.Base64
 import java.util.regex.Pattern
 
 open class RapidrameExtractor : ExtractorApi() {
@@ -15,6 +19,7 @@ open class RapidrameExtractor : ExtractorApi() {
     override val requiresReferer = true
 
     companion object {
+        // Backward compatibility helper for legacy format if ever encountered
         fun decodeRapidrame(jsCode: String, arrStr: String): String {
             val arrRegex = Pattern.compile("\"([^\"]+)\"")
             val arrMatcher = arrRegex.matcher(arrStr)
@@ -105,45 +110,76 @@ open class RapidrameExtractor : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
-        val headers = mapOf(
-            "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Referer" to (referer ?: "https://www.hdfilmcehennemi.nl/")
-        )
-        val html = app.get(url, headers = headers).text
+        try {
+            val host = Regex("""https?://[^/]+""").find(url)?.value ?: mainUrl
+            val effectiveReferer = referer ?: "https://www.hdfilmcehennemi.nl/"
+            val headers = SafeHttpClient.defaultHeaders(referer = effectiveReferer)
+            val doc = app.get(url, headers = headers).document
+            val rawHtml = doc.html()
 
-        val arrRegex = Pattern.compile("\\[\\s*\"[^\\]]+\"\\s*\\]")
-        val arrMatcher = arrRegex.matcher(html)
-        while (arrMatcher.find()) {
-            val arrStr = arrMatcher.group(0) ?: continue
-            if (arrStr.contains(".jpg") || arrStr.contains(".png") || arrStr.contains(".webp")) continue
-            try {
-                val streamUrl = decodeRapidrame(html, arrStr)
-                if (streamUrl.isNotEmpty() && (streamUrl.contains(".m3u8") || streamUrl.contains(".txt") || streamUrl.contains("/hls/"))) {
+            // 1. Try modern CloseLoad / Rapidrame algorithmic extraction
+            var streamUrl = CloseLoadExtractor.extractStreamUrl(rawHtml)
+
+            // 2. Legacy array extraction fallback if not found
+            if (streamUrl.isNullOrBlank()) {
+                val arrRegex = Pattern.compile("\\[\\s*\"[^\\]]+\"\\s*\\]")
+                val arrMatcher = arrRegex.matcher(rawHtml)
+                while (arrMatcher.find()) {
+                    val arrStr = arrMatcher.group(0) ?: continue
+                    if (arrStr.contains(".jpg") || arrStr.contains(".png") || arrStr.contains(".webp")) continue
+                    try {
+                        val legacyUrl = decodeRapidrame(rawHtml, arrStr)
+                        if (legacyUrl.isNotEmpty() && (legacyUrl.contains(".m3u8") || legacyUrl.contains(".txt") || legacyUrl.contains("/hls/"))) {
+                            streamUrl = legacyUrl
+                            break
+                        }
+                    } catch (_: Exception) {}
+                }
+            }
+
+            // 3. Validate and emit stream
+            if (!streamUrl.isNullOrBlank()) {
+                val fullStream = if (streamUrl.startsWith("http")) streamUrl else if (streamUrl.startsWith("//")) "https:$streamUrl" else "${host}/$streamUrl"
+                val preflight = StreamValidator.validateStream(
+                    url = fullStream,
+                    headers = mapOf("Referer" to "${host}/"),
+                    provider = name
+                )
+                if (preflight.isValid) {
                     callback(
                         newExtractorLink(
                             source = name,
-                            name = name,
-                            url = streamUrl,
-                            type = INFER_TYPE
+                            name = "$name ${if (preflight.streamType == ExtractorLinkType.M3U8) "HLS" else "Stream"}",
+                            url = fullStream,
+                            type = preflight.streamType
                         ) {
-                            this.referer = url
+                            this.referer = "${host}/"
+                            this.quality = Qualities.Unknown.value
                         }
                     )
-                    break
                 }
-            } catch (_: Exception) {}
-        }
+            }
 
-        // Subtitles
-        val tracksRegex = Regex("""\{"file":"(https?:[^"]+\.vtt)"[^}]+?"label":"([^"]+)"""")
-        tracksRegex.findAll(html).forEach { match ->
-            val subUrl = match.groupValues[1].replace("""\/""", "/")
-            val label = match.groupValues[2]
-            subtitleCallback(
-                SubtitleFile(
-                    lang = label,
-                    url = subUrl
+            // 4. Subtitles
+            val tracksRegex = Regex("""\{"file":"(https?:[^"]+\.vtt)"[^}]+?"label":"([^"]+)"""")
+            tracksRegex.findAll(rawHtml).forEach { match ->
+                val subUrl = match.groupValues[1].replace("""\/""", "/")
+                val label = match.groupValues[2]
+                subtitleCallback(
+                    SubtitleFile(
+                        lang = label,
+                        url = subUrl
+                    )
                 )
+            }
+        } catch (e: Exception) {
+            com.cloudstream.tr.core.diagnostics.DiagnosticLogger.log(
+                provider = name,
+                stage = com.cloudstream.tr.core.diagnostics.DiagnosticStage.EXTRACTOR,
+                category = com.cloudstream.tr.core.diagnostics.DiagnosticCategory.EXTRACTOR,
+                message = "Rapidrame getUrl failed: ${e.message}",
+                url = url,
+                throwable = e
             )
         }
     }

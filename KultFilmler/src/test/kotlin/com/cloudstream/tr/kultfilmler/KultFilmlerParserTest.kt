@@ -43,4 +43,27 @@ class KultFilmlerParserTest {
         assertEquals("Pulp Fiction", loadResponse?.name)
         assertEquals(1994, loadResponse?.year)
     }
+
+    @Test
+    fun testVidpapiResponseParsing() {
+        val sampleJson = """
+            {
+              "hls": true,
+              "videoImage": "https://moliy5.com/cdn/down/130dad/fvp.jpg",
+              "videoSource": "https://vidpapi.xyz/cdn/hls/130dad/master.txt",
+              "securedLink": "https://vidpapi.xyz/cdn/hls/130dad/master.m3u8?md5=test&expires=123",
+              "downloadLinks": [],
+              "attachmentLinks": []
+            }
+        """.trimIndent()
+
+        val mapper = com.fasterxml.jackson.databind.ObjectMapper().registerModule(com.fasterxml.jackson.module.kotlin.KotlinModule.Builder().build())
+        val parsed = mapper.readValue(sampleJson, KultFilmler.VidpapiResponse::class.java)
+
+        assertNotNull("VidpapiResponse parsing failed", parsed)
+        assertEquals(true, parsed.hls)
+        assertEquals("https://vidpapi.xyz/cdn/hls/130dad/master.m3u8?md5=test&expires=123", parsed.securedLink)
+        assertEquals("https://vidpapi.xyz/cdn/hls/130dad/master.txt", parsed.videoSource)
+    }
 }
+

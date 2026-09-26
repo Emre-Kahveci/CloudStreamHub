@@ -46,4 +46,19 @@ class HDFilmCehennemiParserTest {
         val decoded = RapidrameExtractor.decodeRapidrame(js, arr)
         assertEquals("https://srv12.cdnimages2401.shop/hls/avatar-2009-extended-trdualmp4-mFe66KAZjPw.mp4/txt/master.txt", decoded)
     }
+
+    @Test
+    fun testRapidrameModernExtraction() {
+        val htmlSnippet = """
+            <script>
+            var player = jwplayer("videoplayer").setup({
+                sources: [{file: wv0b, type: "hls"}],
+            });
+            var wv0b = hmn("=0Wh~5CoW~gt2X2Vs26Ik87qSXrgqb~prRc~usnF~ekYh~Tf1B~0DIc~zBWJ~+8OK~73lp~vpit~vGx0~LrNF~Bfhu~sXZ1~OR5h~LWAG~6188~QYrA~rLNX~sZCA~dncM~kio1~GSvG~/S07~QGWp~fD9H~eX6v~dAvK~H0oM~EdjX~AL4m~PBhN~0FLx~d3C1~B+BN~tf6o~JgAU".split("~"));
+            </script>
+        """.trimIndent()
+
+        val extracted = com.cloudstream.tr.core.extractors.CloseLoadExtractor.extractStreamUrl(htmlSnippet)
+        assertEquals("https://srv9.cdnimages324.shop/hls/spidermanbrandnewday-2026-tele-tt22084616mp4-t9yznSN75Lw.mp4/txt/master.txt", extracted)
+    }
 }

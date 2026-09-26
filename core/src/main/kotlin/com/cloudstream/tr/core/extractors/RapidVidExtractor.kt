@@ -42,7 +42,7 @@ open class RapidVidExtractor : ExtractorApi() {
         ): Boolean {
             var foundStream = false
             try {
-                val avPattern = Pattern.compile("""file:\s*av\(['"]([^'"]+)['"]\)""")
+                val avPattern = Pattern.compile(""""?file"?\s*:\s*av\(['"]([^'"]+)['"]\)""")
                 val avMatcher = avPattern.matcher(html)
                 if (avMatcher.find()) {
                     val token = avMatcher.group(1)

@@ -5,7 +5,7 @@
     {
       "name": "AnimeciX",
       "module": "AnimeciX",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "Anime"
@@ -53,12 +53,13 @@
             "/dmca"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_UNSUPPORTED: TauVideo player SPA protected by Cloudflare; tau-video.xyz is not accessible via standard HTTP."
     },
     {
       "name": "BelgeselX",
       "module": "BelgeselX",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "Documentary"
@@ -98,12 +99,13 @@
             "/iletisim/"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_DEAD: Catalog pages return soft 404; content unavailable."
     },
     {
       "name": "DiziPal",
       "module": "DiziPal",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "Movie",
@@ -152,7 +154,8 @@
             "/sayfa/"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_DEAD: Domain connection timed out and mirrors inaccessible."
     },
     {
       "name": "FilmMakinesi",
@@ -167,7 +170,7 @@
       "healthTier": "full",
       "smokeTest": {
         "searchQuery": "Island",
-        "knownDetail": "https://filmmakinesi.to/film/forgotten-island-2026/",
+        "knownDetail": "https://filmmakinesi.to/film/island-zero-2018/",
         "expectedType": "Movie"
       },
       "monitoring": {
@@ -304,7 +307,7 @@
     {
       "name": "TurkAnime",
       "module": "TurkAnime",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "Anime",
@@ -359,7 +362,8 @@
             "sayfa"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_DEAD: Site officially shut down with farewell announcement; domains offered for sale."
     },
     {
       "name": "YesilCamTv",
@@ -421,7 +425,8 @@
       ],
       "domainKey": "TrtDizi",
       "healthTier": "unsupported",
-      "notes": "Module not yet implemented; disabled to prevent phantom health check failures"
+      "notes": "Module not yet implemented; disabled to prevent phantom health check failures",
+      "disabledReason": "DISABLED_DEAD"
     },
     {
       "name": "SezonlukDizi",
@@ -520,7 +525,7 @@
     {
       "name": "DiziMom",
       "module": "DiziMom",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "TvSeries"
@@ -561,7 +566,8 @@
             "/tur/"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_DEAD: Domain SSL certificate mismatch (localhost.localdomain) and mirror inaccessible."
     },
     {
       "name": "DiziYou",
@@ -718,12 +724,13 @@
       ],
       "domainKey": "DiziBox",
       "healthTier": "unsupported",
-      "notes": "Blocked upstream by Cloudflare ASN/Firewall (1000s box); requires personal trusted cookies which violate security policy"
+      "notes": "Blocked upstream by Cloudflare ASN/Firewall (1000s box); requires personal trusted cookies which violate security policy",
+      "disabledReason": "DISABLED_DEAD"
     },
     {
       "name": "FilmModu",
       "module": "FilmModu",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "Movie"
@@ -762,12 +769,13 @@
             "/tur/"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_UNSUPPORTED: Stream CDN sx1.ytconvertor.click blocked by Cloudflare Error 1010 WAF."
     },
     {
       "name": "JetFilmIzle",
       "module": "JetFilmIzle",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "Movie"
@@ -805,12 +813,13 @@
             "/tur/"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_UNSUPPORTED: Site DOM restructured, player extraction unsupported."
     },
     {
       "name": "CizgiMax",
       "module": "CizgiMax",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "TvSeries",
@@ -851,12 +860,13 @@
             "/tur/"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_DEAD: Detail and video pages return HTTP 404."
     },
     {
       "name": "DDizi",
       "module": "DDizi",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "TvSeries"
@@ -895,12 +905,13 @@
             "/sayfa/"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_DEAD: Search endpoint and episode pages return HTTP 404."
     },
     {
       "name": "Sinewix",
       "module": "Sinewix",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "Movie",
@@ -939,7 +950,8 @@
             "/tur/"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_DEAD: DNS resolution failed (sinewix.net host cannot be resolved)."
     },
     {
       "name": "CloudStreamHub",
@@ -1035,7 +1047,7 @@
     {
       "name": "DramaDizilerim",
       "module": "DramaDizilerim",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "AsianDrama"
@@ -1078,12 +1090,13 @@
             "/giris"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_UNSUPPORTED: Proprietary DramaPlaybackGuard JavaScript barrier prevents media discovery."
     },
     {
       "name": "WebDramaTurkey",
       "module": "WebDramaTurkey",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "AsianDrama"
@@ -1126,12 +1139,13 @@
             "/giris"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_UNSUPPORTED: dtpasn.asia obfuscated proprietary player with anti-bot debugger traps."
     },
     {
       "name": "Animeler",
       "module": "Animeler",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "Anime",
@@ -1175,12 +1189,13 @@
             "/giris"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_UNSUPPORTED: Search 404, player discovery failed."
     },
     {
       "name": "SetFilmIzle",
       "module": "SetFilmIzle",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "Movie",
@@ -1224,12 +1239,13 @@
             "/giris"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_UNSUPPORTED: Search 404 and player extraction unsupported."
     },
     {
       "name": "DiziLife",
       "module": "DiziLife",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "TvSeries",
@@ -1273,7 +1289,8 @@
             "/giris"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_DEAD: Domain SSL certificate mismatch (localhost.localdomain) and mirror inaccessible."
     },
     {
       "name": "HDFilmDelisi",
@@ -1326,7 +1343,7 @@
     {
       "name": "Dizigecesi",
       "module": "Dizigecesi",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "TvSeries",
@@ -1370,12 +1387,13 @@
             "/giris"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_DEAD: Detail and episode pages return soft 404."
     },
     {
       "name": "RareFilmm",
       "module": "RareFilmm",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "Movie"
@@ -1418,12 +1436,13 @@
             "/giris"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_UNSUPPORTED: Media player hosted on OK.ru uses non-standard Russian State CA SSL failing standard TLS verification."
     },
     {
       "name": "FilmHane",
       "module": "FilmHane",
-      "enabled": true,
+      "enabled": false,
       "language": "tr",
       "types": [
         "Movie",
@@ -1467,7 +1486,8 @@
             "/giris"
           ]
         }
-      }
+      },
+      "disabledReason": "DISABLED_DEAD: Domain connection timed out."
     }
   ]
 }

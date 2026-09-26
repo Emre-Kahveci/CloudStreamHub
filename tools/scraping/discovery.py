@@ -281,8 +281,8 @@ def evaluate_player_discovery(html_body: str, base_url: str) -> Tuple[str, Dict[
         src = ifr.get("src") or ifr.get("data-src") or ifr.get("data-lazy-src")
         if src:
             abs_src = urljoin(base_url, src)
-            # Filter out non-video ads/analytics iframes
-            if not any(ign in abs_src.lower() for ign in ["google", "recaptcha", "analytics", "disqus", "ads"]):
+            # Filter out non-video ads/analytics and trailer iframes
+            if not any(ign in abs_src.lower() for ign in ["google", "recaptcha", "analytics", "disqus", "ads", "youtube.com", "youtu.be"]):
                 info["iframes"].append(XhrRedactor.sanitize_url(abs_src))
 
     # 2. Inspect HTML5 Video elements

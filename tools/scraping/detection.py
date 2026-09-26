@@ -135,7 +135,14 @@ def is_soft_404(status: Optional[int], body: str, title: Optional[str] = None) -
             if ind in title_lower:
                 return True
 
-    body_sample = (body[:5000] if body else "").lower()
+    if not body:
+        return False
+
+    # Remove script and style tags to avoid false positives on embedded JS translation tables
+    body_no_script = re.sub(r'<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>', '', body[:15000], flags=re.IGNORECASE)
+    body_no_script = re.sub(r'<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>', '', body_no_script, flags=re.IGNORECASE)
+    body_sample = body_no_script.lower()
+
     for ind in SOFT_404_INDICATORS:
         if ind in body_sample:
             return True

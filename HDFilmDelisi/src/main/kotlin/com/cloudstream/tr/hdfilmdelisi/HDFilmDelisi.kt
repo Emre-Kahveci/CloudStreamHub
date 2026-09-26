@@ -157,7 +157,7 @@ class HDFilmDelisi : MainAPI() {
                                 type = ExtractorLinkType.VIDEO
                             ) {
                                 this.referer = embedUrl
-                                this.quality = Qualities.P1080.value
+                                this.quality = Qualities.Unknown.value
                             }
                         )
                     } else {

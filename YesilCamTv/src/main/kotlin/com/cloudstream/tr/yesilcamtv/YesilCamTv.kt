@@ -4,6 +4,7 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.LoadResponse.Companion.addActors
 import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
+import com.cloudstream.tr.core.extractors.RumbleExtractor
 import com.cloudstream.tr.core.model.ProviderModels
 import com.cloudstream.tr.core.network.StreamValidator
 import org.jsoup.nodes.Document
@@ -165,26 +166,7 @@ class YesilCamTv : MainAPI() {
             resolver = { iframeUrl, emitLink ->
                 val fixed = fixUrl(iframeUrl)
                 if (fixed.contains("rumble.com/embed/")) {
-                    try {
-                        val rumbleHtml = app.get(fixed, referer = mainUrl).text
-                        val mp4Matches = Regex("""https?:[\\/]+[^\s"\'<>]+\.mp4[^\s"\'<>]*""").findAll(rumbleHtml)
-                        mp4Matches.forEach { match ->
-                            val cleanUrl = match.value.replace("""\/""", "/")
-                            if (cleanUrl.startsWith("http")) {
-                                emitLink(
-                                    newExtractorLink(
-                                        source = name,
-                                        name = "$name Rumble MP4",
-                                        url = cleanUrl,
-                                        type = ExtractorLinkType.VIDEO
-                                    ) {
-                                        this.referer = "https://rumble.com/"
-                                        this.quality = Qualities.P1080.value
-                                    }
-                                )
-                            }
-                        }
-                    } catch (_: Exception) {}
+                    RumbleExtractor.extract(fixed, referer = mainUrl, subtitleCallback, emitLink)
                 } else {
                     loadExtractor(fixed, referer = mainUrl, subtitleCallback, emitLink)
                 }

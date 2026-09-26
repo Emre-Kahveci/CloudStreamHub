@@ -13,7 +13,26 @@ val ignoredDirs = listOf(
     "core"
 )
 
-val disabled = listOf<String>()
+val disabled = listOf<String>(
+    "AnimeciX",
+    "Animeler",
+    "BelgeselX",
+    "CizgiMax",
+    "DDizi",
+    "Dizigecesi",
+    "DiziLife",
+    "DiziMom",
+    "DiziPal",
+    "DramaDizilerim",
+    "FilmHane",
+    "FilmModu",
+    "JetFilmIzle",
+    "RareFilmm",
+    "SetFilmIzle",
+    "Sinewix",
+    "TurkAnime",
+    "WebDramaTurkey"
+)
 
 File(rootDir, ".").eachDir { dir ->
     if (!ignoredDirs.contains(dir.name) && !disabled.contains(dir.name) && File(dir, "build.gradle.kts").exists()) {

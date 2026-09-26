@@ -41,7 +41,7 @@
         "animecix"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "unsupported"
     },
     "Animeler": {
       "canonical": "https://animeler.pw",
@@ -56,7 +56,7 @@
         "Anime"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "unsupported"
     },
     "Dizilla": {
       "canonical": "https://dizilla.now",
@@ -98,7 +98,7 @@
         "filmmodu"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "unsupported"
     },
     "HDFilmCehennemi": {
       "canonical": "https://www.hdfilmcehennemi.nl",
@@ -142,7 +142,7 @@
         "dizipal"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "dead"
     },
     "TurkAnime": {
       "canonical": "https://www.turkanime.tv",
@@ -157,7 +157,7 @@
         "turkanime"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "dead"
     },
     "BelgeselX": {
       "canonical": "https://belgeselx.com",
@@ -170,7 +170,7 @@
         "belgeselx"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "dead"
     },
     "FilmMakinesi": {
       "canonical": "https://filmmakinesi.to",
@@ -227,7 +227,7 @@
         "dizimom"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "dead"
     },
     "DiziYou": {
       "canonical": "https://www.diziyou.one",
@@ -273,7 +273,7 @@
         "jetfilmizle"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "unsupported"
     },
     "CizgiMax": {
       "canonical": "https://cizgimax.online",
@@ -286,7 +286,7 @@
         "cizgimax"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "dead"
     },
     "DDizi": {
       "canonical": "https://www.ddizi.im",
@@ -301,7 +301,7 @@
         "ddizi"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "dead"
     },
     "Sinewix": {
       "canonical": "https://sinewix.net",
@@ -314,7 +314,7 @@
         "sinewix"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "dead"
     },
     "CloudStreamHub": {
       "canonical": "https://api.themoviedb.org",
@@ -357,7 +357,7 @@
         "Dizi"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "unsupported"
     },
     "WebDramaTurkey": {
       "canonical": "https://webdramaturkey2.com",
@@ -372,7 +372,7 @@
         "Diziler"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "unsupported"
     },
     "SetFilmIzle": {
       "canonical": "https://www.setfilmizle.ltd",
@@ -386,7 +386,7 @@
         "Film"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "unsupported"
     },
     "DiziLife": {
       "canonical": "https://dizi74.life",
@@ -401,7 +401,7 @@
         "Diziler"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "dead"
     },
     "HDFilmDelisi": {
       "canonical": "https://hdfilmdelisi.one",
@@ -429,7 +429,7 @@
         "Dizi"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "dead"
     },
     "RareFilmm": {
       "canonical": "https://rarefilmm.com",
@@ -443,7 +443,7 @@
         "Films"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "unsupported"
     },
     "FilmHane": {
       "canonical": "https://www.filmhane.shop",
@@ -457,7 +457,7 @@
         "Film"
       ],
       "lastChecked": null,
-      "status": "active"
+      "status": "dead"
     }
   }
 }
