@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import org.jsoup.Jsoup
 import org.junit.Assert.*
 import org.junit.Test
+import com.lagradost.cloudstream3.utils.Qualities
 
 class DiziYouParserTest {
     private val provider = DiziYou()
@@ -72,7 +73,7 @@ class DiziYouParserTest {
         assertEquals(2, extLinks.size)
         assertEquals("DiziYou HLS", extLinks[0].name)
         assertEquals("https://storage.diziyou.one/episodes/test_item_id_123/play.m3u8", extLinks[0].url)
-        assertEquals(1080, extLinks[0].quality)
+        assertEquals(Qualities.Unknown.value, extLinks[0].quality)
         assertEquals("https://www.diziyou.one/", extLinks[0].referer)
 
         assertEquals("DiziYou Dublaj HLS", extLinks[1].name)
