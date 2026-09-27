@@ -29,7 +29,7 @@ class CoreTest {
     fun testProviderModelsNormalizeTitle() {
         val raw = "Kurtlar Vadisi: Pusu - 1. Bölüm İzle!"
         val norm = ProviderModels.normalizeTitle(raw)
-        assertEquals("kurtlar vadisi pusu 1 bölüm izle", norm)
+        assertEquals("kurtlar vadisi pusu 1 bölüm", norm)
     }
 
     @Test

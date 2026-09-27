@@ -30,31 +30,37 @@ object HubMatchingEngine {
      */
     fun findConfidentMatch(
         candidates: List<SearchResponse>,
-        targetTitle: String,
+        targetTitles: List<String>,
         targetYear: Int? = null,
         isMovie: Boolean? = null,
-        minConfidence: Double = 0.80
+        minConfidence: Double = 0.70
     ): SearchResponse? {
-        if (candidates.isEmpty()) return null
+        if (candidates.isEmpty() || targetTitles.isEmpty()) return null
 
-        val normTarget = ProviderModels.normalizeTitle(targetTitle)
+        val normTargets = targetTitles.map { ProviderModels.normalizeTitle(it) }
         var bestCandidate: SearchResponse? = null
         var highestScore = 0.0
 
         for (item in candidates) {
             val normName = ProviderModels.normalizeTitle(item.name)
-            var score = 0.0
+            var bestTitleScore = 0.0
 
-            // 1. Title match
-            if (normName == normTarget) {
-                score += 0.85
-            } else if (normName.contains(normTarget) || normTarget.contains(normName)) {
-                val ratio = normTarget.length.toDouble() / max(normName.length, 1)
-                score += (0.65 * ratio).coerceIn(0.40, 0.75)
-            } else {
-                val sim = tokenSimilarity(normTarget, normName)
-                score += (0.70 * sim)
+            for (normTarget in normTargets) {
+                var score = 0.0
+
+                // 1. Title match
+                if (normName == normTarget) {
+                    score += 0.85
+                } else if (normName.contains(normTarget) || normTarget.contains(normName)) {
+                    val ratio = normTarget.length.toDouble() / max(normName.length, 1)
+                    score += (0.65 * ratio).coerceIn(0.40, 0.75)
+                } else {
+                    val sim = tokenSimilarity(normTarget, normName)
+                    score += (0.70 * sim)
+                }
+                if (score > bestTitleScore) bestTitleScore = score
             }
+            var score = bestTitleScore
 
             // 2. Year validation
             val itemYear: Int? = when (item) {

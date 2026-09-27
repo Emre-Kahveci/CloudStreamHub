@@ -36,7 +36,7 @@ fun interface StreamHttpTransport {
 }
 
 object StreamValidator {
-    const val DEFAULT_TIMEOUT_MS = 2000L
+    const val DEFAULT_TIMEOUT_MS = 5000L
     const val MAX_READ_BYTES = 8192
 
     private val defaultTransport = StreamHttpTransport { url, headers ->

@@ -1,4 +1,4 @@
-version = 6
+version = 7
 
 cloudstream {
     authors     = listOf("CloudStreamTR", "Emre-Kahveci")
@@ -7,4 +7,12 @@ cloudstream {
     status      = 1
     tvTypes     = listOf("Movie", "TvSeries", "Anime", "Cartoon", "Documentary")
     iconUrl     = "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/main/assets/icon.png"
+}
+
+dependencies {
+    implementation(project(":FilmMakinesi"))
+    implementation(project(":HDFilmCehennemi"))
+    implementation(project(":SinemaCX"))
+    implementation(project(":SezonlukDizi"))
+    implementation(project(":KultFilmler"))
 }

@@ -51,13 +51,12 @@ class CloudStreamHubTest {
             this.year = 2014
         }
 
-        // Test exact match
-        val match1 = HubMatchingEngine.findConfidentMatch(listOf(cand1, cand2, cand3), "Inception", 2010, isMovie = true)
+        val match1 = HubMatchingEngine.findConfidentMatch(listOf(cand1, cand2, cand3), listOf("Inception"), 2010, isMovie = true)
         assertNotNull(match1)
         assertEquals("Inception", match1?.name)
 
         // Test rejecting completely unrelated title (NEVER returns first result!)
-        val match2 = HubMatchingEngine.findConfidentMatch(listOf(cand1, cand2, cand3), "Matrix", 1999, isMovie = true)
+        val match2 = HubMatchingEngine.findConfidentMatch(listOf(cand1, cand2, cand3), listOf("Matrix"), 1999, isMovie = true)
         assertNull("Unrelated title must NOT match first candidate!", match2)
     }
 
@@ -67,12 +66,12 @@ class CloudStreamHubTest {
             this.year = 2024
         }
         // +/- 1 year tolerance
-        val match = HubMatchingEngine.findConfidentMatch(listOf(cand), "Dune: Part Two", 2023, isMovie = true)
+        val match = HubMatchingEngine.findConfidentMatch(listOf(cand), listOf("Dune: Part Two"), 2023, isMovie = true)
         assertNotNull(match)
         assertEquals("Dune Part Two", match?.name)
 
         // Large year mismatch penalty
-        val mismatch = HubMatchingEngine.findConfidentMatch(listOf(cand), "Dune: Part Two", 1984, isMovie = true)
+        val mismatch = HubMatchingEngine.findConfidentMatch(listOf(cand), listOf("Dune: Part Two"), 1984, isMovie = true)
         assertNull("Decade-mismatched year must be rejected", mismatch)
     }
 
@@ -86,12 +85,12 @@ class CloudStreamHubTest {
         }
 
         // Seeking a TV series must match seriesCand, not movieCand
-        val matchSeries = HubMatchingEngine.findConfidentMatch(listOf(movieCand, seriesCand), "Breaking Bad", 2008, isMovie = false)
+        val matchSeries = HubMatchingEngine.findConfidentMatch(listOf(movieCand, seriesCand), listOf("Breaking Bad"), 2008, isMovie = false)
         assertNotNull(matchSeries)
         assertTrue(matchSeries is TvSeriesSearchResponse)
 
         // Seeking a Movie must match movieCand, not seriesCand
-        val matchMovie = HubMatchingEngine.findConfidentMatch(listOf(seriesCand, movieCand), "Breaking Bad", 2008, isMovie = true)
+        val matchMovie = HubMatchingEngine.findConfidentMatch(listOf(seriesCand, movieCand), listOf("Breaking Bad"), 2008, isMovie = true)
         assertNotNull(matchMovie)
         assertTrue(matchMovie is MovieSearchResponse)
     }

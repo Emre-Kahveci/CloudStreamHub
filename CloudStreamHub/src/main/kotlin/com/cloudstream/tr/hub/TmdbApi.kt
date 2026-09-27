@@ -62,6 +62,10 @@ data class TmdbSeason(
     @JsonProperty("poster_path") val posterPath: String? = null
 )
 
+data class TmdbExternalIds(
+    @JsonProperty("imdb_id") val imdbId: String? = null
+)
+
 data class TmdbDetailResponse(
     @JsonProperty("id") val id: Int? = null,
     @JsonProperty("title") val title: String? = null,
@@ -77,7 +81,8 @@ data class TmdbDetailResponse(
     @JsonProperty("genres") val genres: List<TmdbGenre>? = null,
     @JsonProperty("credits") val credits: TmdbCredits? = null,
     @JsonProperty("videos") val videos: TmdbVideos? = null,
-    @JsonProperty("seasons") val seasons: List<TmdbSeason>? = null
+    @JsonProperty("seasons") val seasons: List<TmdbSeason>? = null,
+    @JsonProperty("external_ids") val externalIds: TmdbExternalIds? = null
 )
 
 data class AggregatorLinkPayload(
@@ -86,7 +91,9 @@ data class AggregatorLinkPayload(
     val isMovie: Boolean,
     val season: Int? = null,
     val episode: Int? = null,
-    val tmdbId: Int? = null
+    val tmdbId: Int? = null,
+    val imdbId: String? = null,
+    val originalTitle: String? = null
 ) {
     fun toUrlData(): String {
         val encTitle = URLEncoder.encode(title, "UTF-8")
@@ -94,7 +101,9 @@ data class AggregatorLinkPayload(
         val s = season?.toString() ?: ""
         val ep = episode?.toString() ?: ""
         val tId = tmdbId?.toString() ?: ""
-        return "hub://item?title=$encTitle&year=$y&isMovie=$isMovie&season=$s&episode=$ep&tmdbId=$tId"
+        val iId = imdbId ?: ""
+        val oTitle = originalTitle?.let { URLEncoder.encode(it, "UTF-8") } ?: ""
+        return "hub://item?title=$encTitle&year=$y&isMovie=$isMovie&season=$s&episode=$ep&tmdbId=$tId&imdbId=$iId&originalTitle=$oTitle"
     }
 
     companion object {
@@ -112,7 +121,9 @@ data class AggregatorLinkPayload(
                     isMovie = params["isMovie"]?.toBoolean() ?: true,
                     season = params["season"]?.toIntOrNull(),
                     episode = params["episode"]?.toIntOrNull(),
-                    tmdbId = params["tmdbId"]?.toIntOrNull()
+                    tmdbId = params["tmdbId"]?.toIntOrNull(),
+                    imdbId = params["imdbId"]?.takeIf { it.isNotBlank() },
+                    originalTitle = params["originalTitle"]?.takeIf { it.isNotBlank() }
                 )
             } catch (e: Exception) {
                 null

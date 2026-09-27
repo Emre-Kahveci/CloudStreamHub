@@ -33,8 +33,16 @@ object ProviderModels {
      * Normalizes a title for deduplication and matching (lowercased, punctuation stripped)
      */
     fun normalizeTitle(rawTitle: String): String {
-        return rawTitle
-            .lowercase(Locale("tr", "TR"))
+        var processed = rawTitle.lowercase(Locale("tr", "TR"))
+        
+        val fillers = listOf("türkçe dublaj", "türkçe altyazılı", "tr dublaj", "tr altyazı", "full hd izle", "full hd", "tek parça", "izle", "1080p", "720p", "4k")
+        for (filler in fillers) {
+            processed = processed.replace(filler, "")
+        }
+        
+        processed = processed.replace("&", " ve ")
+
+        return processed
             .replace(Regex("[^a-z0-9ğüşıöç\\s]"), " ")
             .replace(Regex("\\s+"), " ")
             .trim()

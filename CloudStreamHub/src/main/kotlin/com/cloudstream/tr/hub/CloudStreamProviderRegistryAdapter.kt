@@ -85,11 +85,17 @@ object CloudStreamProviderRegistryAdapter {
 
         // 2. Fallback to ClassLoader instantiation if APIHolder returned no providers
         if (discovered.isEmpty()) {
+            try { discovered.add(com.cloudstream.tr.filmmakinesi.FilmMakinesi()) } catch (_: Throwable) {}
+            try { discovered.add(com.cloudstream.tr.hdfilmcehennemi.HDFilmCehennemi()) } catch (_: Throwable) {}
+            try { discovered.add(com.cloudstream.tr.sinemacx.SinemaCX()) } catch (_: Throwable) {}
+            try { discovered.add(com.cloudstream.tr.sezonlukdizi.SezonlukDizi()) } catch (_: Throwable) {}
+            try { discovered.add(com.cloudstream.tr.kultfilmler.KultFilmler()) } catch (_: Throwable) {}
+
             for (className in knownProviderClasses) {
                 try {
                     val clazz = Class.forName(className)
                     val instance = clazz.getDeclaredConstructor().newInstance() as? MainAPI
-                    if (instance != null) {
+                    if (instance != null && discovered.none { it.name == instance.name }) {
                         discovered.add(instance)
                     }
                 } catch (_: Throwable) {}

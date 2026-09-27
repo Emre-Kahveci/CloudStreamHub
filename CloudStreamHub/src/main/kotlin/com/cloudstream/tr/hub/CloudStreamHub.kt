@@ -91,9 +91,9 @@ class CloudStreamHub : MainAPI() {
         val score = item.voteAverage?.toString()
 
         val dataUrl = if (isMovie) {
-            "${mainUrl}/movie/${id}?api_key=${tmdbApiKey}&language=tr-TR&append_to_response=credits,videos"
+            "${mainUrl}/movie/${id}?api_key=${tmdbApiKey}&language=tr-TR&append_to_response=credits,videos,external_ids"
         } else {
-            "${mainUrl}/tv/${id}?api_key=${tmdbApiKey}&language=tr-TR&append_to_response=credits,videos"
+            "${mainUrl}/tv/${id}?api_key=${tmdbApiKey}&language=tr-TR&append_to_response=credits,videos,external_ids"
         }
 
         return if (isMovie) {
@@ -139,7 +139,9 @@ class CloudStreamHub : MainAPI() {
                 title = title,
                 year = year,
                 isMovie = true,
-                tmdbId = id
+                tmdbId = id,
+                imdbId = resp.externalIds?.imdbId,
+                originalTitle = resp.originalTitle ?: resp.originalName
             ).toUrlData()
 
             return newMovieLoadResponse(title, url, TvType.Movie, payload) {
@@ -166,7 +168,9 @@ class CloudStreamHub : MainAPI() {
                         isMovie = false,
                         season = sNum,
                         episode = ep,
-                        tmdbId = id
+                        tmdbId = id,
+                        imdbId = resp.externalIds?.imdbId,
+                        originalTitle = resp.originalTitle ?: resp.originalName
                     ).toUrlData()
 
                     episodes.add(
@@ -201,6 +205,30 @@ class CloudStreamHub : MainAPI() {
         val payload = AggregatorLinkPayload.fromUrlData(data) ?: return false
         var linksFound = false
 
+        if (payload.imdbId != null) {
+            val torrentioLinks = com.cloudstream.tr.core.resolvers.TorrentioResolver.resolve(
+                imdbId = payload.imdbId,
+                isMovie = payload.isMovie,
+                season = payload.season,
+                episode = payload.episode
+            )
+            torrentioLinks.forEach { link ->
+                callback(link)
+                linksFound = true
+            }
+
+            if (payload.isMovie) {
+                val ytsLinks = com.cloudstream.tr.core.resolvers.YtsResolver.resolve(
+                    imdbId = payload.imdbId,
+                    isMovie = true
+                )
+                ytsLinks.forEach { link ->
+                    callback(link)
+                    linksFound = true
+                }
+            }
+        }
+
         val providers = CloudStreamProviderRegistryAdapter.getRegisteredTurkishProviders(excludeName = this.name)
         if (providers.isEmpty()) {
             DiagnosticLogger.log(
@@ -221,9 +249,10 @@ class CloudStreamHub : MainAPI() {
                     val searchList = provider.search(payload.title) ?: emptyList()
                     if (searchList.isEmpty()) return@resolveProgressive
 
+                    val targetTitles = listOfNotNull(payload.title, payload.originalTitle).distinct()
                     val matched = HubMatchingEngine.findConfidentMatch(
                         candidates = searchList,
-                        targetTitle = payload.title,
+                        targetTitles = targetTitles,
                         targetYear = payload.year,
                         isMovie = payload.isMovie
                     ) ?: run {
@@ -254,7 +283,7 @@ class CloudStreamHub : MainAPI() {
                     }
 
                     if (targetLinkData != null) {
-                        val channel = Channel<ExtractorLink>(capacity = 16)
+                        val channel = Channel<ExtractorLink>(capacity = Channel.UNLIMITED)
                         val seenUrls = ConcurrentHashMap.newKeySet<String>()
                         var rawLinksReceived = 0
                         var duplicatesDropped = 0
@@ -276,6 +305,12 @@ class CloudStreamHub : MainAPI() {
                                         continue
                                     }
 
+                                    if (rawUrl.startsWith("magnet:") || rawLink.type == com.lagradost.cloudstream3.utils.ExtractorLinkType.MAGNET) {
+                                        emitLink(rawLink)
+                                        linksEmitted++
+                                        continue
+                                    }
+
                                     val reqHeaders = rawLink.headers.toMutableMap()
                                     if (rawLink.referer.isNotBlank() && !reqHeaders.containsKey("Referer") && !reqHeaders.containsKey("referer")) {
                                         reqHeaders["Referer"] = rawLink.referer
@@ -292,7 +327,7 @@ class CloudStreamHub : MainAPI() {
                                         com.cloudstream.tr.core.network.ValidationStatus.INDETERMINATE -> preflightIndeterminate++
                                     }
 
-                                    if (preflight.isValid) {
+                                    if (preflight.isValid || preflight.status == com.cloudstream.tr.core.network.ValidationStatus.INDETERMINATE) {
                                         val formattedName = ProviderModels.formatSourceTitle(
                                             sourceName = provider.name,
                                             resolution = rawLink.name
@@ -327,7 +362,7 @@ class CloudStreamHub : MainAPI() {
                                                 provider = provider.name,
                                                 stage = DiagnosticStage.STREAM_PREFLIGHT,
                                                 category = DiagnosticCategory.NETWORK,
-                                                message = "Channel buffer overflow (capacity 16 exceeded) for link: ${DiagnosticLogger.redactUrl(rawLink.url)}"
+                                                message = "Channel buffer overflow for link: ${DiagnosticLogger.redactUrl(rawLink.url)}"
                                             )
                                         }
                                     }
@@ -343,7 +378,7 @@ class CloudStreamHub : MainAPI() {
                                     provider = provider.name,
                                     stage = DiagnosticStage.STREAM_PREFLIGHT,
                                     category = DiagnosticCategory.NETWORK,
-                                    message = "Provider '${provider.name}' completed with dropped links: $channelOverflowDropped dropped due to capacity 16. Metrics: received=$rawLinksReceived, duplicatesDropped=$duplicatesDropped, valid=$preflightValid, invalid=$preflightInvalid, indeterminate=$preflightIndeterminate, emitted=$linksEmitted"
+                                    message = "Provider '${provider.name}' completed with dropped links: $channelOverflowDropped dropped due to capacity overflow. Metrics: received=$rawLinksReceived, duplicatesDropped=$duplicatesDropped, valid=$preflightValid, invalid=$preflightInvalid, indeterminate=$preflightIndeterminate, emitted=$linksEmitted"
                                 )
                             }
                         }
