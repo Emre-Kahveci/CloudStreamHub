@@ -1,10 +1,74 @@
 [
     {
-        "iconUrl": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/main/assets/icon.png",
-        "fileHash": "sha256-6c35fbff73b78d4597e46ccb829743a68fd73789e2e96bfddf6b5c184aa0b1e6",
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=animecix.tv",
+        "fileHash": "sha256-f72a506eb0259b2214777e2ed57d7426fc007593a8c30b9f4775886f4789f330",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 94297,
+        "fileSize": 85591,
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "CloudStreamTR",
+            "keyiflerolsun"
+        ],
+        "tvTypes": [
+            "Anime"
+        ],
+        "version": 93,
+        "internalName": "AnimeciX",
+        "description": "AnimeciX - G\u00fcncel anime ve film ar\u015fivi",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/AnimeciX.cs3",
+        "name": "AnimeciX"
+    },
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=animeler.pw",
+        "fileHash": "sha256-52d9e94673d31069f4505189b01f29c501b6458219e7fc02f600227f59459c21",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 76604,
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "CloudStreamTR",
+            "kraptor"
+        ],
+        "tvTypes": [
+            "Anime",
+            "AnimeMovie"
+        ],
+        "version": 4,
+        "internalName": "Animeler",
+        "description": "Animeler - T\u00fcrk\u00e7e Altyaz\u0131l\u0131 ve Dublajl\u0131 Anime \u0130zleme Platformu",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/Animeler.cs3",
+        "name": "Animeler"
+    },
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=belgeselx.com",
+        "fileHash": "sha256-e66a22185c4e56a1af8c21d0da30aa09c30d864ba28f3d2e0151f883df9cff3a",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 80824,
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "CloudStreamTR",
+            "keyiflerolsun"
+        ],
+        "tvTypes": [
+            "Documentary"
+        ],
+        "version": 94,
+        "internalName": "BelgeselX",
+        "description": "BelgeselX - T\u00fcrk\u00e7e dublaj ve altyaz\u0131l\u0131 belgesel ar\u015fivi",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/BelgeselX.cs3",
+        "name": "BelgeselX"
+    },
+    {
+        "iconUrl": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/main/assets/icon.png",
+        "fileHash": "sha256-97dede81771ace96a94d478d5a3a28616c7a0bf1be7f58f69ba607479a0f121b",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 98166,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -18,18 +82,40 @@
             "Cartoon",
             "Documentary"
         ],
-        "version": 5,
+        "version": 6,
         "internalName": "CloudStreamHub",
         "description": "CloudStreamHub Aggregator - TMDB Ke\u015fif & T\u00fcm T\u00fcrk\u00e7e Sa\u011flay\u0131c\u0131lar\u0131 Birle\u015ftiren S\u00fcper Eklenti",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/CloudStreamHub.cs3",
         "name": "CloudStreamHub"
     },
     {
-        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=dizikorea3.com",
-        "fileHash": "sha256-4244709bca830b5eeb19894284918fc8be9efbd5a20825eea67b5fd1e50903ad",
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=dizigecesi.com",
+        "fileHash": "sha256-1d349fa5239b992b27eae90f07140a608a1a083993ed6ace25a0a319c2a7c4ff",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 73397,
+        "fileSize": 76849,
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "CloudStreamTR",
+            "kraptor"
+        ],
+        "tvTypes": [
+            "TvSeries",
+            "Movie"
+        ],
+        "version": 4,
+        "internalName": "Dizigecesi",
+        "description": "Dizigecesi - Yabanc\u0131 Dizi ve Film \u0130zle",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/Dizigecesi.cs3",
+        "name": "Dizigecesi"
+    },
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=dizikorea3.com",
+        "fileHash": "sha256-a623a7a55d43b17b77fae79c6e9614153294516fd5f9835a31d9152a824f7eec",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 77567,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -39,7 +125,7 @@
         "tvTypes": [
             "AsianDrama"
         ],
-        "version": 3,
+        "version": 4,
         "internalName": "DiziKorea",
         "description": "DiziKorea - En G\u00fcncel Asya ve Kore Dizileri izleme Sitesi",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/DiziKorea.cs3",
@@ -47,31 +133,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=dizilla.now",
-        "fileHash": "sha256-ed724c71a532cb1ad5456af08c93e1c5349c8e0a6f4578771fa33a553e603656",
+        "fileHash": "sha256-6193fd4dcc4c6421f3764038b20e01f99796f6235cf17d8656ed0034a83dca83",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 80667,
-        "status": 1,
-        "language": "tr",
-        "authors": [
-            "CloudStreamTR",
-            "keyiflerolsun"
-        ],
-        "tvTypes": [
-            "TvSeries"
-        ],
-        "version": 3,
-        "internalName": "Dizilla",
-        "description": "Dizilla - G\u00fcncel yabanc\u0131 dizi ve anime ar\u015fivi",
-        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/Dizilla.cs3",
-        "name": "Dizilla"
-    },
-    {
-        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=diziyou.one",
-        "fileHash": "sha256-58f420642691f7f52cccb31df703f5483ea2c63993b38a4d2c48b8767348bd83",
-        "apiVersion": 1,
-        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 76396,
+        "fileSize": 83950,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -82,17 +147,59 @@
             "TvSeries"
         ],
         "version": 4,
+        "internalName": "Dizilla",
+        "description": "Dizilla - G\u00fcncel yabanc\u0131 dizi ve anime ar\u015fivi",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/Dizilla.cs3",
+        "name": "Dizilla"
+    },
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=diziyou.one",
+        "fileHash": "sha256-561d1b07e21875b6c4c45379e2cc465eeec96f3d5e39a98e59bc51aaf966155a",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 82868,
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "CloudStreamTR",
+            "keyiflerolsun"
+        ],
+        "tvTypes": [
+            "TvSeries"
+        ],
+        "version": 5,
         "internalName": "DiziYou",
         "description": "DiziYou - G\u00fcncel yabanc\u0131 dizi ve anime ar\u015fivi",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/DiziYou.cs3",
         "name": "DiziYou"
     },
     {
-        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=filmmakinesi.to",
-        "fileHash": "sha256-e2124d5944e550817b06c05a3a91077ff150b722b4a380d5f5b216cd9e70f460",
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=dramadizilerim.com",
+        "fileHash": "sha256-b083d7d7bee66f0f4c710a21590231b92ded634c6879b897b87c9691850af4fa",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 77058,
+        "fileSize": 77217,
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "CloudStreamTR",
+            "kraptor"
+        ],
+        "tvTypes": [
+            "AsianDrama"
+        ],
+        "version": 4,
+        "internalName": "DramaDizilerim",
+        "description": "DramaDizilerim - Kore, \u00c7in ve Asya K\u0131sa/Uzun Dizileri T\u00fcrk\u00e7e Altyaz\u0131l\u0131",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/DramaDizilerim.cs3",
+        "name": "DramaDizilerim"
+    },
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=filmmakinesi.to",
+        "fileHash": "sha256-9faacc3c99969d0ba910d4ef8cdc1f7f98829781c5e7529f5434f1ead73c7a40",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 80719,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -103,7 +210,7 @@
             "Movie",
             "TvSeries"
         ],
-        "version": 93,
+        "version": 94,
         "internalName": "FilmMakinesi",
         "description": "FilmMakinesi - En iyi 1080p Full HD film ve dizi platformu",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/FilmMakinesi.cs3",
@@ -111,10 +218,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=fullhdfilmizlesene.now",
-        "fileHash": "sha256-b994555197409d1f7d4cebdd87ca67e6078047421212562d2e4f2ad2b4096d62",
+        "fileHash": "sha256-a703ef943290b7e38c2fbc240197a8bd29c9598404ce86cd3f545c57bcf1e285",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 76273,
+        "fileSize": 81892,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -123,7 +230,7 @@
         "tvTypes": [
             "Movie"
         ],
-        "version": 3,
+        "version": 4,
         "internalName": "FullHDFilmizlesene",
         "description": "FullHDFilmizlesene - G\u00fcncel Full HD yerli ve yabanc\u0131 filmler",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/FullHDFilmizlesene.cs3",
@@ -131,10 +238,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=hdfilmcehennemi.nl",
-        "fileHash": "sha256-102ff4afbbe6f53c5fb25bb550a74d4f11d01b8ed42af85ffb07bee12f630773",
+        "fileHash": "sha256-cbb6158555c3b8aa098f1a17bac4c15156f9cdcf95449a2c503b211a415937b8",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 79305,
+        "fileSize": 82884,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -145,7 +252,7 @@
             "Movie",
             "TvSeries"
         ],
-        "version": 94,
+        "version": 95,
         "internalName": "HDFilmCehennemi",
         "description": "HDFilmCehennemi - Y\u00fcksek kalitede T\u00fcrk\u00e7e dublaj ve altyaz\u0131l\u0131 film ve dizi izleme platformu",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/HDFilmCehennemi.cs3",
@@ -153,10 +260,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=hdfilmdelisi.one",
-        "fileHash": "sha256-ae0d21534c9652db56df05d6b2cde484d4f5e1c30fe2e6a1a01e846e9a1cd810",
+        "fileHash": "sha256-a56e251d99d1f41049fec39fccfceba880321237f5a0dcaf83f02f21d2cc6461",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 71971,
+        "fileSize": 76253,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -166,18 +273,39 @@
         "tvTypes": [
             "Movie"
         ],
-        "version": 3,
+        "version": 4,
         "internalName": "HDFilmDelisi",
         "description": "HDFilmDelisi - Film izle, Full HD T\u00fcrk\u00e7e Dublaj & Altyaz\u0131l\u0131",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/HDFilmDelisi.cs3",
         "name": "HDFilmDelisi"
     },
     {
-        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=kultfilmler.net",
-        "fileHash": "sha256-b6d7bfa4c6c88488fed89d45b05f82a0a04963db6ec98e41468f8eb7bab56125",
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=jetfilmizle.vip",
+        "fileHash": "sha256-74d5b280633eb9b03ec6e7425450c5e99b6b5d3a4a03994f903124d8adf60f90",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 79057,
+        "fileSize": 78072,
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "CloudStreamTR",
+            "Emre-Kahveci"
+        ],
+        "tvTypes": [
+            "Movie"
+        ],
+        "version": 4,
+        "internalName": "JetFilmIzle",
+        "description": "JetFilmIzle - G\u00fcncel sinema ve film ar\u015fivi",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/JetFilmIzle.cs3",
+        "name": "JetFilmIzle"
+    },
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=kultfilmler.net",
+        "fileHash": "sha256-afd21e0e6062451a0b1973bd78ddee3aea2993a40b9839f98dc1bb2d0e3bebc4",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 82482,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -188,18 +316,61 @@
             "Movie",
             "TvSeries"
         ],
-        "version": 36,
+        "version": 37,
         "internalName": "KultFilmler",
         "description": "K\u00fclt Filmler - Klasik ve k\u00fclt film ar\u015fivi",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/KultFilmler.cs3",
         "name": "KultFilmler"
     },
     {
-        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=sezonlukdizi.cc",
-        "fileHash": "sha256-4358ac1d1c88ad6b7741ed9fdff8068f7d3fdf1d67aa16a29e26faa8baf0ac3d",
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=rarefilmm.com",
+        "fileHash": "sha256-236d6c7dea3844c59b2078c70d641cf50d8d6ca467c69a07cb443813d460aa08",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 83270,
+        "fileSize": 74398,
+        "status": 1,
+        "language": "en",
+        "authors": [
+            "CloudStreamTR",
+            "kraptor"
+        ],
+        "tvTypes": [
+            "Movie"
+        ],
+        "version": 4,
+        "internalName": "RareFilmm",
+        "description": "RareFilmm - The Cave of Forgotten Films (Rare & Classic Cinema)",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/RareFilmm.cs3",
+        "name": "RareFilmm"
+    },
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=setfilmizle.ltd",
+        "fileHash": "sha256-202dd16a1e0b1fafd91108bca0bca416adf42b12ea6369a003a79e705ca05a82",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 80348,
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "CloudStreamTR",
+            "kraptor"
+        ],
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "version": 4,
+        "internalName": "SetFilmIzle",
+        "description": "SetFilmIzle - HD Film ve Yabanc\u0131 Dizi \u0130zleme Sitesi",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/SetFilmIzle.cs3",
+        "name": "SetFilmIzle"
+    },
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=sezonlukdizi.cc",
+        "fileHash": "sha256-53c96465871902631da912a54fd601c1022bae90e66de74bffeef96b4eba3548",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 86892,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -209,7 +380,7 @@
         "tvTypes": [
             "TvSeries"
         ],
-        "version": 3,
+        "version": 4,
         "internalName": "SezonlukDizi",
         "description": "SezonlukDizi - Yabanc\u0131 dizi ve \u00e7izgi dizi ar\u015fivi",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/SezonlukDizi.cs3",
@@ -217,10 +388,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=sinema.gg",
-        "fileHash": "sha256-13ed77effd408de6ea8307b2e2377b2baebaf5b747bba69d737e4911a2642f81",
+        "fileHash": "sha256-3571c8fa0746b9388fc153a9ab84d93e7100af74204c866c643136c34dbf882e",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 74448,
+        "fileSize": 78309,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -230,18 +401,61 @@
         "tvTypes": [
             "Movie"
         ],
-        "version": 3,
+        "version": 4,
         "internalName": "SinemaCX",
         "description": "SinemaCX - G\u00fcncel yerli ve yabanc\u0131 film ar\u015fivi",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/SinemaCX.cs3",
         "name": "SinemaCX"
     },
     {
-        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=yesilcamtv.com.tr",
-        "fileHash": "sha256-e161de3392068dab7500f17dd4094084386bdd13e5d71d1fbace8ea4fe632070",
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=turkanime.tv",
+        "fileHash": "sha256-b5fdc048991621efc3b792af142def247501a5bf1de3ef5399cc51ff8ebba9f4",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 74324,
+        "fileSize": 84408,
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "CloudStreamTR",
+            "keyiflerolsun"
+        ],
+        "tvTypes": [
+            "Anime",
+            "AnimeMovie"
+        ],
+        "version": 99,
+        "internalName": "TurkAnime",
+        "description": "T\u00fcrk Anime TV - T\u00fcrk\u00e7e altyaz\u0131l\u0131 ve dublaj anime ar\u015fivi",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/TurkAnime.cs3",
+        "name": "TurkAnime"
+    },
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=webdramaturkey2.com",
+        "fileHash": "sha256-9cc09cdb869f9fde5a6512c28a5d1b90a257faa7cf9f3a782efb523e1b17c62a",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 77537,
+        "status": 1,
+        "language": "tr",
+        "authors": [
+            "CloudStreamTR",
+            "kraptor"
+        ],
+        "tvTypes": [
+            "AsianDrama"
+        ],
+        "version": 4,
+        "internalName": "WebDramaTurkey",
+        "description": "WebDramaTurkey - Asya Dizileri ve Web Drama Ar\u015fivi T\u00fcrk\u00e7e Altyaz\u0131l\u0131",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/WebDramaTurkey.cs3",
+        "name": "WebDramaTurkey"
+    },
+    {
+        "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=yesilcamtv.com.tr",
+        "fileHash": "sha256-c8c4dac23e3849768f0042db298590980dffe32404fe6dafb9cdad216ba4a4b4",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 77915,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -251,7 +465,7 @@
         "tvTypes": [
             "Movie"
         ],
-        "version": 14,
+        "version": 15,
         "internalName": "YesilCamTv",
         "description": "Ye\u015fil\u00e7am klasik T\u00fcrk sinemas\u0131 filmleri ve ar\u015fiv",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/YesilCamTv.cs3",
