@@ -1,10 +1,10 @@
 [
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=animecix.tv",
-        "fileHash": "sha256-f72a506eb0259b2214777e2ed57d7426fc007593a8c30b9f4775886f4789f330",
+        "fileHash": "sha256-2895b670f8c9423f82f8b02007cc27c1b2f6e02546b5937e154b874081cf0a0c",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 85591,
+        "fileSize": 96982,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -22,10 +22,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=animeler.pw",
-        "fileHash": "sha256-52d9e94673d31069f4505189b01f29c501b6458219e7fc02f600227f59459c21",
+        "fileHash": "sha256-9284e6132e00aed9065166b4ba2e6fdae7bede95decf275c0f4440eab06208e5",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 76604,
+        "fileSize": 88913,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -44,10 +44,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=belgeselx.com",
-        "fileHash": "sha256-e66a22185c4e56a1af8c21d0da30aa09c30d864ba28f3d2e0151f883df9cff3a",
+        "fileHash": "sha256-3702a99c0f19e0005ee37bd69f70471d049c924f708480c294f87e017973eee9",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 80824,
+        "fileSize": 92496,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -65,10 +65,10 @@
     },
     {
         "iconUrl": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/main/assets/icon.png",
-        "fileHash": "sha256-97dede81771ace96a94d478d5a3a28616c7a0bf1be7f58f69ba607479a0f121b",
+        "fileHash": "sha256-6b3817d004ec2b89c2d1d86be63aecc85533374dd86fe0cec5da0d80f495f460",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 98166,
+        "fileSize": 112973,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -82,7 +82,7 @@
             "Cartoon",
             "Documentary"
         ],
-        "version": 6,
+        "version": 7,
         "internalName": "CloudStreamHub",
         "description": "CloudStreamHub Aggregator - TMDB Ke\u015fif & T\u00fcm T\u00fcrk\u00e7e Sa\u011flay\u0131c\u0131lar\u0131 Birle\u015ftiren S\u00fcper Eklenti",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/CloudStreamHub.cs3",
@@ -90,10 +90,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=dizigecesi.com",
-        "fileHash": "sha256-1d349fa5239b992b27eae90f07140a608a1a083993ed6ace25a0a319c2a7c4ff",
+        "fileHash": "sha256-fbf0f0c2abd8620a01b0f43263e3f305873c6ec3f8ecb2102512c6cee7ca92f1",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 76849,
+        "fileSize": 89196,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -112,10 +112,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=dizikorea3.com",
-        "fileHash": "sha256-a623a7a55d43b17b77fae79c6e9614153294516fd5f9835a31d9152a824f7eec",
+        "fileHash": "sha256-35e2e160da5e3a2dd116c13bcb0a2539d91135ed9dce62702c0d3d2fcfa9f78c",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 77567,
+        "fileSize": 89898,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -133,10 +133,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=dizilla.now",
-        "fileHash": "sha256-6193fd4dcc4c6421f3764038b20e01f99796f6235cf17d8656ed0034a83dca83",
+        "fileHash": "sha256-7cb08052fe31c298e76c7457a83e359e720a626cb27d3c578c7eee0208ee03f0",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 83950,
+        "fileSize": 95579,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -154,10 +154,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=diziyou.one",
-        "fileHash": "sha256-561d1b07e21875b6c4c45379e2cc465eeec96f3d5e39a98e59bc51aaf966155a",
+        "fileHash": "sha256-5a9755eb299d88502af21b683e41e72058e5b832b340894c7704b1284da0927f",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 82868,
+        "fileSize": 94461,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -175,10 +175,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=dramadizilerim.com",
-        "fileHash": "sha256-b083d7d7bee66f0f4c710a21590231b92ded634c6879b897b87c9691850af4fa",
+        "fileHash": "sha256-b9a36f6e1335ea82234d9a4676176f939656ebdb0b6b8d1f8e42eb0d7f0f1ad2",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 77217,
+        "fileSize": 89543,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -196,10 +196,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=filmmakinesi.to",
-        "fileHash": "sha256-9faacc3c99969d0ba910d4ef8cdc1f7f98829781c5e7529f5434f1ead73c7a40",
+        "fileHash": "sha256-8cfd4a4f0cdb1fea42fbb0e349cd8f218c2a2383cc24cff6f5cb9ac8900a2422",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 80719,
+        "fileSize": 92502,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -218,10 +218,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=fullhdfilmizlesene.now",
-        "fileHash": "sha256-a703ef943290b7e38c2fbc240197a8bd29c9598404ce86cd3f545c57bcf1e285",
+        "fileHash": "sha256-8b5618bfd9e036921ce14a0095ac0db6aa617f58805b1e81f13441e8a7a4ffec",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 81892,
+        "fileSize": 93416,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -238,10 +238,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=hdfilmcehennemi.nl",
-        "fileHash": "sha256-cbb6158555c3b8aa098f1a17bac4c15156f9cdcf95449a2c503b211a415937b8",
+        "fileHash": "sha256-12c479a0b64534e16c518c6b1175f905ae3855ae0c6a9c1f693fdeeda8c4da92",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 82884,
+        "fileSize": 94560,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -260,10 +260,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=hdfilmdelisi.one",
-        "fileHash": "sha256-a56e251d99d1f41049fec39fccfceba880321237f5a0dcaf83f02f21d2cc6461",
+        "fileHash": "sha256-d66b42fa3e35fa614a59eca9646cd0515ac0aa9f873a90ce21ab3cfc47095ef3",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 76253,
+        "fileSize": 88767,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -281,10 +281,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=jetfilmizle.vip",
-        "fileHash": "sha256-74d5b280633eb9b03ec6e7425450c5e99b6b5d3a4a03994f903124d8adf60f90",
+        "fileHash": "sha256-810b9fd4910a2635f92156077b5d7f9ba89c8bb42502a054e04d6e58caf04109",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 78072,
+        "fileSize": 90230,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -302,10 +302,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=kultfilmler.net",
-        "fileHash": "sha256-afd21e0e6062451a0b1973bd78ddee3aea2993a40b9839f98dc1bb2d0e3bebc4",
+        "fileHash": "sha256-fcbb8b62452fb0149df9daed3187c6480b338f8bec0d5f28f823a805bdfcc65d",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 82482,
+        "fileSize": 94135,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -324,10 +324,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=rarefilmm.com",
-        "fileHash": "sha256-236d6c7dea3844c59b2078c70d641cf50d8d6ca467c69a07cb443813d460aa08",
+        "fileHash": "sha256-923900cb091af0ba5371ccb4c67550b9c2f629b593681173024fd4de8da7921e",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 74398,
+        "fileSize": 86688,
         "status": 1,
         "language": "en",
         "authors": [
@@ -345,10 +345,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=setfilmizle.ltd",
-        "fileHash": "sha256-202dd16a1e0b1fafd91108bca0bca416adf42b12ea6369a003a79e705ca05a82",
+        "fileHash": "sha256-1db4c1f727f4614b15c9611398782fbc454436df7802b29e5f8fe1bf49d18d8a",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 80348,
+        "fileSize": 92135,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -367,10 +367,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=sezonlukdizi.cc",
-        "fileHash": "sha256-53c96465871902631da912a54fd601c1022bae90e66de74bffeef96b4eba3548",
+        "fileHash": "sha256-b8196362054d19292ebc27f7a8e6294f821a77a123371d68ad8b58d34222c91c",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 86892,
+        "fileSize": 97932,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -388,10 +388,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=sinema.gg",
-        "fileHash": "sha256-3571c8fa0746b9388fc153a9ab84d93e7100af74204c866c643136c34dbf882e",
+        "fileHash": "sha256-7d6ef2f2c3dcb6c37ff51c7f6416cef8cf6820ec9bb6c2eb7378ec4bc542e176",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 78309,
+        "fileSize": 90424,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -409,10 +409,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=turkanime.tv",
-        "fileHash": "sha256-b5fdc048991621efc3b792af142def247501a5bf1de3ef5399cc51ff8ebba9f4",
+        "fileHash": "sha256-7ceab6bf591d5b1bcb776af9b2a6f1424e4a2750e458bca2b3951275b903d684",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 84408,
+        "fileSize": 95847,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -431,10 +431,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=webdramaturkey2.com",
-        "fileHash": "sha256-9cc09cdb869f9fde5a6512c28a5d1b90a257faa7cf9f3a782efb523e1b17c62a",
+        "fileHash": "sha256-8c09bbb95cd2035491152fc643110f6456c2e9a7621ae19e541ce379a6111557",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 77537,
+        "fileSize": 89848,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -452,10 +452,10 @@
     },
     {
         "iconUrl": "https://www.google.com/s2/favicons?sz=128&domain=yesilcamtv.com.tr",
-        "fileHash": "sha256-c8c4dac23e3849768f0042db298590980dffe32404fe6dafb9cdad216ba4a4b4",
+        "fileHash": "sha256-3b96eb4d0912fbb2aa2a854d775016095f9661edac0b7fd5f450b2bbac6c0e3a",
         "apiVersion": 1,
         "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
-        "fileSize": 77915,
+        "fileSize": 90111,
         "status": 1,
         "language": "tr",
         "authors": [
@@ -470,5 +470,28 @@
         "description": "Ye\u015fil\u00e7am klasik T\u00fcrk sinemas\u0131 filmleri ve ar\u015fiv",
         "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/YesilCamTv.cs3",
         "name": "YesilCamTv"
+    },
+    {
+        "iconUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://yts.lt&size=128",
+        "fileHash": "sha256-cbc58f3c169a1eb9d8d1f57eec83ee4da447f0d0b0d9d8f835fc1a7ff34e7e2f",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/Emre-Kahveci/CloudStreamHub",
+        "fileSize": 85810,
+        "status": 1,
+        "language": "en",
+        "authors": [
+            "CloudStreamTR",
+            "kraptor",
+            "Phisher98"
+        ],
+        "tvTypes": [
+            "Torrent",
+            "Movie"
+        ],
+        "version": 43,
+        "internalName": "YTS",
+        "description": "YTS Filmleri 4K Deste\u011fi Otomatik altyaz\u0131 ve film a\u00e7\u0131klamas\u0131 (Torrent)",
+        "url": "https://raw.githubusercontent.com/Emre-Kahveci/CloudStreamHub/builds/YTS.cs3",
+        "name": "YTS"
     }
 ]
