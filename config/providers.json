@@ -1488,6 +1488,53 @@
         }
       },
       "disabledReason": "DISABLED_DEAD: Domain connection timed out."
+    },
+    {
+      "name": "YTS",
+      "module": "YTS",
+      "enabled": true,
+      "language": "en",
+      "types": [
+        "Torrent",
+        "Movie"
+      ],
+      "domainKey": "YTS",
+      "healthTier": "full",
+      "smokeTest": {
+        "searchQuery": "Inception",
+        "knownDetail": "https://yts.lt/api/v2/movie_details.json?movie_id=1606&with_images=true",
+        "expectedType": "Torrent"
+      },
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": false,
+        "stealthFallback": true,
+        "contentType": "Movie",
+        "playerProbe": {
+          "mode": "detail"
+        },
+        "search": {
+          "method": "GET",
+          "path": "/api/v2/list_movies.json?query_term={query}&limit=20",
+          "headers": {
+            "Referer": "https://yts.lt/"
+          }
+        },
+        "homepage": {
+          "selectors": [
+            "div.browse-movie-wrap a",
+            "a[href*=\"/movies/\"]"
+          ],
+          "requiredUrlPatterns": [
+            "/movies/"
+          ],
+          "excludedUrlPatterns": [
+            "/browse-movies",
+            "/login",
+            "/register"
+          ]
+        }
+      }
     }
   ]
 }

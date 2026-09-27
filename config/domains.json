@@ -458,6 +458,21 @@
       ],
       "lastChecked": null,
       "status": "dead"
+    },
+    "YTS": {
+      "canonical": "https://yts.lt",
+      "allowedHosts": [
+        "yts.lt",
+        "yts.mx",
+        "yts.rs",
+        "yts.do"
+      ],
+      "expectedMarkers": [
+        "YTS",
+        "yts"
+      ],
+      "lastChecked": null,
+      "status": "active"
     }
   }
 }
