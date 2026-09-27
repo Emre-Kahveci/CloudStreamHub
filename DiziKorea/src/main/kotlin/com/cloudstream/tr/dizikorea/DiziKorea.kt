@@ -4,6 +4,7 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
 import com.cloudstream.tr.core.model.ProviderModels
+import com.cloudstream.tr.core.network.SafeHttpClient
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 
@@ -15,9 +16,10 @@ class DiziKorea : MainAPI() {
     override val hasQuickSearch = true
     override val supportedTypes = setOf(TvType.AsianDrama)
 
+    private val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
     override val mainPage = mainPageOf(
-        "${mainUrl}/son-eklenen-bolumler" to "Son Eklenen Bölümler",
-        "${mainUrl}/populer-diziler" to "Popüler Diziler",
+        "${mainUrl}/" to "Son Eklenenler",
         "${mainUrl}/kore-dizileri" to "Kore Dizileri",
         "${mainUrl}/cin-dizileri" to "Çin Dizileri",
         "${mainUrl}/tayland-dizileri" to "Tayland Dizileri"
@@ -27,14 +29,15 @@ class DiziKorea : MainAPI() {
         val targetUrl = if (page <= 1) {
             request.data
         } else {
-            "${request.data}?page=${page}"
+            val base = request.data.removeSuffix("/")
+            if (base.contains("?")) "${base}&page=${page}" else "${base}?page=${page}"
         }
 
-        val document = app.get(targetUrl).document
-        val items = document.select("a.poster-card, div.content-grid a[href*='/dizi/']").mapNotNull { toSearchResult(it) }
+        val document = app.get(targetUrl, headers = mapOf("User-Agent" to userAgent)).document
+        val items = document.select("a.poster-card, div.content-grid a[href*='/dizi/'], div.grid a[href*='/dizi/']").mapNotNull { toSearchResult(it) }
         val deduped = ProviderModels.dedupSearchResults(items)
 
-        return newHomePageResponse(request.name, deduped)
+        return newHomePageResponse(request.name, deduped, hasNext = deduped.isNotEmpty())
     }
 
     fun toSearchResult(element: Element): SearchResponse? {
@@ -69,13 +72,13 @@ class DiziKorea : MainAPI() {
             "${mainUrl}/arama?q=${query}&page=${page}"
         }
 
-        val document = app.get(targetUrl).document
+        val document = app.get(targetUrl, headers = mapOf("User-Agent" to userAgent)).document
         val items = parseSearchResults(document)
         return newSearchResponseList(items, hasNext = false)
     }
 
     fun parseSearchResults(document: Document): List<SearchResponse> {
-        val elements = document.select("a.poster-card, div.content-grid a[href*='/dizi/']")
+        val elements = document.select("a.poster-card, div.content-grid a[href*='/dizi/'], div.grid a[href*='/dizi/']")
         val results = elements.mapNotNull { toSearchResult(it) }
         return ProviderModels.dedupSearchResults(results)
     }
@@ -83,7 +86,7 @@ class DiziKorea : MainAPI() {
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query, 1).items
 
     override suspend fun load(url: String): LoadResponse? {
-        val document = app.get(url).document
+        val document = app.get(url, headers = mapOf("User-Agent" to userAgent)).document
         return parseLoadMetadata(document, url)
     }
 
@@ -94,7 +97,7 @@ class DiziKorea : MainAPI() {
                 it.attr("data-src").ifBlank { null } ?: it.attr("src").ifBlank { null }
             }
         )
-        val description = document.selectFirst("p.series-about-text, div.series-about-body p")?.text()?.trim()
+        val description = document.selectFirst("p.series-about-text, div.series-about-body p, div.description")?.text()?.trim()
 
         val episodeElements = document.select("a[href*='/sezon-']")
         val episodes = mutableListOf<Episode>()
@@ -127,17 +130,79 @@ class DiziKorea : MainAPI() {
         }
     }
 
+    private suspend fun resolvePlayerDkorea(
+        playerUrl: String,
+        pageUrl: String,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
+        return try {
+            val videoId = Regex("""/video/([a-zA-Z0-9_-]+)""").find(playerUrl)?.groupValues?.get(1) ?: return false
+            val host = Regex("""https?://[^/]+""").find(playerUrl)?.value ?: "https://playerdkorea.xyz"
+            val apiUrl = "${host}/player/index.php?data=${videoId}&do=getVideo"
+
+            val apiResp = app.post(
+                apiUrl,
+                data = mapOf(
+                    "hash" to videoId,
+                    "r" to pageUrl,
+                    "s" to ""
+                ),
+                headers = mapOf(
+                    "X-Requested-With" to "XMLHttpRequest",
+                    "Referer" to playerUrl,
+                    "User-Agent" to userAgent
+                )
+            ).text
+
+            val streamMatch = Regex(""""securedLink"\s*:\s*"([^"]+)"""").find(apiResp)
+                ?: Regex(""""videoSource"\s*:\s*"([^"]+)"""").find(apiResp)
+                ?: Regex("""https?://[^"'\s<>]+\.m3u8[^"'\s<>]*""").find(apiResp)
+
+            val streamUrl = streamMatch?.groupValues?.getOrNull(1)?.replace("\\/", "/")
+                ?: streamMatch?.value?.replace("\\/", "/")
+
+            if (!streamUrl.isNullOrBlank()) {
+                callback(
+                    newExtractorLink(
+                        source = name,
+                        name = "$name HLS",
+                        url = streamUrl,
+                        type = ExtractorLinkType.M3U8
+                    ) {
+                        this.referer = "${host}/"
+                        this.headers = mapOf(
+                            "Referer" to "${host}/",
+                            "User-Agent" to userAgent
+                        )
+                        this.quality = Qualities.P1080.value
+                    }
+                )
+                true
+            } else {
+                false
+            }
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val document = app.get(data).document
+        val document = app.get(data, headers = mapOf("User-Agent" to userAgent)).document
         val iframes = mutableListOf<String>()
 
-        document.select("iframe[data-src], iframe[src]").forEach {
-            val src = fixUrlNull(it.attr("data-src").ifBlank { it.attr("src") })
+        document.select("iframe[data-src], iframe[src], [data-src], [data-embed]").forEach {
+            val src = fixUrlNull(
+                it.attr("data-src").ifBlank {
+                    it.attr("src").ifBlank {
+                        it.attr("data-embed")
+                    }
+                }
+            )
             if (!src.isNullOrBlank() && !src.contains("google") && !src.contains("recaptcha")) {
                 iframes.add(src)
             }
@@ -150,30 +215,9 @@ class DiziKorea : MainAPI() {
             candidates = candidates,
             resolver = { iframeUrl, emitLink ->
                 if (iframeUrl.contains("playerdkorea") || iframeUrl.contains("/video/")) {
-                    try {
-                        val playerDoc = app.get(iframeUrl, headers = mapOf("Referer" to data)).document
-                        val innerSrc = playerDoc.selectFirst("iframe[src]")?.attr("src")
-                        if (!innerSrc.isNullOrBlank()) {
-                            loadExtractor(innerSrc, iframeUrl, subtitleCallback, emitLink)
-                        } else {
-                            val html = playerDoc.html()
-                            val m3u8Regex = Regex("""["'](https?://[^\s"']+\.m3u8[^\s"']*)["']""")
-                            m3u8Regex.findAll(html).forEach { m ->
-                                val streamUrl = m.groupValues[1]
-                                emitLink(
-                                    newExtractorLink(
-                                        source = name,
-                                        name = "$name HLS",
-                                        url = streamUrl,
-                                        type = ExtractorLinkType.M3U8
-                                    ) {
-                                        this.referer = iframeUrl
-                                        this.quality = Qualities.Unknown.value
-                                    }
-                                )
-                            }
-                        }
-                    } catch (_: Exception) {}
+                    if (resolvePlayerDkorea(iframeUrl, data, emitLink)) {
+                        found = true
+                    }
                 } else {
                     loadExtractor(iframeUrl, data, subtitleCallback, emitLink)
                 }

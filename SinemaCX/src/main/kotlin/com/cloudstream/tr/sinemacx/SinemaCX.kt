@@ -8,6 +8,7 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import java.util.Base64
 
 class SinemaCX : MainAPI() {
     override var mainUrl = "https://sinemacc.com"
@@ -23,14 +24,23 @@ class SinemaCX : MainAPI() {
             return fixUrlNull(trimmed)
         }
         return try {
-            val decoded = String(android.util.Base64.decode(trimmed, android.util.Base64.DEFAULT), Charsets.UTF_8).trim()
+            val decoded = String(Base64.getDecoder().decode(trimmed), Charsets.UTF_8).trim()
             if (decoded.startsWith("http://") || decoded.startsWith("https://")) {
                 decoded
             } else {
                 fixUrlNull(trimmed)
             }
         } catch (_: Exception) {
-            fixUrlNull(trimmed)
+            try {
+                val decoded = String(android.util.Base64.decode(trimmed, android.util.Base64.DEFAULT), Charsets.UTF_8).trim()
+                if (decoded.startsWith("http://") || decoded.startsWith("https://")) {
+                    decoded
+                } else {
+                    fixUrlNull(trimmed)
+                }
+            } catch (_: Exception) {
+                fixUrlNull(trimmed)
+            }
         }
     }
 
@@ -50,7 +60,7 @@ class SinemaCX : MainAPI() {
         }
 
         val doc = app.get(targetUrl).document
-        val items = doc.select("div.frag-k, div.film-k").mapNotNull { el ->
+        val items = doc.select(".film_kutusu, div.frag-k, div.film-k").mapNotNull { el ->
             parseFragCard(el)
         }.distinctBy { it.url }
 
@@ -62,8 +72,8 @@ class SinemaCX : MainAPI() {
         val href = fixUrlNull(linkEl.attr("href")) ?: return null
 
         val imgEl = element.selectFirst("img")
-        val title = element.selectFirst("div.f-baslik, h2, h3, .baslik")?.text()?.ifBlank { null }
-            ?: linkEl.attr("title").ifBlank { null }
+        val rawTitle = linkEl.attr("title").ifBlank { null }
+            ?: element.selectFirst(".film_adi, div.f-baslik, h2, h3, .baslik")?.text()?.ifBlank { null }
             ?: imgEl?.attr("alt")?.ifBlank { null }
             ?: return null
 
@@ -73,9 +83,16 @@ class SinemaCX : MainAPI() {
         )
 
         val year = element.selectFirst("span.yil, span.f-yil, div.yil")?.text()?.filter { it.isDigit() }?.take(4)?.toIntOrNull()
-            ?: Regex("""\((\d{4})\)""").find(title)?.groupValues?.get(1)?.toIntOrNull()
+            ?: Regex("""\((\d{4})\)""").find(rawTitle)?.groupValues?.get(1)?.toIntOrNull()
 
-        val cleanTitle = title.replace(Regex("""\s*\(\d{4}\)$"""), "").replace(" Türkçe Dublaj İzle", "").replace(" İzle", "").trim()
+        val cleanTitle = rawTitle
+            .replace(Regex("""\s*\(\d{4}\)$"""), "")
+            .replace(" Türkçe Dublaj İzle", "")
+            .replace(" Türkçe Altyazı İzle", "")
+            .replace(" Film Posteri", "")
+            .replace(" İzle", "")
+            .replace(" izle", "")
+            .trim()
 
         return newMovieSearchResponse(cleanTitle, href, TvType.Movie) {
             this.posterUrl = poster
@@ -91,7 +108,7 @@ class SinemaCX : MainAPI() {
         }
 
         val doc = app.get(targetUrl).document
-        val items = doc.select("div.frag-k, div.film-k, article.film").mapNotNull { el ->
+        val items = doc.select(".film_kutusu, div.frag-k, div.film-k, article.film").mapNotNull { el ->
             parseFragCard(el)
         }
         val deduped = ProviderModels.dedupSearchResults(items)
@@ -112,19 +129,19 @@ class SinemaCX : MainAPI() {
 
         val poster = fixUrlNull(
             doc.selectFirst("meta[property='og:image']")?.attr("content")
-                ?: doc.selectFirst("div.f-afis img, div.f-bilgi img, .afis img")?.let {
+                ?: doc.selectFirst("div.film_resmi img, div.f-afis img, div.f-bilgi img, .afis img")?.let {
                     it.attr("data-src").ifBlank { null } ?: it.attr("src").ifBlank { null }
                 }
         )
 
         val plot = doc.selectFirst("meta[property='og:description']")?.attr("content")
-            ?: doc.selectFirst("div.f-ozet, div.konu, div.film-ozeti")?.text()?.trim()
+            ?: doc.selectFirst("div.film_ozeti, div.f-ozet, div.konu")?.text()?.trim()
 
         val year = doc.selectFirst("span.f-yil, span.yil, div.f-detay")?.text()?.filter { it.isDigit() }?.take(4)?.toIntOrNull()
             ?: Regex("""\((\d{4})\)""").find(rawTitle)?.groupValues?.get(1)?.toIntOrNull()
 
         val cleanTitle = rawTitle.replace(Regex("""\s*\(\d{4}\)$"""), "").trim()
-        val score = doc.selectFirst("span.imdb, span.puan, div.f-puan")?.text()?.trim()
+        val score = doc.selectFirst("span.imdb, span.puan, div.f-puan, .film_puani")?.text()?.trim()
         val tags = doc.select("a[href*='/kategori/'], a[href*='/tur/']").map { it.text().trim() }.filter { it.isNotBlank() }
 
         return newMovieLoadResponse(cleanTitle, url, TvType.Movie, url) {
@@ -166,7 +183,7 @@ class SinemaCX : MainAPI() {
 
         val allIframes = mutableListOf<String>()
         for (pageDoc in pagesToCheck) {
-            pageDoc.select("iframe").forEach { iframe ->
+            pageDoc.select("iframe, [data-vsrc]").forEach { iframe ->
                 val rawSrc = iframe.attr("data-vsrc").ifEmpty { iframe.attr("data-src").ifEmpty { iframe.attr("src") } }
                 if (rawSrc.isNotBlank() && !rawSrc.contains("youtube", ignoreCase = true)) {
                     val resolved = decodeIframeUrl(rawSrc)

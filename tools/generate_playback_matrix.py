@@ -215,18 +215,22 @@ def probe_provider_dynamically(name: str, p_cfg: Dict[str, Any], d_cfg: Dict[str
                         with urllib.request.urlopen(alt_req, timeout=8) as r:
                             alt_js = json.loads(r.read().decode("utf-8"))
                             data_items = alt_js.get("data", [])
-                            if data_items:
-                                sid = str(data_items[0]["id"])
+                            for it in data_items:
+                                sid = str(it.get("id"))
                                 emb_req = urllib.request.Request(
                                     f"{canonical}/ajax/dataEmbed22.asp",
                                     data=urllib.parse.urlencode({"id": sid}).encode(),
                                     headers={"X-Requested-With": "XMLHttpRequest", "Referer": ep_url, "User-Agent": "Mozilla/5.0"}
                                 )
-                                with urllib.request.urlopen(emb_req, timeout=8) as r_emb:
-                                    emb_html = r_emb.read().decode("utf-8")
-                                    m_ifr = re.search(r'src=["\']([^"\']+)["\']', emb_html)
-                                    if m_ifr:
-                                        embed_url = m_ifr.group(1)
+                                try:
+                                    with urllib.request.urlopen(emb_req, timeout=8) as r_emb:
+                                        emb_html = r_emb.read().decode("utf-8")
+                                        m_ifr = re.search(r'src=["\']([^"\']+)["\']', emb_html)
+                                        if m_ifr and "reCAPTCHA" not in m_ifr.group(1):
+                                            embed_url = m_ifr.group(1)
+                                            break
+                                except Exception:
+                                    pass
 
         elif name == "FullHDFilmizlesene":
             scx_m = re.search(r'var\s+scx\s*=\s*(\{.+?\});', target_body, re.DOTALL)
@@ -287,9 +291,11 @@ def probe_provider_dynamically(name: str, p_cfg: Dict[str, Any], d_cfg: Dict[str
                 ref = ep_url
                 if ep_res.statusCode == 200:
                     soup_ep = BeautifulSoup(ep_res.body, "html.parser")
-                    ifr = soup_ep.select_one("iframe[src*='vidmoly'], iframe[src*='playerdkorea'], iframe[src]")
-                    if ifr:
-                        embed_url = urllib.parse.urljoin(canonical, ifr.get("src"))
+                    for el in soup_ep.find_all(["iframe", "div", "button", "li"]):
+                        src = el.get("data-src") or el.get("src") or el.get("data-embed")
+                        if src and ("playerdkorea" in src or "vidmoly" in src or "playerkorea" in src):
+                            embed_url = urllib.parse.urljoin(canonical, src)
+                            break
 
         elif name == "HDFilmDelisi":
             emb_m = re.search(r'https?://hdfilmdelisi\.one/embed/[^\s"\'<>\\]+', target_body)

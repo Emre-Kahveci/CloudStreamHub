@@ -1,10 +1,27 @@
 package com.cloudstream.tr.core.extractors
 
 import com.cloudstream.tr.core.network.SafeHttpClient
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import java.util.Base64
 import java.util.regex.Pattern
+
+data class RapidVidCaption(
+    @JsonProperty("kind") val kind: String? = null,
+    @JsonProperty("file") val file: String? = null,
+    @JsonProperty("label") val label: String? = null
+)
+
+data class RapidVidPayload(
+    @JsonProperty("m") val m: String? = null,
+    @JsonProperty("i") val i: String? = null,
+    @JsonProperty("cm") val cm: String? = null,
+    @JsonProperty("tm") val tm: String? = null,
+    @JsonProperty("ct") val ct: List<RapidVidCaption>? = null
+)
 
 open class RapidVidExtractor : ExtractorApi() {
     override val name = "RapidVid"
@@ -12,6 +29,8 @@ open class RapidVidExtractor : ExtractorApi() {
     override val requiresReferer = true
 
     companion object {
+        private val mapper = jacksonObjectMapper()
+
         fun decryptRapidvidAv(token: String): String {
             return try {
                 val rev = token.reversed()
@@ -42,35 +61,91 @@ open class RapidVidExtractor : ExtractorApi() {
         ): Boolean {
             var foundStream = false
             try {
-                val avPattern = Pattern.compile(""""?file"?\s*:\s*av\(['"]([^'"]+)['"]\)""")
-                val avMatcher = avPattern.matcher(html)
-                if (avMatcher.find()) {
-                    val token = avMatcher.group(1)
+                // 1. Check new window._p8 payload (Eylül 2026 JSON format)
+                val p8Pattern = Pattern.compile("""window\._p8\s*=\s*['"]([^'"]+)['"]""")
+                val p8Matcher = p8Pattern.matcher(html)
+                if (p8Matcher.find()) {
+                    val token = p8Matcher.group(1)
                     if (!token.isNullOrBlank()) {
-                        val streamUrl = decryptRapidvidAv(token)
-                        if (streamUrl.isNotBlank()) {
-                            val preflight = com.cloudstream.tr.core.network.StreamValidator.validateStream(
-                                url = streamUrl,
-                                headers = mapOf("Referer" to "https://rapidvid.org/"),
-                                provider = "RapidVid"
-                            )
-                            if (preflight.isValid) {
-                                callback(
-                                    newExtractorLink(
-                                        source = "RapidVid",
-                                        name = "RapidVid",
-                                        url = streamUrl,
-                                        type = preflight.streamType
-                                    ) {
-                                        this.referer = "https://rapidvid.org/"
+                        val jsonStr = decryptRapidvidAv(token)
+                        if (jsonStr.isNotBlank()) {
+                            try {
+                                val payload = mapper.readValue<RapidVidPayload>(jsonStr)
+                                val streams = listOfNotNull(payload.cm, payload.tm).distinct()
+                                for ((idx, streamUrl) in streams.withIndex()) {
+                                    if (streamUrl.startsWith("http")) {
+                                        val streamName = if (idx == 0) "RapidVid" else "RapidVid Alternatif"
+                                        callback(
+                                            newExtractorLink(
+                                                source = "RapidVid",
+                                                name = streamName,
+                                                url = streamUrl,
+                                                type = ExtractorLinkType.M3U8
+                                            ) {
+                                                this.referer = "https://rapidvid.org/"
+                                                this.headers = mapOf(
+                                                    "Referer" to "https://rapidvid.org/",
+                                                    "User-Agent" to SafeHttpClient.DEFAULT_USER_AGENT
+                                                )
+                                            }
+                                        )
+                                        foundStream = true
                                     }
+                                }
+
+                                payload.ct?.forEach { cap ->
+                                    val capFile = cap.file?.replace("\\/", "/")
+                                    if (!capFile.isNullOrBlank()) {
+                                        subtitleCallback(
+                                            SubtitleFile(
+                                                lang = cap.label?.trim() ?: "Türkçe",
+                                                url = capFile
+                                            )
+                                        )
+                                    }
+                                }
+                            } catch (_: Exception) {}
+                        }
+                    }
+                }
+
+                // 2. Legacy av(...) file regex fallback
+                if (!foundStream) {
+                    val avPattern = Pattern.compile(""""?file"?\s*:\s*av\(['"]([^'"]+)['"]\)""")
+                    val avMatcher = avPattern.matcher(html)
+                    if (avMatcher.find()) {
+                        val token = avMatcher.group(1)
+                        if (!token.isNullOrBlank()) {
+                            val streamUrl = decryptRapidvidAv(token)
+                            if (streamUrl.isNotBlank()) {
+                                val preflight = com.cloudstream.tr.core.network.StreamValidator.validateStream(
+                                    url = streamUrl,
+                                    headers = mapOf("Referer" to "https://rapidvid.org/"),
+                                    provider = "RapidVid"
                                 )
-                                foundStream = true
+                                if (preflight.isValid) {
+                                    callback(
+                                        newExtractorLink(
+                                            source = "RapidVid",
+                                            name = "RapidVid",
+                                            url = streamUrl,
+                                            type = preflight.streamType
+                                        ) {
+                                            this.referer = "https://rapidvid.org/"
+                                            this.headers = mapOf(
+                                                "Referer" to "https://rapidvid.org/",
+                                                "User-Agent" to SafeHttpClient.DEFAULT_USER_AGENT
+                                            )
+                                        }
+                                    )
+                                    foundStream = true
+                                }
                             }
                         }
                     }
                 }
 
+                // Subtitles fallback (jwSetup.tracks)
                 val tracksPattern = Pattern.compile("""jwSetup\.tracks\s*=\s*(\[.+?\]);""", Pattern.DOTALL)
                 val tracksMatcher = tracksPattern.matcher(html)
                 if (tracksMatcher.find()) {

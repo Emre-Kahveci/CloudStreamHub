@@ -29,27 +29,31 @@ class FullHDFilmizlesene : MainAPI() {
     override val hasQuickSearch = true
     override val supportedTypes = setOf(TvType.Movie)
 
+    private val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
     override val mainPage = mainPageOf(
         "${mainUrl}/" to "Son Eklenen Filmler",
-        "${mainUrl}/filmler/" to "Tüm Filmler",
-        "${mainUrl}/en-cok-izlenen-filmler-izle/" to "En Çok İzlenen Filmler",
-        "${mainUrl}/film-izle/film-arsivi/" to "Film Arşivi"
+        "${mainUrl}/filmizle/turkce-dublaj-filmler-1" to "Türkçe Dublaj Filmler",
+        "${mainUrl}/filmizle/turkce-altyazili-filmler" to "Türkçe Altyazılı Filmler",
+        "${mainUrl}/filmizle/1080p-filmler-2" to "1080p Filmler",
+        "${mainUrl}/filmizle/aksiyon-filmleri" to "Aksiyon Filmleri"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val targetUrl = if (page <= 1) {
-            request.data
+            val reqData = request.data.removeSuffix("/")
+            if (reqData == mainUrl) "${mainUrl}/" else request.data
         } else {
             val base = request.data.removeSuffix("/")
             if (base == mainUrl) {
-                "${mainUrl}/sayfa/${page}/"
+                "${mainUrl}/yeni-filmler/${page}"
             } else {
-                "${base}/sayfa/${page}/"
+                "${base}/${page}"
             }
         }
 
-        val doc = app.get(targetUrl).document
-        val items = doc.select(".list li.film").mapNotNull { el ->
+        val doc = app.get(targetUrl, headers = mapOf("User-Agent" to userAgent)).document
+        val items = doc.select(".list li.film, ul.film-list li, div.film").mapNotNull { el ->
             parseCard(el)
         }.distinctBy { it.url }
 
@@ -89,7 +93,10 @@ class FullHDFilmizlesene : MainAPI() {
 
     override suspend fun search(query: String, page: Int): SearchResponseList {
         val searchUrl = "${mainUrl}/autocomplete/q.php?q=${query.trim().replace(" ", "+")}&callback="
-        val response = app.get(searchUrl, referer = "${mainUrl}/").parsedSafe<List<AutocompleteItem>>() ?: emptyList()
+        val response = app.get(
+            searchUrl,
+            headers = mapOf("User-Agent" to userAgent, "Referer" to "${mainUrl}/")
+        ).parsedSafe<List<AutocompleteItem>>() ?: emptyList()
 
         val results = response.mapNotNull { item ->
             val slug = item.dizilink?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
@@ -102,46 +109,64 @@ class FullHDFilmizlesene : MainAPI() {
                 else -> return@mapNotNull null
             }
 
+            val poster = fixUrlNull(item.vidresim)
+            val year = item.yil?.filter { it.isDigit() }?.take(4)?.toIntOrNull()
+
             newMovieSearchResponse(title, url, TvType.Movie) {
-                this.posterUrl = fixUrlNull(item.vidresim)
-                this.year = item.yil?.toIntOrNull()
+                this.posterUrl = poster
+                this.year = year
             }
         }
+
         val deduped = ProviderModels.dedupSearchResults(results)
         return newSearchResponseList(deduped, hasNext = false)
     }
 
-    override suspend fun quickSearch(query: String): List<SearchResponse> = search(query, 1).items
+    override suspend fun quickSearch(query: String): List<SearchResponse>? = search(query, 1).items
 
     override suspend fun load(url: String): LoadResponse? {
-        val doc = app.get(url).document
+        val doc = app.get(url, headers = mapOf("User-Agent" to userAgent)).document
         return parseLoadMetadata(doc, url)
     }
 
     suspend fun parseLoadMetadata(doc: Document, url: String): LoadResponse? {
-        val title = doc.selectFirst("h1")?.text()?.trim()
-            ?: doc.selectFirst("meta[property='og:title']")?.attr("content")?.replace(" - FullHDFilmizlesene", "")?.trim()
-            ?: return null
+        val mainTitle = doc.selectFirst("h1.film-title, h1")?.text()?.trim()
+        val originalTitle = doc.selectFirst("span.film-sub-title, div.detay-orig")?.text()?.trim()
+
+        val title = when {
+            !mainTitle.isNullOrBlank() && !originalTitle.isNullOrBlank() && !mainTitle.equals(originalTitle, ignoreCase = true) ->
+                "$mainTitle - $originalTitle"
+            !mainTitle.isNullOrBlank() -> mainTitle
+            else -> doc.selectFirst("meta[property='og:title']")?.attr("content")?.replace(" izle", "")?.trim() ?: return null
+        }
 
         val poster = fixUrlNull(
             doc.selectFirst("meta[property='og:image']")?.attr("content")
-                ?: doc.selectFirst("img.afis")?.attr("data-src")
-                ?: doc.selectFirst("img.afis")?.attr("src")
+                ?: doc.selectFirst("div.film-afis img, img.afis")?.let {
+                    if (it.tagName() == "meta") it.attr("content") else it.attr("data-src").ifBlank { it.attr("src") }
+                }
         )
 
-        val plot = doc.selectFirst(".ozet-ic, .film-ozeti")?.text()?.trim()
+        val plot = doc.selectFirst(".ozet-ic, .film-ozeti, div.film-ozet, div.ozet, meta[property='og:description']")?.let {
+            if (it.tagName() == "meta") it.attr("content") else it.text().trim()
+        }
 
         val year = doc.selectFirst(".film-info")?.select("li, div, p")?.find {
             it.text().contains("Yapım", ignoreCase = true)
         }?.text()?.filter { it.isDigit() }?.take(4)?.toIntOrNull()
+            ?: doc.selectFirst("span.film-yil, div.detay-yil")?.text()?.filter { it.isDigit() }?.take(4)?.toIntOrNull()
+            ?: Regex("""\((\d{4})\)""").find(title)?.groupValues?.get(1)?.toIntOrNull()
+
+        val score = doc.selectFirst(".imdb, span.imdb, span.puan")?.text()?.trim()
 
         val tags = doc.selectFirst(".film-info")?.select("li, div, p")?.find {
             it.text().contains("Tür", ignoreCase = true)
         }?.select("a")?.map { it.text().trim() }
+            ?: doc.select("div.film-tur a, a[href*='/kategori/']").map { it.text().trim() }.filter { it.isNotBlank() }
 
-        val score = doc.selectFirst(".imdb, span.imdb")?.text()?.trim()
+        val cleanTitle = title.replace(" izle", "").replace(" İzle", "").trim()
 
-        return newMovieLoadResponse(title, url, TvType.Movie, url) {
+        return newMovieLoadResponse(cleanTitle, url, TvType.Movie, url) {
             this.posterUrl = poster
             this.plot = plot
             this.year = year
@@ -156,21 +181,37 @@ class FullHDFilmizlesene : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val html = app.get(data).text
-        val iframes = extractScxIframeUrls(html).distinct()
         var anyFound = false
+        val wrappedCallback: (ExtractorLink) -> Unit = { link ->
+            anyFound = true
+            callback(link)
+        }
 
+        val html = app.get(data, headers = mapOf("User-Agent" to userAgent)).text
+        val doc = org.jsoup.Jsoup.parse(html, data)
+
+        val iframes = mutableListOf<String>()
+
+        // 1. Direct iframe tags
+        doc.select("iframe").forEach { iframe ->
+            val src = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
+            if (src.isNotEmpty() && !src.contains("youtube.com") && !src.contains("youtu.be")) {
+                fixUrlNull(src)?.let { iframes.add(it) }
+            }
+        }
+
+        // 2. Decode scx tokens
+        val scxUrls = extractScxIframeUrls(html)
+        iframes.addAll(scxUrls)
+
+        val candidates = iframes.distinct()
         val count = BoundedParallelResolver.resolveProgressive(
-            candidates = iframes,
-            resolver = { iframe, emitLink ->
-                if (iframe.contains("rapidvid.org")) {
-                    if (resolveRapidvid(iframe, subtitleCallback, emitLink)) {
-                        anyFound = true
-                    }
+            candidates = candidates,
+            resolver = { candidateUrl, emitLink ->
+                if (candidateUrl.contains("rapidvid.org") || candidateUrl.contains("/vx/")) {
+                    resolveRapidvid(candidateUrl, subtitleCallback, emitLink)
                 } else {
-                    if (loadExtractor(iframe, referer = data, subtitleCallback, emitLink)) {
-                        anyFound = true
-                    }
+                    loadExtractor(candidateUrl, data, subtitleCallback, emitLink)
                 }
             },
             onLinkFound = { link ->
@@ -229,22 +270,7 @@ class FullHDFilmizlesene : MainAPI() {
         }
 
         fun decryptRapidvidAv(token: String): String {
-            val rev = token.reversed()
-            val padLen = (4 - rev.length % 4) % 4
-            val padded = rev + "=".repeat(padLen)
-            val decodedBytes = Base64.getDecoder().decode(padded)
-            val decodedStr = String(decodedBytes, Charsets.ISO_8859_1)
-            val key = "K9L"
-            val sb = StringBuilder()
-            for (i in decodedStr.indices) {
-                val r = key[i % 3]
-                val n = decodedStr[i].code - (r.code % 5 + 1)
-                sb.append(n.toChar())
-            }
-            val inner = sb.toString()
-            val innerPad = (4 - inner.length % 4) % 4
-            val innerPadded = inner + "=".repeat(innerPad)
-            return String(Base64.getDecoder().decode(innerPadded), Charsets.UTF_8)
+            return RapidVidExtractor.decryptRapidvidAv(token)
         }
     }
 
@@ -262,7 +288,13 @@ class FullHDFilmizlesene : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         return try {
-            val res = app.get(url, referer = "${mainUrl}/").text
+            val res = app.get(
+                url,
+                headers = mapOf(
+                    "User-Agent" to userAgent,
+                    "Referer" to "${mainUrl}/"
+                )
+            ).text
             parseRapidvidResponse(res, subtitleCallback, callback)
         } catch (e: Exception) {
             false

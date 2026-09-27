@@ -32,7 +32,7 @@ class SezonlukDizi : MainAPI() {
         }
 
         val doc = app.get(targetUrl).document
-        val items = doc.select("div.afis").mapNotNull { el ->
+        val items = doc.select("div.afis a.column, div.afis .column, a[href*='/diziler/']").mapNotNull { el ->
             parseAfis(el)
         }.distinctBy { it.url }
 
@@ -40,12 +40,13 @@ class SezonlukDizi : MainAPI() {
     }
 
     fun parseAfis(element: Element): SearchResponse? {
-        val linkEl = element.selectFirst("a") ?: return null
+        val linkEl = if (element.tagName() == "a") element else element.selectFirst("a") ?: return null
         val href = fixUrlNull(linkEl.attr("href")) ?: return null
+        if (!href.contains("/diziler/")) return null
 
         val imgEl = element.selectFirst("img")
-        val title = element.selectFirst("span.dizi-adi")?.text()?.ifBlank { null }
-            ?: linkEl.attr("title").ifBlank { null }
+        val rawTitle = linkEl.attr("title").ifBlank { null }
+            ?: element.selectFirst("span.dizi-adi, .header, h3, h2")?.text()?.ifBlank { null }
             ?: imgEl?.attr("alt")?.ifBlank { null }
             ?: return null
 
@@ -54,9 +55,10 @@ class SezonlukDizi : MainAPI() {
                 ?: imgEl?.attr("src")?.ifBlank { null }
         )
 
-        val year = element.selectFirst("span.yil")?.text()?.filter { it.isDigit() }?.take(4)?.toIntOrNull()
+        val year = element.selectFirst("span.yil, .meta, span.dizi-yil")?.text()?.filter { it.isDigit() }?.take(4)?.toIntOrNull()
+        val cleanTitle = rawTitle.replace(" izle", "").replace(" İzle", "").trim()
 
-        return newTvSeriesSearchResponse(title.trim(), href, TvType.TvSeries) {
+        return newTvSeriesSearchResponse(cleanTitle, href, TvType.TvSeries) {
             this.posterUrl = poster
             this.year = year
         }

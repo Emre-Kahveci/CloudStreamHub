@@ -37,8 +37,11 @@ class Dizilla : MainAPI() {
 
     override val mainPage = mainPageOf(
         "${mainUrl}/" to "Son Eklenen Bölümler",
-        "${mainUrl}/tum-diziler" to "Tüm Diziler",
-        "${mainUrl}/trend-diziler" to "Trend Diziler"
+        "${mainUrl}/arsiv" to "Dizi Arşivi",
+        "${mainUrl}/yabanci-dizi-izle" to "Yabancı Diziler",
+        "${mainUrl}/anime-izle" to "Anime",
+        "${mainUrl}/kdrama-izle" to "Kdrama",
+        "${mainUrl}/imdb-top-100" to "Top 100 Diziler"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {

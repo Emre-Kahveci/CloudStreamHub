@@ -13,25 +13,15 @@ val ignoredDirs = listOf(
     "core"
 )
 
-val disabled = listOf<String>(
-    "AnimeciX",
-    "Animeler",
-    "BelgeselX",
+val disabled = listOf(
     "CizgiMax",
     "DDizi",
-    "Dizigecesi",
     "DiziLife",
     "DiziMom",
     "DiziPal",
-    "DramaDizilerim",
     "FilmHane",
     "FilmModu",
-    "JetFilmIzle",
-    "RareFilmm",
-    "SetFilmIzle",
-    "Sinewix",
-    "TurkAnime",
-    "WebDramaTurkey"
+    "Sinewix"
 )
 
 File(rootDir, ".").eachDir { dir ->

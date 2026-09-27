@@ -66,25 +66,21 @@ open class PichiveExtractor : ExtractorApi() {
                 pichiveJson?.playlist?.forEach { pl ->
                     pl.sources?.forEach { s ->
                         val fileUrl = s.file ?: return@forEach
-                        val masterUrl = fileUrl.replace("m.php", "master.m3u8")
-                        val preflight = com.cloudstream.tr.core.network.StreamValidator.validateStream(
-                            url = masterUrl,
-                            headers = mapOf("Referer" to "${host}/"),
-                            provider = name
+                        callback(
+                            newExtractorLink(
+                                source = name,
+                                name = "$name ${s.title ?: "HLS"}",
+                                url = fileUrl,
+                                type = ExtractorLinkType.M3U8
+                            ) {
+                                this.referer = "${host}/"
+                                this.headers = mapOf(
+                                    "Referer" to "${host}/",
+                                    "User-Agent" to SafeHttpClient.DEFAULT_USER_AGENT
+                                )
+                                this.quality = Qualities.P1080.value
+                            }
                         )
-                        if (preflight.isValid) {
-                            callback(
-                                newExtractorLink(
-                                    source = name,
-                                    name = "$name ${s.title ?: "HLS"}",
-                                    url = masterUrl,
-                                    type = preflight.streamType
-                                ) {
-                                    this.referer = "${host}/"
-                                    this.quality = Qualities.Unknown.value
-                                }
-                            )
-                        }
                     }
                 }
             }

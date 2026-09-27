@@ -369,6 +369,30 @@ class PlaybackVerifier:
                 req = urllib.request.Request(embed_url, headers={"User-Agent": USER_AGENT, "Referer": referer or "https://www.fullhdfilmizlesene.now/"})
                 with urllib.request.urlopen(req, timeout=self.timeout, context=self.ssl_ctx) as resp:
                     html = resp.read().decode("utf-8", errors="ignore")
+                    
+                    # New window._p8 JSON format (Eylul 2026)
+                    p8_m = re.search(r'window\._p8\s*=\s*[\'"]([^\'"]+)[\'"]', html)
+                    if p8_m:
+                        token = p8_m.group(1)
+                        rev = token[::-1]
+                        pad = (4 - len(rev) % 4) % 4
+                        raw_bytes = base64.b64decode(rev + "=" * pad)
+                        raw_str = raw_bytes.decode('latin1', errors='ignore')
+                        key = "K9L"
+                        sb = []
+                        for i, ch in enumerate(raw_str):
+                            r = key[i % 3]
+                            n = ord(ch) - (ord(r) % 5 + 1)
+                            sb.append(chr(n))
+                        inner = "".join(sb)
+                        inner_pad = (4 - len(inner) % 4) % 4
+                        json_str = base64.b64decode(inner + "=" * inner_pad).decode('utf-8', errors='ignore')
+                        js_data = json.loads(json_str)
+                        stream = js_data.get("cm") or js_data.get("tm")
+                        if stream and stream.startswith("http"):
+                            return "PASS", stream, "RapidVid"
+
+                    # Legacy av(...) format
                     av_m = re.search(r'["\']?file["\']?\s*:\s*av\((["\'])(.*?)\1\)', html)
                     if av_m:
                         token = av_m.group(2)
@@ -398,6 +422,27 @@ class PlaybackVerifier:
                 item_id = m.group(1)
                 stream = f"https://storage.diziyou.one/episodes/{item_id}/play.m3u8"
                 return "PASS", stream, "DiziYou"
+
+        # 11. PlayerDKorea (DiziKorea)
+        if "playerdkorea" in embed_url or "playerkorea" in embed_url:
+            try:
+                vid_m = re.search(r'/video/([a-zA-Z0-9_-]+)', embed_url)
+                if vid_m:
+                    video_id = vid_m.group(1)
+                    api_url = f"https://playerdkorea.xyz/player/index.php?data={video_id}&do=getVideo"
+                    post_data = urllib.parse.urlencode({"hash": video_id, "r": referer or "https://dizikorea3.com/", "s": ""}).encode('utf-8')
+                    req = urllib.request.Request(api_url, data=post_data, headers={
+                        "User-Agent": USER_AGENT,
+                        "Referer": embed_url,
+                        "X-Requested-With": "XMLHttpRequest"
+                    })
+                    with urllib.request.urlopen(req, timeout=self.timeout, context=self.ssl_ctx) as resp:
+                        js = json.loads(resp.read().decode("utf-8"))
+                        stream = js.get("securedLink") or js.get("videoSource")
+                        if stream:
+                            return "PASS", stream.replace("\\/", "/"), "PlayerDKorea"
+            except Exception:
+                pass
 
         # 11. HDFilmDelisi Embed
         if "hdfilmdelisi.one/embed/" in embed_url:

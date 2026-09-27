@@ -168,8 +168,16 @@ class FilmMakinesi : MainAPI() {
         val doc = app.get(data, headers = mapOf("User-Agent" to userAgent, "Referer" to "${mainUrl}/")).document
 
         val iframes = mutableListOf<String>()
-        doc.select("iframe").forEach { iframe ->
-            val src = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
+        doc.select("iframe, [data-video_url], [data-frame], .partlar a, .parts a, li[data-frame], button[data-url]").forEach { el ->
+            val src = el.attr("data-video_url").ifEmpty {
+                el.attr("data-frame").ifEmpty {
+                    el.attr("data-src").ifEmpty {
+                        el.attr("src").ifEmpty {
+                            el.attr("data-url")
+                        }
+                    }
+                }
+            }
             if (src.isNotEmpty()) {
                 fixUrlNull(src)?.let { iframes.add(it) }
             }

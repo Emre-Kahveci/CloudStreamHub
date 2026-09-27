@@ -5,7 +5,7 @@
     {
       "name": "AnimeciX",
       "module": "AnimeciX",
-      "enabled": false,
+      "enabled": true,
       "language": "tr",
       "types": [
         "Anime"
@@ -59,7 +59,7 @@
     {
       "name": "BelgeselX",
       "module": "BelgeselX",
-      "enabled": false,
+      "enabled": true,
       "language": "tr",
       "types": [
         "Documentary"
@@ -307,7 +307,7 @@
     {
       "name": "TurkAnime",
       "module": "TurkAnime",
-      "enabled": false,
+      "enabled": true,
       "language": "tr",
       "types": [
         "Anime",
@@ -775,7 +775,7 @@
     {
       "name": "JetFilmIzle",
       "module": "JetFilmIzle",
-      "enabled": false,
+      "enabled": true,
       "language": "tr",
       "types": [
         "Movie"
@@ -1047,7 +1047,7 @@
     {
       "name": "DramaDizilerim",
       "module": "DramaDizilerim",
-      "enabled": false,
+      "enabled": true,
       "language": "tr",
       "types": [
         "AsianDrama"
@@ -1096,7 +1096,7 @@
     {
       "name": "WebDramaTurkey",
       "module": "WebDramaTurkey",
-      "enabled": false,
+      "enabled": true,
       "language": "tr",
       "types": [
         "AsianDrama"
@@ -1145,7 +1145,7 @@
     {
       "name": "Animeler",
       "module": "Animeler",
-      "enabled": false,
+      "enabled": true,
       "language": "tr",
       "types": [
         "Anime",
@@ -1195,7 +1195,7 @@
     {
       "name": "SetFilmIzle",
       "module": "SetFilmIzle",
-      "enabled": false,
+      "enabled": true,
       "language": "tr",
       "types": [
         "Movie",
@@ -1343,7 +1343,7 @@
     {
       "name": "Dizigecesi",
       "module": "Dizigecesi",
-      "enabled": false,
+      "enabled": true,
       "language": "tr",
       "types": [
         "TvSeries",
@@ -1393,7 +1393,7 @@
     {
       "name": "RareFilmm",
       "module": "RareFilmm",
-      "enabled": false,
+      "enabled": true,
       "language": "tr",
       "types": [
         "Movie"

@@ -17,34 +17,67 @@ class DiziYou : MainAPI() {
 
     override val mainPage = mainPageOf(
         "${mainUrl}/" to "Son Eklenen Bölümler",
-        "${mainUrl}/tum-diziler/" to "Tüm Diziler",
-        "${mainUrl}/populer-diziler/" to "Popüler Diziler"
+        "${mainUrl}/dizi-arsivi/?filtrele=tarih&sirala=DESC" to "Son Eklenen Diziler",
+        "${mainUrl}/dizi-arsivi/?filtrele=alfabetik&sirala=ASC" to "Dizi Arşivi",
+        "${mainUrl}/dizi-arsivi/?filtrele=imdb&sirala=DESC&yil=&imdb=7" to "Popüler Diziler (IMDb 7+)"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val targetUrl = if (page <= 1) {
             request.data
         } else {
-            val base = request.data.removeSuffix("/")
-            "${base}/page/${page}/"
+            val base = request.data
+            if (base.contains("?")) {
+                val parts = base.split("?", limit = 2)
+                "${parts[0].removeSuffix("/")}/page/${page}/?${parts[1]}"
+            } else {
+                "${base.removeSuffix("/")}/page/${page}/"
+            }
         }
 
         val doc = app.get(targetUrl).document
-        val items = doc.select("div.bolumust, div.cat-item, div.series-item, div.post").mapNotNull { el ->
-            parseCard(el)
-        }.distinctBy { it.url }
+        val items = mutableListOf<SearchResponse>()
 
-        return newHomePageResponse(request.name, items, hasNext = items.isNotEmpty())
+        // 1. Parse episode list if present on homepage / latest episodes
+        doc.select(".listepisodes a, div.bolumust a, .latest-episodes a").forEach { a ->
+            val href = fixUrlNull(a.attr("href")) ?: return@forEach
+            val title = a.attr("title").ifBlank { a.text() }.trim()
+            if (title.isBlank()) return@forEach
+            val img = a.selectFirst("img")
+            val poster = fixUrlNull(img?.attr("data-src")?.ifBlank { null } ?: img?.attr("src"))
+            items.add(newTvSeriesSearchResponse(title, href, TvType.TvSeries) {
+                this.posterUrl = poster
+            })
+        }
+
+        // 2. Parse series archive / categories
+        doc.select(".alphabetical-category-wrapper a, div.cat-item, div.series-item, div.post, div#categorytitle").forEach { el ->
+            if (el.tagName() == "a") {
+                val href = fixUrlNull(el.attr("href")) ?: return@forEach
+                if (href.contains("#")) return@forEach
+                val title = el.attr("title").ifBlank { el.text() }.trim()
+                if (title.isNotBlank()) {
+                    items.add(newTvSeriesSearchResponse(title, href, TvType.TvSeries))
+                }
+            } else {
+                parseCard(el)?.let { items.add(it) }
+            }
+        }
+
+        val distinctItems = items.distinctBy { it.url }
+        return newHomePageResponse(request.name, distinctItems, hasNext = distinctItems.isNotEmpty())
     }
 
     fun parseCard(element: Element): SearchResponse? {
         val linkEl = element.selectFirst("a[href*='/dizi/']") ?: element.selectFirst("a") ?: return null
         val href = fixUrlNull(linkEl.attr("href")) ?: return null
+        if (href.contains("#")) return null
 
         val imgEl = element.selectFirst("img")
         val title = element.selectFirst("div#categorytitle, h2, h3, .series-title, .title")?.text()?.ifBlank { null }
             ?: linkEl.attr("title").ifBlank { null }
             ?: imgEl?.attr("alt")?.ifBlank { null }
+            ?: linkEl.text().ifBlank { null }
             ?: return null
 
         val poster = fixUrlNull(
@@ -71,9 +104,10 @@ class DiziYou : MainAPI() {
         }
 
         val doc = app.get(targetUrl).document
-        val items = doc.select("div#list-series .cat-item, div.cat-item, div.post, div.search-result, div.incontent a[href*='/dizi/']").mapNotNull { el ->
+        val items = doc.select("div#list-series .cat-item, div.cat-item, div.post, div.search-result, div.incontent a[href*='/dizi/'], .alphabetical-category-wrapper a").mapNotNull { el ->
             if (el.tagName() == "a") {
                 val href = fixUrlNull(el.attr("href")) ?: return@mapNotNull null
+                if (href.contains("#")) return@mapNotNull null
                 val title = el.attr("title").ifBlank { el.text() }.trim()
                 if (title.isBlank()) return@mapNotNull null
                 val img = el.selectFirst("img")
@@ -98,54 +132,91 @@ class DiziYou : MainAPI() {
     }
 
     suspend fun parseLoadMetadata(doc: Document, url: String): LoadResponse? {
-        val rawTitle = doc.selectFirst("h1, meta[property='og:title']")?.let {
+        // If url is an episode page and has a parent series link, we can inspect both
+        var targetDoc = doc
+        var targetUrl = url
+
+        if (url.contains("-sezon-") && url.contains("-bolum")) {
+            val parentSeriesLink = doc.select("a").firstOrNull { a ->
+                val href = a.attr("href")
+                href.isNotBlank() && !href.contains("-bolum") && !href.contains("#") && href.startsWith(mainUrl) && href != "${mainUrl}/"
+            }?.attr("href")
+
+            if (!parentSeriesLink.isNullOrBlank()) {
+                try {
+                    val pDoc = app.get(parentSeriesLink).document
+                    if (pDoc.select("a[href*='-sezon-']").isNotEmpty()) {
+                        targetDoc = pDoc
+                        targetUrl = parentSeriesLink
+                    }
+                } catch (_: Exception) {}
+            }
+        }
+
+        val rawTitle = targetDoc.selectFirst("h1, meta[property='og:title']")?.let {
             if (it.tagName() == "meta") it.attr("content") else it.text().trim()
-        }?.replace(" - DiziYou", "")?.replace(" İzle", "")?.trim() ?: return null
+        }?.replace(" - DiziYou", "")?.replace(" İzle", "")?.replace(" izle", "")?.trim() ?: return null
 
         val poster = fixUrlNull(
-            doc.selectFirst("meta[property='og:image']")?.attr("content")
-                ?: doc.selectFirst("div.cat-img img, div.poster img, img.series-poster")?.let {
+            targetDoc.selectFirst("meta[property='og:image']")?.attr("content")
+                ?: targetDoc.selectFirst("div.cat-img img, div.poster img, img.series-poster, div.afis img")?.let {
                     it.attr("data-src").ifBlank { null } ?: it.attr("src").ifBlank { null }
                 }
         )
 
-        val plot = doc.selectFirst("meta[property='og:description']")?.attr("content")
-            ?: doc.selectFirst("div.cat-desc, div.description, div.summary")?.text()?.trim()
+        val plot = targetDoc.selectFirst("meta[property='og:description']")?.attr("content")
+            ?: targetDoc.selectFirst("div.cat-desc, div.description, div.summary, div.konu")?.text()?.trim()
 
-        val year = doc.selectFirst("span.year, div.info span")?.text()?.filter { it.isDigit() }?.take(4)?.toIntOrNull()
+        val year = targetDoc.selectFirst("span.year, div.info span")?.text()?.filter { it.isDigit() }?.take(4)?.toIntOrNull()
             ?: Regex("""\((\d{4})\)""").find(rawTitle)?.groupValues?.get(1)?.toIntOrNull()
 
-        val score = doc.selectFirst("span.imdb, span.rating, div.score")?.text()?.trim()
-        val tags = doc.select("div.cat-tax a, a[href*='/kategori/'], a[href*='/tur/']").map { it.text().trim() }.filter { it.isNotBlank() }
+        val score = targetDoc.selectFirst("span.imdb, span.rating, div.score")?.text()?.trim()
+        val tags = targetDoc.select("div.cat-tax a, a[href*='/kategori/'], a[href*='/tur/']").map { it.text().trim() }.filter { it.isNotBlank() }
 
-        val episodeElements = doc.select("a[href*='-sezon-']").filter { el ->
+        val episodeElements = targetDoc.select("a[href*='-sezon-']").filter { el ->
             val href = el.attr("href")
             href.contains("-sezon-") && href.contains("-bolum")
         }.distinctBy { it.attr("href") }
 
-        val episodes = episodeElements.mapNotNull { el ->
-            val epHref = fixUrlNull(el.attr("href")) ?: return@mapNotNull null
-            val epText = el.text().trim()
+        val episodes = if (episodeElements.isNotEmpty()) {
+            episodeElements.mapNotNull { el ->
+                val epHref = fixUrlNull(el.attr("href")) ?: return@mapNotNull null
+                val epText = el.text().trim()
 
-            val sMatch = Regex("""(\d+)\.\s*Sezon""").find(epText)
-                ?: Regex("""(\d+)-sezon""").find(epHref)
+                val sMatch = Regex("""(\d+)\.\s*Sezon""").find(epText)
+                    ?: Regex("""(\d+)-sezon""").find(epHref)
 
-            val eMatch = Regex("""(\d+)\.\s*B[öo]l[üu]m""").find(epText)
-                ?: Regex("""(\d+)-bolum""").find(epHref)
+                val eMatch = Regex("""(\d+)\.\s*B[öo]l[üu]m""").find(epText)
+                    ?: Regex("""(\d+)-bolum""").find(epHref)
 
+                val seasonNum = sMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
+                val epNum = eMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
+
+                newEpisode(epHref) {
+                    this.name = "${seasonNum}. Sezon ${epNum}. Bölüm"
+                    this.season = seasonNum
+                    this.episode = epNum
+                }
+            }
+        } else if (url.contains("-sezon-") && url.contains("-bolum")) {
+            val sMatch = Regex("""(\d+)-sezon""").find(url)
+            val eMatch = Regex("""(\d+)-bolum""").find(url)
             val seasonNum = sMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
             val epNum = eMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
-
-            newEpisode(epHref) {
-                this.name = "${seasonNum}. Sezon ${epNum}. Bölüm"
-                this.season = seasonNum
-                this.episode = epNum
-            }
+            listOf(
+                newEpisode(url) {
+                    this.name = "${seasonNum}. Sezon ${epNum}. Bölüm"
+                    this.season = seasonNum
+                    this.episode = epNum
+                }
+            )
+        } else {
+            emptyList()
         }
 
         val cleanTitle = rawTitle.replace(Regex("""\s*\(\d{4}\)$"""), "").trim()
 
-        return newTvSeriesLoadResponse(cleanTitle, url, TvType.TvSeries, episodes) {
+        return newTvSeriesLoadResponse(cleanTitle, targetUrl, TvType.TvSeries, episodes) {
             this.posterUrl = poster
             this.plot = plot
             this.year = year

@@ -6,6 +6,7 @@ import com.cloudstream.tr.core.concurrency.BoundedParallelResolver
 import com.cloudstream.tr.core.model.ProviderModels
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
+import java.util.regex.Pattern
 
 class HDFilmDelisi : MainAPI() {
     override var mainUrl = "https://hdfilmdelisi.one"
@@ -15,21 +16,33 @@ class HDFilmDelisi : MainAPI() {
     override val hasQuickSearch = true
     override val supportedTypes = setOf(TvType.Movie)
 
+    private val userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
     override val mainPage = mainPageOf(
         "${mainUrl}" to "Son Eklenen Filmler",
-        "${mainUrl}/en-cok-izlenenler" to "En Çok İzlenenler"
+        "${mainUrl}/imdb-top-250" to "IMDb Top 250",
+        "${mainUrl}/tur/aksiyon" to "Aksiyon Filmleri",
+        "${mainUrl}/tur/bilim-kurgu" to "Bilim Kurgu",
+        "${mainUrl}/tur/gerilim" to "Gerilim",
+        "${mainUrl}/tur/animasyon" to "Animasyon"
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val targetUrl = if (page <= 1) {
             request.data
         } else {
-            "${request.data}?sayfa=${page}"
+            val base = request.data.removeSuffix("/")
+            if (base.contains("?")) {
+                "${base}&sayfa=${page}"
+            } else {
+                "${base}?sayfa=${page}"
+            }
         }
 
-        val document = app.get(targetUrl).document
-        val items = parseSearchResults(document)
-        return newHomePageResponse(request.name, items)
+        val html = app.get(targetUrl, headers = mapOf("User-Agent" to userAgent)).text
+        val document = org.jsoup.Jsoup.parse(html, targetUrl)
+        val items = parseSearchResults(document, html)
+        return newHomePageResponse(request.name, items, hasNext = items.isNotEmpty())
     }
 
     fun toSearchResult(element: Element): SearchResponse? {
@@ -66,21 +79,59 @@ class HDFilmDelisi : MainAPI() {
             "${mainUrl}/page/${page}/?s=${query}"
         }
 
-        val document = app.get(targetUrl).document
-        val items = parseSearchResults(document)
+        val html = app.get(targetUrl, headers = mapOf("User-Agent" to userAgent)).text
+        val document = org.jsoup.Jsoup.parse(html, targetUrl)
+        val items = parseSearchResults(document, html)
         return newSearchResponseList(items, hasNext = false)
     }
 
-    fun parseSearchResults(document: Document): List<SearchResponse> {
+    fun parseSearchResults(document: Document, rawHtml: String = ""): List<SearchResponse> {
+        val results = mutableListOf<SearchResponse>()
+
+        // 1. Direct HTML elements
         val elements = document.select("a[href*='/film/']")
-        val results = elements.mapNotNull { toSearchResult(it) }
+        elements.forEach { el ->
+            toSearchResult(el)?.let { results.add(it) }
+        }
+
+        // 2. Parse JSON-LD or RSC payload if HTML returned empty (Next.js category pages)
+        if (results.isEmpty() && rawHtml.isNotEmpty()) {
+            val jsonLdPattern = Pattern.compile(""""@type"\s*:\s*"Movie".+?"url"\s*:\s*"([^"]+)".+?"name"\s*:\s*"([^"]+)"""")
+            val m = jsonLdPattern.matcher(rawHtml)
+            while (m.find()) {
+                val url = m.group(1)?.replace("\\/", "/") ?: continue
+                val name = m.group(2)?.trim() ?: continue
+                val fixedUrl = fixUrlNull(url) ?: continue
+                results.add(
+                    newMovieSearchResponse(name, fixedUrl, TvType.Movie)
+                )
+            }
+
+            if (results.isEmpty()) {
+                // RSC slug fallback
+                val slugPattern = Pattern.compile(""""/film/([a-zA-Z0-9_-]+)"""")
+                val sm = slugPattern.matcher(rawHtml)
+                val seen = mutableSetOf<String>()
+                while (sm.find()) {
+                    val slug = sm.group(1) ?: continue
+                    if (seen.add(slug)) {
+                        val fixedUrl = "${mainUrl}/film/$slug"
+                        val title = slug.replace("-", " ").capitalize()
+                        results.add(
+                            newMovieSearchResponse(title, fixedUrl, TvType.Movie)
+                        )
+                    }
+                }
+            }
+        }
+
         return ProviderModels.dedupSearchResults(results)
     }
 
     override suspend fun quickSearch(query: String): List<SearchResponse> = search(query, 1).items
 
     override suspend fun load(url: String): LoadResponse? {
-        val document = app.get(url).document
+        val document = app.get(url, headers = mapOf("User-Agent" to userAgent)).document
         return parseLoadMetadata(document, url)
     }
 
@@ -119,7 +170,7 @@ class HDFilmDelisi : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         var found = false
-        val document = app.get(data).document
+        val document = app.get(data, headers = mapOf("User-Agent" to userAgent)).document
         val html = document.html()
 
         val embedUrls = mutableListOf<String>()
@@ -144,7 +195,13 @@ class HDFilmDelisi : MainAPI() {
             candidates = candidates,
             resolver = { embedUrl, emitLink ->
                 try {
-                    val embedDoc = app.get(embedUrl, headers = mapOf("Referer" to data)).document
+                    val embedDoc = app.get(
+                        embedUrl,
+                        headers = mapOf(
+                            "User-Agent" to userAgent,
+                            "Referer" to data
+                        )
+                    ).document
                     val videoSrc = embedDoc.selectFirst("video source[src], source[src]")?.attr("src")
 
                     if (!videoSrc.isNullOrBlank()) {
@@ -157,7 +214,11 @@ class HDFilmDelisi : MainAPI() {
                                 type = ExtractorLinkType.VIDEO
                             ) {
                                 this.referer = embedUrl
-                                this.quality = Qualities.Unknown.value
+                                this.headers = mapOf(
+                                    "User-Agent" to userAgent,
+                                    "Referer" to "${mainUrl}/"
+                                )
+                                this.quality = Qualities.P1080.value
                             }
                         )
                     } else {

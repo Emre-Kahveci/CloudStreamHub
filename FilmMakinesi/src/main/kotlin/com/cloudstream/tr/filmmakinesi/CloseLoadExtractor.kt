@@ -1,22 +1,20 @@
 package com.cloudstream.tr.filmmakinesi
 
-import java.util.Base64
+import com.cloudstream.tr.core.extractors.CloseLoadExtractor as CoreCloseLoadExtractor
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.app
-import com.lagradost.cloudstream3.utils.ExtractorApi
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.INFER_TYPE
 import com.lagradost.cloudstream3.utils.newExtractorLink
-import java.util.regex.Pattern
 
-open class CloseLoadExtractor : ExtractorApi() {
+class CloseLoadExtractor : CoreCloseLoadExtractor() {
     override val name = "CloseLoad"
     override val mainUrl = "https://closeload.filmmakinesi.to"
     override val requiresReferer = true
 
     companion object {
         fun decodeCloseLoad(jsCode: String, arrStr: String): String {
-            val arrRegex = Pattern.compile("\"([^\"]+)\"")
+            val arrRegex = java.util.regex.Pattern.compile("\"([^\"]+)\"")
             val arrMatcher = arrRegex.matcher(arrStr)
             val sb = java.lang.StringBuilder()
             while (arrMatcher.find()) {
@@ -24,7 +22,7 @@ open class CloseLoadExtractor : ExtractorApi() {
             }
             var kspgo = sb.toString()
 
-            val keysRegex = Pattern.compile("var\\s+[a-zA-Z0-9_]+\\s*=\\s*\"([^\"]+)\";\\s*var\\s+[a-zA-Z0-9_]+\\s*=\\s*\"([^\"]+)\";")
+            val keysRegex = java.util.regex.Pattern.compile("var\\s+[a-zA-Z0-9_]+\\s*=\\s*\"([^\"]+)\";\\s*var\\s+[a-zA-Z0-9_]+\\s*=\\s*\"([^\"]+)\";")
             val keysMatcher = keysRegex.matcher(jsCode)
             if (!keysMatcher.find()) return ""
             val key1 = keysMatcher.group(1) ?: return ""
@@ -50,7 +48,11 @@ open class CloseLoadExtractor : ExtractorApi() {
                     if (missing != 0) {
                         padded += "=".repeat(4 - missing)
                     }
-                    val decodedBytes = Base64.getDecoder().decode(padded)
+                    val decodedBytes = try {
+                        java.util.Base64.getDecoder().decode(padded)
+                    } catch (_: Throwable) {
+                        android.util.Base64.decode(padded, android.util.Base64.DEFAULT)
+                    }
                     kspgo = String(decodedBytes, Charsets.ISO_8859_1)
                 } else if (x7ed6 == 'v') {
                     kspgo = kspgo.reversed()
@@ -109,29 +111,27 @@ open class CloseLoadExtractor : ExtractorApi() {
             "User-Agent" to "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
             "Referer" to (referer ?: "https://filmmakinesi.to/")
         )
-        val html = app.get(url, headers = headers).text
+        val html = try {
+            app.get(url, headers = headers).text
+        } catch (_: Exception) {
+            return
+        }
 
-        val arrRegex = Pattern.compile("\\[\\s*\"[^\\]]+\"\\s*\\]")
-        val arrMatcher = arrRegex.matcher(html)
-        while (arrMatcher.find()) {
-            val arrStr = arrMatcher.group(0) ?: continue
-            if (arrStr.contains(".jpg") || arrStr.contains(".png") || arrStr.contains(".webp")) continue
-            try {
-                val streamUrl = decodeCloseLoad(html, arrStr)
-                if (streamUrl.isNotEmpty() && (streamUrl.contains(".m3u8") || streamUrl.contains(".txt") || streamUrl.contains("/hls/"))) {
-                    callback(
-                        newExtractorLink(
-                            source = name,
-                            name = name,
-                            url = streamUrl,
-                            type = INFER_TYPE
-                        ) {
-                            this.referer = url
-                        }
-                    )
-                    break
+        val streamUrl = extractStreamUrl(html)
+        if (!streamUrl.isNullOrEmpty()) {
+            callback(
+                newExtractorLink(
+                    source = name,
+                    name = name,
+                    url = streamUrl,
+                    type = INFER_TYPE
+                ) {
+                    this.referer = url
                 }
-            } catch (_: Exception) {}
+            )
+        } else {
+            // Fallback to core implementation
+            super.getUrl(url, referer, subtitleCallback, callback)
         }
 
         // Subtitles

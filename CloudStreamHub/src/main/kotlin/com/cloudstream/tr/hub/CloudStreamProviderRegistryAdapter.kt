@@ -7,13 +7,27 @@ import com.lagradost.cloudstream3.MainAPI
 
 object CloudStreamProviderRegistryAdapter {
 
+    private val knownProviderClasses = listOf(
+        "com.cloudstream.tr.hdfilmcehennemi.HDFilmCehennemi",
+        "com.cloudstream.tr.filmmakinesi.FilmMakinesi",
+        "com.cloudstream.tr.fullhdfilmizlesene.FullHDFilmizlesene",
+        "com.cloudstream.tr.kultfilmler.KultFilmler",
+        "com.cloudstream.tr.sinemacx.SinemaCX",
+        "com.cloudstream.tr.hdfilmdelisi.HDFilmDelisi",
+        "com.cloudstream.tr.yesilcamtv.YesilCamTv",
+        "com.cloudstream.tr.sezonlukdizi.SezonlukDizi",
+        "com.cloudstream.tr.diziyou.DiziYou",
+        "com.cloudstream.tr.dizikorea.DiziKorea"
+    )
+
     /**
      * Dynamically queries CloudStream's internal APIHolder for registered Turkish providers.
-     * Operates purely via reflection on the host application without hardcoding provider classes.
+     * Also falls back to ClassLoader instantiation for known bundled providers when APIHolder is empty.
      */
     fun getRegisteredTurkishProviders(excludeName: String = "CloudStreamHub"): List<MainAPI> {
         val discovered = mutableListOf<MainAPI>()
 
+        // 1. Try reflection on CloudStream APIHolder
         try {
             val holderClass = Class.forName("com.lagradost.cloudstream3.APIHolder")
             val holderInstance = try {
@@ -22,7 +36,7 @@ object CloudStreamProviderRegistryAdapter {
                 null
             }
 
-            val getterNames = listOf("getAllProviders", "getApis", "getPlugins")
+            val getterNames = listOf("getAllProviders", "getApis", "getPlugins", "getAllApis")
             for (mName in getterNames) {
                 try {
                     val m = holderClass.getMethod(mName)
@@ -41,7 +55,7 @@ object CloudStreamProviderRegistryAdapter {
             }
 
             if (discovered.isEmpty()) {
-                val candidateFields = listOf("allProviders", "apis", "loadedPlugins")
+                val candidateFields = listOf("allProviders", "apis", "loadedPlugins", "plugins")
                 for (fieldName in candidateFields) {
                     try {
                         val field = holderClass.getDeclaredField(fieldName)
@@ -69,7 +83,20 @@ object CloudStreamProviderRegistryAdapter {
             )
         }
 
-        val filtered = discovered.distinctBy { it.name }.filter { it.lang == "tr" && it.name != excludeName }
+        // 2. Fallback to ClassLoader instantiation if APIHolder returned no providers
+        if (discovered.isEmpty()) {
+            for (className in knownProviderClasses) {
+                try {
+                    val clazz = Class.forName(className)
+                    val instance = clazz.getDeclaredConstructor().newInstance() as? MainAPI
+                    if (instance != null) {
+                        discovered.add(instance)
+                    }
+                } catch (_: Throwable) {}
+            }
+        }
+
+        val filtered = discovered.distinctBy { it.name }.filter { (it.lang == "tr" || it.lang.isBlank()) && it.name != excludeName }
         if (filtered.isEmpty()) {
             DiagnosticLogger.log(
                 provider = "CloudStreamHub",
