@@ -128,44 +128,38 @@
   {
     "provider": "DiziPal",
     "canonical": "https://dizipal1430.com",
-    "finalUrl": "https://dizipal1430.com",
-    "httpsValid": true,
-    "hostAllowed": true,
-    "markerFound": true,
-    "redirectChain": [
-      "https://dizipal1430.com"
-    ],
+    "finalUrl": null,
+    "httpsValid": false,
+    "hostAllowed": false,
+    "markerFound": false,
+    "redirectChain": [],
     "candidateHost": null,
-    "status": "healthy",
-    "error": null
+    "status": "dead",
+    "error": "Provider marked as dead in domains.json"
   },
   {
     "provider": "TurkAnime",
     "canonical": "https://www.turkanime.tv",
-    "finalUrl": "https://www.turkanime.tv",
-    "httpsValid": true,
-    "hostAllowed": true,
-    "markerFound": true,
-    "redirectChain": [
-      "https://www.turkanime.tv"
-    ],
+    "finalUrl": null,
+    "httpsValid": false,
+    "hostAllowed": false,
+    "markerFound": false,
+    "redirectChain": [],
     "candidateHost": null,
-    "status": "healthy",
-    "error": null
+    "status": "dead",
+    "error": "Provider marked as dead in domains.json"
   },
   {
     "provider": "BelgeselX",
     "canonical": "https://belgeselx.com",
-    "finalUrl": "https://belgeselx.com",
-    "httpsValid": true,
-    "hostAllowed": true,
-    "markerFound": true,
-    "redirectChain": [
-      "https://belgeselx.com"
-    ],
+    "finalUrl": null,
+    "httpsValid": false,
+    "hostAllowed": false,
+    "markerFound": false,
+    "redirectChain": [],
     "candidateHost": null,
-    "status": "healthy",
-    "error": null
+    "status": "dead",
+    "error": "Provider marked as dead in domains.json"
   },
   {
     "provider": "FilmMakinesi",
@@ -212,16 +206,14 @@
   {
     "provider": "DiziMom",
     "canonical": "https://www.dizimom.diy",
-    "finalUrl": "https://www.dizimom.diy",
-    "httpsValid": true,
-    "hostAllowed": true,
-    "markerFound": true,
-    "redirectChain": [
-      "https://www.dizimom.diy"
-    ],
+    "finalUrl": null,
+    "httpsValid": false,
+    "hostAllowed": false,
+    "markerFound": false,
+    "redirectChain": [],
     "candidateHost": null,
-    "status": "healthy",
-    "error": null
+    "status": "dead",
+    "error": "Provider marked as dead in domains.json"
   },
   {
     "provider": "DiziYou",
@@ -246,6 +238,207 @@
     "markerFound": true,
     "redirectChain": [
       "https://www.fullhdfilmizlesene.now"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "JetFilmIzle",
+    "canonical": "https://jetfilmizle.now",
+    "finalUrl": "https://jetfilmizle.now",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://jetfilmizle.now"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "CizgiMax",
+    "canonical": "https://cizgimax.online",
+    "finalUrl": null,
+    "httpsValid": false,
+    "hostAllowed": false,
+    "markerFound": false,
+    "redirectChain": [],
+    "candidateHost": null,
+    "status": "dead",
+    "error": "Provider marked as dead in domains.json"
+  },
+  {
+    "provider": "DDizi",
+    "canonical": "https://www.ddizi.im",
+    "finalUrl": null,
+    "httpsValid": false,
+    "hostAllowed": false,
+    "markerFound": false,
+    "redirectChain": [],
+    "candidateHost": null,
+    "status": "dead",
+    "error": "Provider marked as dead in domains.json"
+  },
+  {
+    "provider": "Sinewix",
+    "canonical": "https://sinewix.net",
+    "finalUrl": null,
+    "httpsValid": false,
+    "hostAllowed": false,
+    "markerFound": false,
+    "redirectChain": [],
+    "candidateHost": null,
+    "status": "dead",
+    "error": "Provider marked as dead in domains.json"
+  },
+  {
+    "provider": "CloudStreamHub",
+    "canonical": "https://api.themoviedb.org",
+    "finalUrl": "https://developer.themoviedb.org/docs/getting-started",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://api.themoviedb.org",
+      "https://www.themoviedb.org/documentation/api",
+      "https://developer.themoviedb.org/docs",
+      "https://developer.themoviedb.org/docs/getting-started"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "DiziKorea",
+    "canonical": "https://dizikorea3.com",
+    "finalUrl": "https://dizikorea3.com",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://dizikorea3.com"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "DramaDizilerim",
+    "canonical": "https://dramadizilerim.com",
+    "finalUrl": "https://dramadizilerim.com",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://dramadizilerim.com"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "WebDramaTurkey",
+    "canonical": "https://webdramaturkey2.com",
+    "finalUrl": "https://webdramaturkey2.com",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://webdramaturkey2.com"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "SetFilmIzle",
+    "canonical": "https://www.setfilmizle.ltd",
+    "finalUrl": "https://www.setfilmizle.ltd",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://www.setfilmizle.ltd"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "DiziLife",
+    "canonical": "https://dizi74.life",
+    "finalUrl": null,
+    "httpsValid": false,
+    "hostAllowed": false,
+    "markerFound": false,
+    "redirectChain": [],
+    "candidateHost": null,
+    "status": "dead",
+    "error": "Provider marked as dead in domains.json"
+  },
+  {
+    "provider": "HDFilmDelisi",
+    "canonical": "https://hdfilmdelisi.one",
+    "finalUrl": "https://hdfilmdelisi.one",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://hdfilmdelisi.one"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "Dizigecesi",
+    "canonical": "https://dizigecesi.com",
+    "finalUrl": null,
+    "httpsValid": false,
+    "hostAllowed": false,
+    "markerFound": false,
+    "redirectChain": [],
+    "candidateHost": null,
+    "status": "dead",
+    "error": "Provider marked as dead in domains.json"
+  },
+  {
+    "provider": "RareFilmm",
+    "canonical": "https://rarefilmm.com",
+    "finalUrl": "https://rarefilmm.com",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://rarefilmm.com"
+    ],
+    "candidateHost": null,
+    "status": "healthy",
+    "error": null
+  },
+  {
+    "provider": "FilmHane",
+    "canonical": "https://www.filmhane.shop",
+    "finalUrl": null,
+    "httpsValid": false,
+    "hostAllowed": false,
+    "markerFound": false,
+    "redirectChain": [],
+    "candidateHost": null,
+    "status": "dead",
+    "error": "Provider marked as dead in domains.json"
+  },
+  {
+    "provider": "YTS",
+    "canonical": "https://yts.gg/home",
+    "finalUrl": "https://yts.gg/home",
+    "httpsValid": true,
+    "hostAllowed": true,
+    "markerFound": true,
+    "redirectChain": [
+      "https://yts.gg/home"
     ],
     "candidateHost": null,
     "status": "healthy",

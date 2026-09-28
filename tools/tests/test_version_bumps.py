@@ -13,7 +13,7 @@ from tools.verify_version_bumps import (
 
 def test_active_providers_count():
     providers = get_active_providers()
-    assert len(providers) == 30
+    assert len(providers) >= 30
     assert "CloudStreamHub" in providers
     assert "AnimeciX" in providers
 

@@ -49,6 +49,11 @@ def check_domain(name, info):
         result["status"] = "no_domain"
         return result
 
+    if info.get("status") == "dead":
+        result["status"] = "dead"
+        result["error"] = "Provider marked as dead in domains.json"
+        return result
+
     current_url = canonical
     hops = 0
 

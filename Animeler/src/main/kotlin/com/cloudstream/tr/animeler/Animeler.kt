@@ -72,7 +72,7 @@ class Animeler : MainAPI() {
     }
 
     fun parseSearchResults(document: Document): List<SearchResponse> {
-        val elements = document.select("a:has(img[src*='animecover']), a:has(img[src*='portrait']), div.anime-card, div.col a")
+        val elements = document.select("a.anime-card-modern, a:has(img[src*='animecover']), a:has(img[src*='portrait']), div.anime-card, div.col a")
         val results = elements.mapNotNull { toSearchResult(it) }
         return ProviderModels.dedupSearchResults(results)
     }

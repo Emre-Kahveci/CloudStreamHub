@@ -460,7 +460,7 @@
       "status": "dead"
     },
     "YTS": {
-      "canonical": "https://yts.gg",
+      "canonical": "https://yts.gg/home",
       "allowedHosts": [
         "yts.gg",
         "web.yts.gg",

@@ -1,10 +1,10 @@
 [
   {
     "schemaVersion": 1,
-    "provider": "SinemaCX",
-    "checkedAt": "2026-09-26T13:51:53.616620+00:00",
-    "canonical": "https://sinemacc.com",
-    "finalUrl": "https://sinemacc.com/",
+    "provider": "Animeler",
+    "checkedAt": "2026-09-28T21:25:25.459457+00:00",
+    "canonical": "https://animeler.pw",
+    "finalUrl": "https://animeler.pw/",
     "tierResults": {
       "L0_config": "pass",
       "L1_domain": "pass",
@@ -17,12 +17,12 @@
     "healthScore": 100,
     "playbackVerification": "UNVERIFIED_BY_AUTOMATION",
     "diagnostic": {
-      "L2": "Found 15 items. Top: Bulvar İzle",
-      "L3": "Found 30 content results. Top: Bulvar\nBoulevard\n\n\n★ 4.7• 2026\n• 113 Dk.",
-      "L4": "Loaded: Bulvar izle (2026) (Episodes: 0, Mode: NONE)",
-      "L5": "[NONE] Discovered 1 iframes, 0 videos at https://sinemacc.com/film/bulvar-boulevard-2026/"
+      "L2": "Found 15 items. Top: Xian Ni",
+      "L3": "Found 21 content results. Top: Naruto Movie 2: Dai Gekitotsu! Maboroshi",
+      "L4": "Loaded: Steins;Gate izle - Anime izle - Animeler (Episodes: 32, Mode: STRICT_CONFIG)",
+      "L5": "[STRICT_CONFIG] Discovered 1 iframes, 0 videos at https://animeler.pw/steinsgate/bolum-1"
     },
-    "durationMs": 1876,
+    "durationMs": 17237,
     "candidateHost": null
   }
 ]

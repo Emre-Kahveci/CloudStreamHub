@@ -268,9 +268,13 @@ def check_l3_search(name, canonical, smoke_test, monitoring_cfg, fetcher: Provid
                     try:
                         data = json.loads(trimmed)
                         json_key = search_cfg.get("jsonKey", "results")
-                        results = data.get(json_key, []) if isinstance(data, dict) else data
+                        results = data
+                        if json_key and isinstance(results, dict):
+                            for k in json_key.split("."):
+                                if isinstance(results, dict):
+                                    results = results.get(k, [])
                         if results and len(results) > 0:
-                            first = results[0]
+                            first = results[0] if isinstance(results, list) else results
                             first_title = first.get("title") or first.get("name") if isinstance(first, dict) else str(first)
                             return "pass", f"Found {len(results)} API results. Top: {str(first_title)[:40]}"
                     except Exception:

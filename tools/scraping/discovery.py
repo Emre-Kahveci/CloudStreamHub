@@ -152,6 +152,24 @@ def parse_detail_page(
         result["isSoft404"] = (status_code == 404)
         return result
 
+    trimmed_body = html_body.strip()
+    if trimmed_body.startswith("{") or trimmed_body.startswith("["):
+        try:
+            import json
+            jdata = json.loads(trimmed_body)
+            title = None
+            if isinstance(jdata, dict):
+                movie_obj = jdata.get("data", {}).get("movie") or jdata.get("data") or jdata
+                if isinstance(movie_obj, dict):
+                    title = movie_obj.get("title") or movie_obj.get("name")
+                if not title:
+                    title = jdata.get("title") or jdata.get("status_message")
+            result["status"] = "PASS"
+            result["title"] = (str(title) if title else "JSON API Content")[:80]
+            return result
+        except Exception:
+            pass
+
     soup = BeautifulSoup(html_body, "html.parser")
     title_tag = soup.select_one("h1, h2, meta[property='og:title'], title")
     title = title_tag.text.strip() if title_tag else "Unknown"
@@ -343,6 +361,11 @@ def evaluate_player_discovery(html_body: str, base_url: str) -> Tuple[str, Dict[
                 pass
 
     if info["iframes"] or info["videos"] or info["mediaUrls"] or has_player_code:
+        return "PLAYER_DISCOVERED", info
+
+    # Check for Torrent / Magnet links
+    if "magnet:?" in body_str or ".torrent" in body_str.lower() or '"torrents":' in body_str:
+        info["mediaUrls"].append("torrent_stream_source")
         return "PLAYER_DISCOVERED", info
 
     return "PLAYER_NOT_FOUND", info

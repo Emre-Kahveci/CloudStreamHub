@@ -1169,16 +1169,18 @@
         },
         "search": {
           "method": "GET",
-          "path": "/arama?q={query}",
+          "path": "/filter?search={query}",
+          "expectedSelector": "a.anime-card-modern, .anime-grid-modern a, a[href*=\"/naruto\"]",
           "headers": {
             "Referer": "https://animeler.pw/"
           }
         },
         "homepage": {
           "selectors": [
-            "a.poster-card",
-            "a[href*=\"/dizi/\"]",
-            "a[href*=\"/film/\"]"
+            "a:has(img[src*=\"animecover\"])",
+            "a[href*=\"/bolum-\"]",
+            "div.col a",
+            "div.anime-card a"
           ],
           "requiredUrlPatterns": [
             "/"
@@ -1186,11 +1188,11 @@
           "excludedUrlPatterns": [
             "/ara",
             "/profil",
-            "/giris"
+            "/giris",
+            "/discord"
           ]
         }
-      },
-      "disabledReason": "DISABLED_UNSUPPORTED: Search 404, player discovery failed."
+      }
     },
     {
       "name": "SetFilmIzle",
@@ -1516,6 +1518,7 @@
         "search": {
           "method": "GET",
           "path": "/api/v2/list_movies.json?query_term={query}&limit=20",
+          "jsonKey": "data.movies",
           "headers": {
             "Referer": "https://yts.gg/"
           }
