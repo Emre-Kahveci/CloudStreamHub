@@ -33,7 +33,8 @@ object TorrentioResolver {
         if (imdbId.isBlank()) return emptyList()
         val type = if (isMovie) "movie" else "series"
         val idPath = if (isMovie) imdbId else "$imdbId:$season:$episode"
-        val url = "https://torrentio.strem.fun/stream/$type/$idPath.json"
+        val debridPrefix = DebridConfig.getActiveDebridPrefix()?.let { "$it/" } ?: ""
+        val url = "https://torrentio.strem.fun/${debridPrefix}stream/$type/$idPath.json"
 
         try {
             val response = app.get(url, timeout = 10).parsedSafe<TorrentioResponse>()
@@ -67,7 +68,8 @@ object TorrentioResolver {
                 if (isDV) tags += " DV"
                 if (isAtmos) tags += " Atmos"
 
-                val displayName = "Torrentio $resolution$tags ${if (size.isNotBlank()) "[$size]" else ""}$seedStr".trim()
+                val prefix = if (DebridConfig.isDebridEnabled) "🚀 Debrid " else ""
+                val displayName = "$prefix$resolution$tags ${if (size.isNotBlank()) "[$size]" else ""}$seedStr".trim()
 
                 // If direct video stream is provided, use it directly
                 if (stream.url != null && !stream.url.startsWith("magnet:")) {

@@ -205,6 +205,33 @@ class CloudStreamHub : MainAPI() {
         val payload = AggregatorLinkPayload.fromUrlData(data) ?: return false
         var linksFound = false
 
+        // 1. Automated Turkish Subtitles via OpenSubtitles
+        if (payload.imdbId != null) {
+            com.cloudstream.tr.core.resolvers.SubtitlesResolver.resolveTurkishSubtitles(
+                imdbId = payload.imdbId,
+                isMovie = payload.isMovie,
+                season = payload.season,
+                episode = payload.episode,
+                callback = subtitleCallback
+            )
+        }
+
+        // 2. High-speed Direct DDL CDN (4KHDHub Hub-Cloud, V-Cloud, FSL Server)
+        try {
+            val fourKLinks = com.cloudstream.tr.core.resolvers.FourKhubResolver.resolve(
+                title = payload.title,
+                year = payload.year,
+                isMovie = payload.isMovie,
+                season = payload.season,
+                episode = payload.episode
+            )
+            fourKLinks.forEach { link ->
+                callback(link)
+                linksFound = true
+            }
+        } catch (_: Exception) {}
+
+        // 3. Debrid & Torrent P2P (Torrentio & YTS)
         if (payload.imdbId != null) {
             val torrentioLinks = com.cloudstream.tr.core.resolvers.TorrentioResolver.resolve(
                 imdbId = payload.imdbId,
