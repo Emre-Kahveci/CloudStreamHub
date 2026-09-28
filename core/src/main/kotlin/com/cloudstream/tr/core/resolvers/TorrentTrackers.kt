@@ -11,6 +11,12 @@ object TorrentTrackers {
         "https://tracker.tamersunion.org:443/announce",
         "http://tracker.renfei.net:8080/announce",
 
+        // WebTorrent WebSocket trackers (modern streaming clients)
+        "wss://tracker.openwebtorrent.com",
+        "wss://tracker.btorrent.xyz",
+        "wss://tracker.fastcast.nz",
+
+
         // Top reliable UDP trackers (ngosang trackerslist verified)
         "udp://tracker.opentrackr.org:1337/announce",
         "udp://open.demonii.com:1337/announce",

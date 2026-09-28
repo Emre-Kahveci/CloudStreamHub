@@ -67,8 +67,8 @@ object YtsResolver {
                 val torrents = movie.torrents ?: continue
                 val movieTitle = movie.title ?: "Movie"
 
-                return torrents.mapNotNull { t ->
-                    val hash = t.hash?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                return torrents.flatMap { t ->
+                    val hash = t.hash?.takeIf { it.isNotBlank() } ?: return@flatMap emptyList<ExtractorLink>()
                     val encodedTitle = URLEncoder.encode(movieTitle, "UTF-8")
                     val magnet = "magnet:?xt=urn:btih:$hash&dn=$encodedTitle&index=0${TorrentTrackers.asMagnetParam}"
 
@@ -85,18 +85,36 @@ object YtsResolver {
                         else -> Qualities.Unknown.value
                     }
 
-                    val directTorrentUrl = t.url?.takeIf { it.startsWith("http") }
-                    val finalUrl = directTorrentUrl ?: magnet
-                    val linkType = if (directTorrentUrl != null) ExtractorLinkType.TORRENT else ExtractorLinkType.MAGNET
+                    val links = mutableListOf<ExtractorLink>()
 
-                    ExtractorLink(
-                        source = "YTS",
-                        name = displayName,
-                        url = finalUrl,
-                        referer = "",
-                        quality = mappedQuality,
-                        type = linkType
+                    // 1. Primary Magnet link with high-availability trackers
+                    links.add(
+                        ExtractorLink(
+                            source = "YTS",
+                            name = displayName,
+                            url = magnet,
+                            referer = "",
+                            quality = mappedQuality,
+                            type = ExtractorLinkType.MAGNET
+                        )
                     )
+
+                    // 2. Direct .torrent link fallback
+                    val directTorrentUrl = t.url?.takeIf { it.startsWith("http") }
+                    if (directTorrentUrl != null) {
+                        links.add(
+                            ExtractorLink(
+                                source = "YTS",
+                                name = "$displayName [.torrent]",
+                                url = directTorrentUrl,
+                                referer = "",
+                                quality = mappedQuality,
+                                type = ExtractorLinkType.TORRENT
+                            )
+                        )
+                    }
+
+                    links
                 }
             } catch (e: Exception) {
                 DiagnosticLogger.log(

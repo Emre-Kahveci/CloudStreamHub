@@ -82,9 +82,9 @@ object TorrentioResolver {
                 }
 
                 val hash = stream.infoHash?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-                val cleanTitle = stream.behaviorHints?.filename
-                    ?: rawTitle.lines().firstOrNull()?.trim()
-                    ?: "Torrent"
+                val rawFirstLine = rawTitle.lines().firstOrNull()?.trim() ?: "Torrent"
+                val sanitizedTitle = rawFirstLine.replace(Regex("""[^\w\s\.\-\(\)\[\]]"""), "").trim().ifBlank { "Torrent" }
+                val cleanTitle = stream.behaviorHints?.filename?.takeIf { it.isNotBlank() } ?: sanitizedTitle
                 val encodedTitle = URLEncoder.encode(cleanTitle, "UTF-8")
                 val fileIndex = stream.fileIdx ?: 0
                 val magnetUrl = "magnet:?xt=urn:btih:$hash&dn=$encodedTitle&index=$fileIndex${TorrentTrackers.asMagnetParam}"
