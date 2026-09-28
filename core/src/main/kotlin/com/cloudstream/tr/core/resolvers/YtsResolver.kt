@@ -53,13 +53,6 @@ object YtsResolver {
         "https://yts.mx"
     )
 
-    private val trackers = listOf(
-        "udp://tracker.opentrackr.org:1337/announce",
-        "udp://open.stealth.si:80/announce",
-        "udp://tracker.torrent.eu.org:451/announce",
-        "udp://tracker.coppersurfer.tk:6969/announce"
-    ).joinToString("") { "&tr=" + URLEncoder.encode(it, "UTF-8") }
-
     suspend fun resolve(imdbId: String, isMovie: Boolean): List<ExtractorLink> {
         if (!isMovie || imdbId.isBlank()) return emptyList()
 
@@ -77,7 +70,7 @@ object YtsResolver {
                 return torrents.mapNotNull { t ->
                     val hash = t.hash?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
                     val encodedTitle = URLEncoder.encode(movieTitle, "UTF-8")
-                    val magnet = "magnet:?xt=urn:btih:$hash&dn=$encodedTitle$trackers"
+                    val magnet = "magnet:?xt=urn:btih:$hash&dn=$encodedTitle&index=0${TorrentTrackers.asMagnetParam}"
 
                     val qStr = t.quality ?: "Unknown"
                     val codecStr = t.videoCodec?.let { " $it" } ?: ""
@@ -92,13 +85,17 @@ object YtsResolver {
                         else -> Qualities.Unknown.value
                     }
 
+                    val directTorrentUrl = t.url?.takeIf { it.startsWith("http") }
+                    val finalUrl = directTorrentUrl ?: magnet
+                    val linkType = if (directTorrentUrl != null) ExtractorLinkType.TORRENT else ExtractorLinkType.MAGNET
+
                     ExtractorLink(
                         source = "YTS",
                         name = displayName,
-                        url = magnet,
+                        url = finalUrl,
                         referer = "",
                         quality = mappedQuality,
-                        type = ExtractorLinkType.MAGNET
+                        type = linkType
                     )
                 }
             } catch (e: Exception) {
