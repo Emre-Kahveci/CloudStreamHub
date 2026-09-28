@@ -1502,7 +1502,7 @@
       "healthTier": "full",
       "smokeTest": {
         "searchQuery": "Inception",
-        "knownDetail": "https://yts.lt/api/v2/movie_details.json?movie_id=1606&with_images=true",
+        "knownDetail": "https://yts.gg/api/v2/movie_details.json?movie_id=1606&with_images=true",
         "expectedType": "Torrent"
       },
       "monitoring": {
@@ -1517,7 +1517,7 @@
           "method": "GET",
           "path": "/api/v2/list_movies.json?query_term={query}&limit=20",
           "headers": {
-            "Referer": "https://yts.lt/"
+            "Referer": "https://yts.gg/"
           }
         },
         "homepage": {

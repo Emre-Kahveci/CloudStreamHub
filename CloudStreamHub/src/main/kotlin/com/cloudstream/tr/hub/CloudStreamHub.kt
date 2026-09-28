@@ -27,7 +27,8 @@ class CloudStreamHub : MainAPI() {
         TvType.TvSeries,
         TvType.Anime,
         TvType.Cartoon,
-        TvType.Documentary
+        TvType.Documentary,
+        TvType.Live
     )
 
     // TMDB Credential Policy: Public read-only client credential model.
@@ -43,6 +44,7 @@ class CloudStreamHub : MainAPI() {
     )
 
     override val mainPage = mainPageOf(
+        "canli_tv" to "📺 Canlı TV & Ulusal Kanallar",
         "${mainUrl}/trending/all/day?language=tr-TR&api_key=${tmdbApiKey}" to "Günün Trendleri",
         "${mainUrl}/movie/popular?language=tr-TR&api_key=${tmdbApiKey}" to "Popüler Filmler",
         "${mainUrl}/tv/popular?language=tr-TR&api_key=${tmdbApiKey}" to "Popüler Diziler",
@@ -51,6 +53,10 @@ class CloudStreamHub : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+        if (request.data == "canli_tv") {
+            val channels = com.cloudstream.tr.core.resolvers.LiveTvResolver.getSearchResponses(this)
+            return newHomePageResponse(request.name, channels, hasNext = false)
+        }
         val targetUrl = "${request.data}&page=${page}"
         val resp = app.get(targetUrl, headers = authHeaders).parsedSafe<TmdbPageResponse>()
         val items = resp?.results?.mapNotNull { parseTmdbItem(it) } ?: emptyList()
@@ -112,6 +118,10 @@ class CloudStreamHub : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
+        if (url.startsWith("live://")) {
+            val channelName = url.substringBefore("?").removePrefix("live://")
+            return newLiveStreamLoadResponse(channelName, url, url)
+        }
         val resp = app.get(url, headers = authHeaders).parsedSafe<TmdbDetailResponse>() ?: return null
         return parseTmdbDetail(resp, url)
     }
@@ -202,8 +212,50 @@ class CloudStreamHub : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
+        // Live TV stream handler
+        if (data.startsWith("live://")) {
+            val channelName = data.substringBefore("?").removePrefix("live://")
+            val streamUrl = data.substringAfter("stream=", "")
+            if (streamUrl.isNotBlank()) {
+                val link = com.cloudstream.tr.core.resolvers.LiveTvResolver.getExtractorLink(channelName, streamUrl)
+                callback(link)
+                return true
+            }
+            return false
+        }
+
         val payload = AggregatorLinkPayload.fromUrlData(data) ?: return false
         var linksFound = false
+
+        // 0. Zero-Latency Stream Cache Check (instant links)
+        val cacheKey = com.cloudstream.tr.core.streaming.StreamCacheManager.buildKey(
+            title = payload.title,
+            year = payload.year,
+            isMovie = payload.isMovie,
+            season = payload.season,
+            episode = payload.episode
+        )
+        val cachedLinks = com.cloudstream.tr.core.streaming.StreamCacheManager.get(cacheKey)
+        if (!cachedLinks.isNullOrEmpty()) {
+            cachedLinks.forEach { callback(it) }
+            if (payload.imdbId != null) {
+                com.cloudstream.tr.core.resolvers.SubtitlesResolver.resolveTurkishSubtitles(
+                    imdbId = payload.imdbId,
+                    isMovie = payload.isMovie,
+                    season = payload.season,
+                    episode = payload.episode,
+                    callback = subtitleCallback
+                )
+            }
+            return true
+        }
+
+        val collectedLinks = mutableListOf<ExtractorLink>()
+        val interceptedCallback: (ExtractorLink) -> Unit = { link ->
+            collectedLinks.add(link)
+            callback(link)
+            linksFound = true
+        }
 
         // 1. Automated Turkish Subtitles via OpenSubtitles
         if (payload.imdbId != null) {
@@ -226,13 +278,12 @@ class CloudStreamHub : MainAPI() {
                 episode = payload.episode
             )
             fourKLinks.forEach { link ->
-                callback(link)
-                linksFound = true
+                interceptedCallback(link)
             }
         } catch (_: Exception) {}
 
-        // 3. Debrid & Torrent P2P (Torrentio & YTS)
-        if (payload.imdbId != null) {
+        // 3. Debrid & Torrent P2P (Torrentio & YTS) - checked against DebridConfig preferences
+        if (payload.imdbId != null && (com.cloudstream.tr.core.resolvers.DebridConfig.enableTorrentSources || com.cloudstream.tr.core.resolvers.DebridConfig.isDebridEnabled)) {
             val torrentioLinks = com.cloudstream.tr.core.resolvers.TorrentioResolver.resolve(
                 imdbId = payload.imdbId,
                 isMovie = payload.isMovie,
@@ -240,18 +291,16 @@ class CloudStreamHub : MainAPI() {
                 episode = payload.episode
             )
             torrentioLinks.forEach { link ->
-                callback(link)
-                linksFound = true
+                interceptedCallback(link)
             }
 
-            if (payload.isMovie) {
+            if (payload.isMovie && com.cloudstream.tr.core.resolvers.DebridConfig.enableTorrentSources) {
                 val ytsLinks = com.cloudstream.tr.core.resolvers.YtsResolver.resolve(
                     imdbId = payload.imdbId,
                     isMovie = true
                 )
                 ytsLinks.forEach { link ->
-                    callback(link)
-                    linksFound = true
+                    interceptedCallback(link)
                 }
             }
         }
@@ -423,10 +472,13 @@ class CloudStreamHub : MainAPI() {
                 }
             },
             onLinkFound = { link ->
-                callback(link)
-                linksFound = true
+                interceptedCallback(link)
             }
         )
+
+        if (collectedLinks.isNotEmpty()) {
+            com.cloudstream.tr.core.streaming.StreamCacheManager.put(cacheKey, collectedLinks)
+        }
 
         return linksFound || resolved > 0
     }

@@ -382,6 +382,51 @@ def check_l5_player_discovery(
                 except Exception:
                     pass
 
+        # Check for SezonlukDizi-style dataAlternatif AJAX
+        if stat != "PLAYER_DISCOVERED":
+            dilsec = soup.select_one("#dilsec, div[data-id]")
+            bid = dilsec.get("data-id") if dilsec else None
+            if not bid:
+                m = re.search(r'data-id=["\'](\d+)["\']', target_body)
+                bid = m.group(1) if m else None
+            if bid:
+                parsed_t = urlparse(target_url)
+                root_t = f"{parsed_t.scheme}://{parsed_t.netloc}/"
+                alt_url = urljoin(root_t, "ajax/dataAlternatif22.asp")
+                try:
+                    alt_res = fetcher.fetch(
+                        alt_url,
+                        preferred_mode=FetchMode.HTTP,
+                        allow_dynamic_fallback=False,
+                        method="POST",
+                        data={"bid": bid, "dil": "1"},
+                        headers={"X-Requested-With": "XMLHttpRequest", "Referer": target_url}
+                    )
+                    if alt_res.statusCode == 200 and alt_res.body:
+                        alt_data = json.loads(alt_res.body).get("data", [])
+                        for item in alt_data:
+                            sid = item.get("id")
+                            if not sid:
+                                continue
+                            embed_url = urljoin(root_t, "ajax/dataEmbed22.asp")
+                            emb_res = fetcher.fetch(
+                                embed_url,
+                                preferred_mode=FetchMode.HTTP,
+                                allow_dynamic_fallback=False,
+                                method="POST",
+                                data={"id": str(sid)},
+                                headers={"X-Requested-With": "XMLHttpRequest", "Referer": target_url}
+                            )
+                            if emb_res.statusCode == 200 and emb_res.body:
+                                emb_stat, emb_info = evaluate_player_discovery(emb_res.body, embed_url)
+                                if emb_stat == "PLAYER_DISCOVERED":
+                                    stat = "PLAYER_DISCOVERED"
+                                    info = emb_info
+                                    target_url = embed_url
+                                    break
+                except Exception:
+                    pass
+
     if stat == "PLAYER_DISCOVERED":
         diag = f"[{episode_discovery_mode}] Discovered {len(info['iframes'])} iframes, {len(info['videos'])} videos at {target_url}"
         return "player_discovered", diag
