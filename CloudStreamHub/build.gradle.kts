@@ -1,4 +1,4 @@
-version = 12
+version = 13
 
 cloudstream {
     authors     = listOf("CloudStreamTR", "Emre-Kahveci")
@@ -15,4 +15,10 @@ dependencies {
     implementation(project(":SinemaCX"))
     implementation(project(":SezonlukDizi"))
     implementation(project(":KultFilmler"))
+    implementation(project(":Dizilla"))
+    implementation(project(":DiziYou"))
+    implementation(project(":HDFilmDelisi"))
+    implementation(project(":JetFilmIzle"))
+    implementation(project(":DiziKorea"))
+    implementation(project(":YesilCamTv"))
 }

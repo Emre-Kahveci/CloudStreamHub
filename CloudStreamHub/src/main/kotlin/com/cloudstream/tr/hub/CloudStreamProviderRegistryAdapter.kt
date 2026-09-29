@@ -17,7 +17,9 @@ object CloudStreamProviderRegistryAdapter {
         "com.cloudstream.tr.yesilcamtv.YesilCamTv",
         "com.cloudstream.tr.sezonlukdizi.SezonlukDizi",
         "com.cloudstream.tr.diziyou.DiziYou",
-        "com.cloudstream.tr.dizikorea.DiziKorea"
+        "com.cloudstream.tr.dizikorea.DiziKorea",
+        "com.cloudstream.tr.dizilla.Dizilla",
+        "com.cloudstream.tr.jetfilmizle.JetFilmIzle"
     )
 
     /**
@@ -90,6 +92,12 @@ object CloudStreamProviderRegistryAdapter {
             try { discovered.add(com.cloudstream.tr.sinemacx.SinemaCX()) } catch (_: Throwable) {}
             try { discovered.add(com.cloudstream.tr.sezonlukdizi.SezonlukDizi()) } catch (_: Throwable) {}
             try { discovered.add(com.cloudstream.tr.kultfilmler.KultFilmler()) } catch (_: Throwable) {}
+            try { discovered.add(com.cloudstream.tr.dizilla.Dizilla()) } catch (_: Throwable) {}
+            try { discovered.add(com.cloudstream.tr.diziyou.DiziYou()) } catch (_: Throwable) {}
+            try { discovered.add(com.cloudstream.tr.hdfilmdelisi.HDFilmDelisi()) } catch (_: Throwable) {}
+            try { discovered.add(com.cloudstream.tr.jetfilmizle.JetFilmIzle()) } catch (_: Throwable) {}
+            try { discovered.add(com.cloudstream.tr.dizikorea.DiziKorea()) } catch (_: Throwable) {}
+            try { discovered.add(com.cloudstream.tr.yesilcamtv.YesilCamTv()) } catch (_: Throwable) {}
 
             for (className in knownProviderClasses) {
                 try {

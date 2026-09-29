@@ -58,7 +58,7 @@ object FourKhubResolver {
             val searchDoc = Jsoup.parse(app.get(searchUrl, timeout = 10).text)
 
             // Extract articles / entries
-            val entries = searchDoc.select("article, div.post-item, div.entry-content, h2.entry-title a")
+            val entries = searchDoc.select("article, div.post-item, div.entry-content, h2.entry-title a, a[href*='-movie-'], a[href*='-series-']")
             var matchedUrl: String? = null
 
             for (entry in entries) {
@@ -89,9 +89,9 @@ object FourKhubResolver {
             val detailDoc = Jsoup.parse(app.get(targetPageUrl, timeout = 10).text)
 
             // Extract HubCloud / HubDrive / download links
-            val downloadHrefs = detailDoc.select("a[href*='hubcloud'], a[href*='hubdrive'], div.download-item a, a.btn")
+            val downloadHrefs = detailDoc.select("a[href*='hubcloud'], a[href*='hubdrive'], a[href*='greenmotors.club'], div.download-item a, a.btn")
                 .map { it.attr("href") }
-                .filter { it.isNotBlank() && (it.contains("hubcloud") || it.contains("hubdrive") || it.contains("drive")) }
+                .filter { it.isNotBlank() && (it.contains("hubcloud") || it.contains("hubdrive") || it.contains("drive") || it.contains("greenmotors")) }
                 .distinct()
 
             if (downloadHrefs.isEmpty()) return emptyList()
@@ -100,8 +100,16 @@ object FourKhubResolver {
 
             for (hubUrl in downloadHrefs.take(4)) {
                 try {
-                    val hubPageHtml = app.get(hubUrl, timeout = 10).text
-                    val hubDoc = Jsoup.parse(hubPageHtml)
+                    var hubPageHtml = app.get(hubUrl, timeout = 10).text
+                    var hubDoc = Jsoup.parse(hubPageHtml)
+
+                    if (hubUrl.contains("greenmotors.club")) {
+                        val nextUrl = hubDoc.select("a[href*='hubcloud'], a[href*='hubdrive']").firstOrNull()?.attr("href") ?: hubDoc.select("a.btn, a[rel='nofollow']").firstOrNull()?.attr("href")
+                        if (nextUrl != null && nextUrl.isNotBlank()) {
+                            hubPageHtml = app.get(nextUrl, timeout = 10).text
+                            hubDoc = Jsoup.parse(hubPageHtml)
+                        }
+                    }
 
                     // Find download buttons: FSL Server, Download File (HubCloud), V-Cloud
                     val buttons = hubDoc.select("div.card-body a.btn, a.btn")

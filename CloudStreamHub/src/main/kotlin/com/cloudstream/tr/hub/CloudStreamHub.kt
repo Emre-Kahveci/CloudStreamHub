@@ -27,8 +27,7 @@ class CloudStreamHub : MainAPI() {
         TvType.TvSeries,
         TvType.Anime,
         TvType.Cartoon,
-        TvType.Documentary,
-        TvType.Live
+        TvType.Documentary
     )
 
     // TMDB Credential Policy: Public read-only client credential model.
@@ -44,7 +43,6 @@ class CloudStreamHub : MainAPI() {
     )
 
     override val mainPage = mainPageOf(
-        "canli_tv" to "📺 Canlı TV & Ulusal Kanallar",
         "${mainUrl}/trending/all/day?language=tr-TR&api_key=${tmdbApiKey}" to "Günün Trendleri",
         "${mainUrl}/movie/popular?language=tr-TR&api_key=${tmdbApiKey}" to "Popüler Filmler",
         "${mainUrl}/tv/popular?language=tr-TR&api_key=${tmdbApiKey}" to "Popüler Diziler",
@@ -53,10 +51,6 @@ class CloudStreamHub : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        if (request.data == "canli_tv") {
-            val channels = com.cloudstream.tr.core.resolvers.LiveTvResolver.getSearchResponses(this)
-            return newHomePageResponse(request.name, channels, hasNext = false)
-        }
         val targetUrl = "${request.data}&page=${page}"
         val resp = app.get(targetUrl, headers = authHeaders).parsedSafe<TmdbPageResponse>()
         val items = resp?.results?.mapNotNull { parseTmdbItem(it) } ?: emptyList()
@@ -118,10 +112,6 @@ class CloudStreamHub : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        if (url.startsWith("live://")) {
-            val channelName = url.substringBefore("?").removePrefix("live://")
-            return newLiveStreamLoadResponse(channelName, url, url)
-        }
         val resp = app.get(url, headers = authHeaders).parsedSafe<TmdbDetailResponse>() ?: return null
         return parseTmdbDetail(resp, url)
     }
@@ -212,18 +202,6 @@ class CloudStreamHub : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        // Live TV stream handler
-        if (data.startsWith("live://")) {
-            val channelName = data.substringBefore("?").removePrefix("live://")
-            val streamUrl = data.substringAfter("stream=", "")
-            if (streamUrl.isNotBlank()) {
-                val link = com.cloudstream.tr.core.resolvers.LiveTvResolver.getExtractorLink(channelName, streamUrl)
-                callback(link)
-                return true
-            }
-            return false
-        }
-
         val payload = AggregatorLinkPayload.fromUrlData(data) ?: return false
         var linksFound = false
 
@@ -244,6 +222,7 @@ class CloudStreamHub : MainAPI() {
                     isMovie = payload.isMovie,
                     season = payload.season,
                     episode = payload.episode,
+                    title = payload.title,
                     callback = subtitleCallback
                 )
             }
@@ -253,7 +232,6 @@ class CloudStreamHub : MainAPI() {
         val collectedLinks = mutableListOf<ExtractorLink>()
         val interceptedCallback: (ExtractorLink) -> Unit = { link ->
             collectedLinks.add(link)
-            callback(link)
             linksFound = true
         }
 
@@ -477,7 +455,9 @@ class CloudStreamHub : MainAPI() {
         )
 
         if (collectedLinks.isNotEmpty()) {
-            com.cloudstream.tr.core.streaming.StreamCacheManager.put(cacheKey, collectedLinks)
+            val sortedLinks = com.cloudstream.tr.core.model.StreamPrioritySorter.sortByPriority(collectedLinks)
+            sortedLinks.forEach { callback(it) }
+            com.cloudstream.tr.core.streaming.StreamCacheManager.put(cacheKey, sortedLinks)
         }
 
         return linksFound || resolved > 0

@@ -32,15 +32,23 @@ class HDFilmCehennemi : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+        mainUrl = com.cloudstream.tr.core.network.DynamicDomainResolver.resolve(name, mainUrl)
+        val reqUrl = request.data.replace(Regex("https?://[^/]+"), mainUrl)
+
         val url = if (page <= 1) {
-            request.data
+            reqUrl
         } else {
-            val base = if (request.data.endsWith("/")) request.data else "${request.data}/"
+            val base = if (reqUrl.endsWith("/")) reqUrl else "${reqUrl}/"
             "${base}page/$page/"
         }
-        val doc = app.get(url, headers = mapOf("User-Agent" to userAgent)).document
-        val home = parseHomePage(doc)
-        return newHomePageResponse(request.name, home, hasNext = home.isNotEmpty())
+        try {
+            val doc = app.get(url, headers = mapOf("User-Agent" to userAgent)).document
+            val home = parseHomePage(doc)
+            return newHomePageResponse(request.name, home, hasNext = home.isNotEmpty())
+        } catch (e: Exception) {
+            com.cloudstream.tr.core.network.DynamicDomainResolver.fallbackToNextMirror(name)
+            throw e
+        }
     }
 
     fun parseHomePage(doc: Document): List<SearchResponse> {
@@ -157,7 +165,7 @@ class HDFilmCehennemi : MainAPI() {
             doc.select("div.seasons-tab-content a.mini-poster, div.seasons a[href*='bolum']").forEach { a ->
                 val epHref = fixUrlNull(a.attr("href")) ?: return@forEach
                 val epTitle = a.selectFirst(".mini-poster-title")?.text()?.trim() ?: a.text().trim()
-                
+
                 // e.g. 1. Sezon 1. Bölüm
                 val sMatch = Regex("""(\d+)\.\s*Sezon""").find(epTitle)
                 val eMatch = Regex("""(\d+)\.\s*B[öo]l[üu]m""").find(epTitle)

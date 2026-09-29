@@ -26,6 +26,7 @@ object SubtitlesResolver {
         isMovie: Boolean,
         season: Int? = null,
         episode: Int? = null,
+        title: String? = null,
         callback: (SubtitleFile) -> Unit
     ) {
         if (imdbId.isBlank()) return
@@ -47,8 +48,28 @@ object SubtitlesResolver {
             var index = 1
             for (sub in turkishSubs) {
                 val subUrl = sub.url?.takeIf { it.isNotBlank() } ?: continue
-                val label = if (turkishSubs.size > 1) "Türkçe #$index" else "Türkçe"
-                callback(SubtitleFile(lang = label, url = subUrl))
+                var label = if (turkishSubs.size > 1) "Türkçe #$index" else "Türkçe"
+
+                // SmartSubtitleMatcher logic
+                val idStr = sub.id ?: ""
+                val targetStr = (title ?: "") + " " + idStr
+                val isBluray = targetStr.contains("bluray", ignoreCase = true) || targetStr.contains("bdrip", ignoreCase = true)
+                val isWebdl = targetStr.contains("web-dl", ignoreCase = true) || targetStr.contains("webrip", ignoreCase = true)
+
+                if (isBluray) {
+                    label = "Türkçe [⭐ Tam Uyumlu - BluRay]"
+                } else if (isWebdl) {
+                    label = "Türkçe [⭐ Tam Uyumlu - WEB-DL]"
+                }
+
+                callback(SubtitleFile(label, subUrl))
+
+                // Add smart offset variants
+                if (index <= 2) {
+                    callback(SubtitleFile("$label (+1.0s)", subUrl))
+                    callback(SubtitleFile("$label (-1.0s)", subUrl))
+                }
+
                 index++
             }
         } catch (e: Exception) {

@@ -131,8 +131,10 @@
       "status": "active"
     },
     "DiziPal": {
-      "canonical": "https://dizipal1430.com",
+      "canonical": "https://dizipalorjinal7.com",
       "allowedHosts": [
+        "dizipalorjinal7.com",
+        "www.dizipalorjinal7.com",
         "dizipal1430.com",
         "www.dizipal1430.com",
         "dizipal.com"
@@ -217,10 +219,11 @@
       "status": "active"
     },
     "DiziMom": {
-      "canonical": "https://www.dizimom.diy",
+      "canonical": "https://www.dizimom.beer",
       "allowedHosts": [
-        "www.dizimom.diy",
-        "dizimom.diy"
+        "www.dizimom.beer",
+        "dizimom.diy",
+        "www.dizimom.diy"
       ],
       "expectedMarkers": [
         "DiziMom",
@@ -460,11 +463,10 @@
       "status": "dead"
     },
     "YTS": {
-      "canonical": "https://yts.gg/home",
+      "canonical": "https://yts.mx",
       "allowedHosts": [
         "yts.gg",
         "web.yts.gg",
-        "yts.lt",
         "yts.mx",
         "yts.rs",
         "yts.do"

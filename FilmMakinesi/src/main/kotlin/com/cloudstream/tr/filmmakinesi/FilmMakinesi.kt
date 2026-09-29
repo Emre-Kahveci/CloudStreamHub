@@ -12,6 +12,12 @@ import org.jsoup.nodes.Element
 class FilmMakinesi : MainAPI() {
     override var mainUrl = "https://filmmakinesi.to"
     override var name = "FilmMakinesi"
+
+    init {
+        // We could run this in a coroutine or just wait till usage, but since it's suspend we'll need a way.
+        // Actually, mainUrl is var, but we can't do suspend in init.
+        // Let's modify getMainPage and search to resolve it instead.
+    }
     override val hasMainPage = true
     override var lang = "tr"
     override val hasQuickSearch = true
@@ -27,10 +33,18 @@ class FilmMakinesi : MainAPI() {
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val url = if (page <= 1) request.data else "${request.data}sayfa/$page/"
-        val doc = app.get(url, headers = mapOf("User-Agent" to userAgent)).document
-        val home = parseHomePage(doc)
-        return newHomePageResponse(request.name, home, hasNext = home.isNotEmpty())
+        mainUrl = com.cloudstream.tr.core.network.DynamicDomainResolver.resolve(name, mainUrl)
+        val reqUrl = request.data.replace(Regex("https?://[^/]+"), mainUrl)
+        val url = if (page <= 1) reqUrl else "${reqUrl}sayfa/$page/"
+
+        try {
+            val doc = app.get(url, headers = mapOf("User-Agent" to userAgent)).document
+            val home = parseHomePage(doc)
+            return newHomePageResponse(request.name, home, hasNext = home.isNotEmpty())
+        } catch (e: Exception) {
+            com.cloudstream.tr.core.network.DynamicDomainResolver.fallbackToNextMirror(name)
+            throw e
+        }
     }
 
     fun parseHomePage(doc: Document): List<SearchResponse> {
@@ -122,7 +136,7 @@ class FilmMakinesi : MainAPI() {
             doc.select("a[href*='bolum'], div.episodes a").forEach { a ->
                 val epHref = fixUrlNull(a.attr("href")) ?: return@forEach
                 val epTitle = a.text().trim()
-                
+
                 val sMatch = Regex("""(\d+)\.\s*Sezon""").find(epTitle)
                 val eMatch = Regex("""(\d+)\.\s*B[öo]l[üu]m""").find(epTitle)
 

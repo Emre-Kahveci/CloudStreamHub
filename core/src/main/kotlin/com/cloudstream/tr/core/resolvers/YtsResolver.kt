@@ -11,46 +11,46 @@ import com.lagradost.cloudstream3.utils.Qualities
 import java.net.URLEncoder
 
 data class YtsResponse(
-    @JsonProperty("status") val status: String? = null,
-    @JsonProperty("data") val data: YtsData? = null
+    @param:JsonProperty("status") val status: String? = null,
+    @param:JsonProperty("data") val data: YtsData? = null
 )
 
 data class YtsData(
-    @JsonProperty("movies") val movies: List<YtsMovie>? = null
+    @param:JsonProperty("movies") val movies: List<YtsMovie>? = null
 )
 
 data class YtsMovie(
-    @JsonProperty("id") val id: Int? = null,
-    @JsonProperty("imdb_code") val imdbCode: String? = null,
-    @JsonProperty("title") val title: String? = null,
-    @JsonProperty("year") val year: Int? = null,
-    @JsonProperty("rating") val rating: Double? = null,
-    @JsonProperty("genres") val genres: List<String>? = null,
-    @JsonProperty("description_full") val descriptionFull: String? = null,
-    @JsonProperty("yt_trailer_code") val ytTrailerCode: String? = null,
-    @JsonProperty("medium_cover_image") val mediumCoverImage: String? = null,
-    @JsonProperty("large_cover_image") val largeCoverImage: String? = null,
-    @JsonProperty("background_image_original") val backgroundImage: String? = null,
-    @JsonProperty("torrents") val torrents: List<YtsTorrent>? = null
+    @param:JsonProperty("id") val id: Int? = null,
+    @param:JsonProperty("imdb_code") val imdbCode: String? = null,
+    @param:JsonProperty("title") val title: String? = null,
+    @param:JsonProperty("year") val year: Int? = null,
+    @param:JsonProperty("rating") val rating: Double? = null,
+    @param:JsonProperty("genres") val genres: List<String>? = null,
+    @param:JsonProperty("description_full") val descriptionFull: String? = null,
+    @param:JsonProperty("yt_trailer_code") val ytTrailerCode: String? = null,
+    @param:JsonProperty("medium_cover_image") val mediumCoverImage: String? = null,
+    @param:JsonProperty("large_cover_image") val largeCoverImage: String? = null,
+    @param:JsonProperty("background_image_original") val backgroundImage: String? = null,
+    @param:JsonProperty("torrents") val torrents: List<YtsTorrent>? = null
 )
 
 data class YtsTorrent(
-    @JsonProperty("url") val url: String? = null,
-    @JsonProperty("hash") val hash: String? = null,
-    @JsonProperty("quality") val quality: String? = null,
-    @JsonProperty("type") val type: String? = null,
-    @JsonProperty("video_codec") val videoCodec: String? = null,
-    @JsonProperty("size") val size: String? = null,
-    @JsonProperty("seeds") val seeds: Int? = null,
-    @JsonProperty("peers") val peers: Int? = null
+    @param:JsonProperty("url") val url: String? = null,
+    @param:JsonProperty("hash") val hash: String? = null,
+    @param:JsonProperty("quality") val quality: String? = null,
+    @param:JsonProperty("type") val type: String? = null,
+    @param:JsonProperty("video_codec") val videoCodec: String? = null,
+    @param:JsonProperty("size") val size: String? = null,
+    @param:JsonProperty("seeds") val seeds: Int? = null,
+    @param:JsonProperty("peers") val peers: Int? = null
 )
 
 object YtsResolver {
     private val mirrors = listOf(
-        "https://yts.lt",
+        "https://yts.mx",
+        "https://web.yts.gg",
         "https://yts.bz",
-        "https://yts.do",
-        "https://yts.mx"
+        "https://yts.do"
     )
 
     suspend fun resolve(imdbId: String, isMovie: Boolean): List<ExtractorLink> {
@@ -67,15 +67,21 @@ object YtsResolver {
                 val torrents = movie.torrents ?: continue
                 val movieTitle = movie.title ?: "Movie"
 
-                return torrents.flatMap { t ->
-                    val hash = t.hash?.takeIf { it.isNotBlank() } ?: return@flatMap emptyList<ExtractorLink>()
+                return torrents.mapNotNull { t ->
+                    val hash = t.hash?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
                     val encodedTitle = URLEncoder.encode(movieTitle, "UTF-8")
-                    val magnet = "magnet:?xt=urn:btih:$hash&dn=$encodedTitle&index=0${TorrentTrackers.asMagnetParam}"
+                    // Removed &index=0 per instructions
+                    val magnet = "magnet:?xt=urn:btih:$hash&dn=$encodedTitle${TorrentTrackers.asMagnetParam}"
 
                     val qStr = t.quality ?: "Unknown"
                     val codecStr = t.videoCodec?.let { " $it" } ?: ""
                     val sizeStr = t.size?.let { " [$it]" } ?: ""
-                    val seedStr = t.seeds?.let { " ($it seeds)" } ?: ""
+                    val seedCount = t.seeds ?: 0
+
+                    val hasDebrid = DebridConfig.isDebridEnabled
+                    if (!hasDebrid && seedCount < 3) return@mapNotNull null
+
+                    val seedStr = " ($seedCount seeds)"
                     val displayName = "YTS $qStr$codecStr$sizeStr$seedStr".trim()
 
                     val mappedQuality = when (qStr.lowercase()) {
@@ -85,36 +91,14 @@ object YtsResolver {
                         else -> Qualities.Unknown.value
                     }
 
-                    val links = mutableListOf<ExtractorLink>()
-
-                    // 1. Primary Magnet link with high-availability trackers
-                    links.add(
-                        ExtractorLink(
-                            source = "YTS",
-                            name = displayName,
-                            url = magnet,
-                            referer = "",
-                            quality = mappedQuality,
-                            type = ExtractorLinkType.MAGNET
-                        )
-                    )
-
-                    // 2. Direct .torrent link fallback
-                    val directTorrentUrl = t.url?.takeIf { it.startsWith("http") }
-                    if (directTorrentUrl != null) {
-                        links.add(
-                            ExtractorLink(
-                                source = "YTS",
-                                name = "$displayName [.torrent]",
-                                url = directTorrentUrl,
-                                referer = "",
-                                quality = mappedQuality,
-                                type = ExtractorLinkType.TORRENT
-                            )
-                        )
+                    com.lagradost.cloudstream3.utils.newExtractorLink(
+                        source = "YTS",
+                        name = displayName,
+                        url = magnet,
+                        type = ExtractorLinkType.MAGNET
+                    ) {
+                        this.quality = mappedQuality
                     }
-
-                    links
                 }
             } catch (e: Exception) {
                 DiagnosticLogger.log(

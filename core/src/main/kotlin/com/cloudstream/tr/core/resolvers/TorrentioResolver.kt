@@ -11,21 +11,21 @@ import com.lagradost.cloudstream3.utils.Qualities
 import java.net.URLEncoder
 
 data class TorrentioResponse(
-    @JsonProperty("streams") val streams: List<TorrentioStream>? = null
+    @param:JsonProperty("streams") val streams: List<TorrentioStream>? = null
 )
 
 data class TorrentioBehaviorHints(
-    @JsonProperty("filename") val filename: String? = null,
-    @JsonProperty("bingeGroup") val bingeGroup: String? = null
+    @param:JsonProperty("filename") val filename: String? = null,
+    @param:JsonProperty("bingeGroup") val bingeGroup: String? = null
 )
 
 data class TorrentioStream(
-    @JsonProperty("name") val name: String? = null,
-    @JsonProperty("title") val title: String? = null,
-    @JsonProperty("infoHash") val infoHash: String? = null,
-    @JsonProperty("fileIdx") val fileIdx: Int? = null,
-    @JsonProperty("behaviorHints") val behaviorHints: TorrentioBehaviorHints? = null,
-    @JsonProperty("url") val url: String? = null
+    @param:JsonProperty("name") val name: String? = null,
+    @param:JsonProperty("title") val title: String? = null,
+    @param:JsonProperty("infoHash") val infoHash: String? = null,
+    @param:JsonProperty("fileIdx") val fileIdx: Int? = null,
+    @param:JsonProperty("behaviorHints") val behaviorHints: TorrentioBehaviorHints? = null,
+    @param:JsonProperty("url") val url: String? = null
 )
 
 object TorrentioResolver {
@@ -33,8 +33,11 @@ object TorrentioResolver {
         if (imdbId.isBlank()) return emptyList()
         val type = if (isMovie) "movie" else "series"
         val idPath = if (isMovie) imdbId else "$imdbId:$season:$episode"
-        val debridPrefix = DebridConfig.getActiveDebridPrefix()?.let { "$it/" } ?: ""
-        val url = "https://torrentio.strem.fun/${debridPrefix}stream/$type/$idPath.json"
+        val options = "providers=yts,eztv,rarbg,1337x,thepiratebay,kickasstorrents,torrentgalaxy,magnetdl|qualityfilter=scr,cam|sort=qualitysize"
+        val prefix = DebridConfig.getActiveDebridPrefix()?.let { "$it|" } ?: ""
+        val fullOptions = "$prefix$options"
+        val url = "https://torrentio.strem.fun/$fullOptions/stream/$type/$idPath.json"
+        val hasDebrid = DebridConfig.isDebridEnabled
 
         try {
             val response = app.get(url, timeout = 10).parsedSafe<TorrentioResponse>()
@@ -42,6 +45,15 @@ object TorrentioResolver {
 
             return streams.mapNotNull { stream ->
                 val rawTitle = stream.title ?: stream.name ?: "Unknown"
+
+                // Filter out CAM/TS/SCR if any slipped through
+                if (rawTitle.contains("CAM", ignoreCase = true) || rawTitle.contains(" HDCAM", ignoreCase = true) || rawTitle.contains(" TELESYNC", ignoreCase = true) || rawTitle.contains(" TS", ignoreCase = true) || rawTitle.contains(" SCR", ignoreCase = true)) {
+                    return@mapNotNull null
+                }
+
+                val seedMatch = Regex("""[\U0001F464\U0001F465\uD83D\uDC64\uD83D\uDC65👤👥]\s*(\d+)""").find(rawTitle)
+                val seedCount = seedMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
+                if (!hasDebrid && seedCount < 3) return@mapNotNull null
 
                 val sizeMatch = Regex("""\b(\d+(?:\.\d+)?\s*[GgMm]B)\b""").find(rawTitle)
                 val size = sizeMatch?.groupValues?.get(1) ?: ""
@@ -56,31 +68,42 @@ object TorrentioResolver {
                     else -> Qualities.Unknown.value
                 }
 
-                val isHDR = rawTitle.contains("HDR", ignoreCase = true)
+                val isRemux = rawTitle.contains("REMUX", ignoreCase = true)
                 val isDV = rawTitle.contains("DV", ignoreCase = true) || rawTitle.contains("Dolby Vision", ignoreCase = true)
+                val isHDR10Plus = rawTitle.contains("HDR10+", ignoreCase = true)
+                val isHDR = rawTitle.contains("HDR", ignoreCase = true) && !isHDR10Plus
+                val isTrueHD = rawTitle.contains("TrueHD", ignoreCase = true)
+                val isDtsHdMa = rawTitle.contains("DTS-HD MA", ignoreCase = true) || rawTitle.contains("DTS-HD", ignoreCase = true)
                 val isAtmos = rawTitle.contains("Atmos", ignoreCase = true)
-
-                val seedMatch = Regex("""[\U0001F464\U0001F465\uD83D\uDC64\uD83D\uDC65👤👥]\s*(\d+)""").find(rawTitle)
-                val seedStr = seedMatch?.let { " (${it.groupValues[1]} seeds)" } ?: ""
+                val is71 = rawTitle.contains("7.1")
+                val is51 = rawTitle.contains("5.1") || rawTitle.contains("DD")
 
                 var tags = ""
-                if (isHDR) tags += " HDR"
-                if (isDV) tags += " DV"
-                if (isAtmos) tags += " Atmos"
+                if (isRemux) tags += " [REMUX]"
+                if (isDV) tags += " [DV]"
+                if (isHDR10Plus) tags += " [HDR10+]"
+                else if (isHDR) tags += " [HDR]"
 
-                val prefix = if (DebridConfig.isDebridEnabled) "🚀 Debrid " else ""
-                val displayName = "$prefix$resolution$tags ${if (size.isNotBlank()) "[$size]" else ""}$seedStr".trim()
+                if (isTrueHD && isAtmos && is71) tags += " [TrueHD Atmos 7.1]"
+                else if (isDtsHdMa && is71) tags += " [DTS-HD MA 7.1]"
+                else if (isAtmos && is71) tags += " [Atmos 7.1]"
+                else if (isAtmos) tags += " [Atmos]"
+                else if (is71) tags += " [7.1]"
+                else if (is51) tags += " [5.1]"
 
-                // If direct video stream is provided, use it directly
+                val seedStr = " ($seedCount seeds)"
+                val prefixStr = if (hasDebrid) "🚀 Debrid " else ""
+                val displayName = "$prefixStr$resolution$tags ${if (size.isNotBlank()) "[$size]" else ""}$seedStr".trim()
+
                 if (stream.url != null && !stream.url.startsWith("magnet:")) {
-                    return@mapNotNull ExtractorLink(
+                    return@mapNotNull com.lagradost.cloudstream3.utils.newExtractorLink(
                         source = "Torrentio",
                         name = displayName,
                         url = stream.url,
-                        referer = "",
-                        quality = mappedQuality,
                         type = ExtractorLinkType.VIDEO
-                    )
+                    ) {
+                        this.quality = mappedQuality
+                    }
                 }
 
                 val hash = stream.infoHash?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
@@ -88,17 +111,18 @@ object TorrentioResolver {
                 val sanitizedTitle = rawFirstLine.replace(Regex("""[^\w\s\.\-\(\)\[\]]"""), "").trim().ifBlank { "Torrent" }
                 val cleanTitle = stream.behaviorHints?.filename?.takeIf { it.isNotBlank() } ?: sanitizedTitle
                 val encodedTitle = URLEncoder.encode(cleanTitle, "UTF-8")
-                val fileIndex = stream.fileIdx ?: 0
-                val magnetUrl = "magnet:?xt=urn:btih:$hash&dn=$encodedTitle&index=$fileIndex${TorrentTrackers.asMagnetParam}"
 
-                ExtractorLink(
+                // standard BEP-0009 compliant magnet URL without index parameter
+                val magnetUrl = "magnet:?xt=urn:btih:$hash&dn=$encodedTitle${TorrentTrackers.asMagnetParam}"
+
+                com.lagradost.cloudstream3.utils.newExtractorLink(
                     source = "Torrentio",
                     name = displayName,
                     url = magnetUrl,
-                    referer = "",
-                    quality = mappedQuality,
                     type = ExtractorLinkType.MAGNET
-                )
+                ) {
+                    this.quality = mappedQuality
+                }
             }
         } catch (e: Exception) {
             DiagnosticLogger.log(

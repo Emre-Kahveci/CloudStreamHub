@@ -20,7 +20,8 @@ data class PreflightResult(
     val detectedMime: String? = null,
     val statusCode: Int = 0,
     val failureReason: String? = null,
-    val media3ErrorCode: Int? = null
+    val media3ErrorCode: Int? = null,
+    val latencyMs: Long = 0L
 ) {
     val isValid: Boolean get() = status == ValidationStatus.VALID
 }
@@ -214,6 +215,7 @@ object StreamValidator {
                     putIfAbsent("Range", "bytes=0-1024")
                 }
 
+                val startTime = System.currentTimeMillis()
                 var response = transport.get(url, reqHeaders)
                 var code = response.code
 
@@ -223,6 +225,8 @@ object StreamValidator {
                     response = transport.get(url, retryHeaders)
                     code = response.code
                 }
+
+                val latency = System.currentTimeMillis() - startTime
 
                 val status = classifyHttpStatus(code)
                 if (status != ValidationStatus.VALID) {
@@ -241,7 +245,8 @@ object StreamValidator {
                         streamType = ExtractorLinkType.VIDEO,
                         statusCode = code,
                         failureReason = "HTTP_STATUS_$code",
-                        media3ErrorCode = media3Err
+                        media3ErrorCode = media3Err,
+                        latencyMs = latency
                     )
                 }
 
@@ -278,7 +283,8 @@ object StreamValidator {
                     status = ValidationStatus.VALID,
                     streamType = finalType,
                     detectedMime = ct,
-                    statusCode = code
+                    statusCode = code,
+                    latencyMs = latency
                 )
             } ?: run {
                 // Timeout elapsed: Fail-closed with INDETERMINATE status (never emit blindly)
