@@ -188,6 +188,19 @@
       "lastChecked": null,
       "status": "active"
     },
+    "FourKHDHub": {
+      "canonical": "https://4khdhub.one",
+      "allowedHosts": [
+        "4khdhub.one",
+        "www.4khdhub.one"
+      ],
+      "expectedMarkers": [
+        "4KHDHub",
+        "4khdhub"
+      ],
+      "lastChecked": null,
+      "status": "active"
+    },
     "SezonlukDizi": {
       "canonical": "https://sezonlukdizi.cc",
       "allowedHosts": [

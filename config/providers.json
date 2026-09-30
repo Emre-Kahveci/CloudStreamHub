@@ -205,6 +205,45 @@
       }
     },
     {
+      "name": "4KHDHub",
+      "module": "FourKHDHub",
+      "enabled": true,
+      "language": "en",
+      "types": [
+        "Movie"
+      ],
+      "domainKey": "FourKHDHub",
+      "healthTier": "standard",
+      "monitoring": {
+        "preferredFetch": "HTTP",
+        "dynamicFallback": false,
+        "stealthFallback": false,
+        "contentType": "Movie",
+        "playerProbe": {
+          "mode": "detail"
+        },
+        "search": {
+          "method": "GET",
+          "path": "/?s={query}",
+          "expectedSelector": "article, div.post-item"
+        },
+        "homepage": {
+          "selectors": [
+            "article",
+            "div.post-item"
+          ],
+          "requiredUrlPatterns": [
+            "/"
+          ],
+          "excludedUrlPatterns": [
+            "/category/",
+            "/tag/",
+            "/page/"
+          ]
+        }
+      }
+    },
+    {
       "name": "HDFilmCehennemi",
       "module": "HDFilmCehennemi",
       "enabled": true,
