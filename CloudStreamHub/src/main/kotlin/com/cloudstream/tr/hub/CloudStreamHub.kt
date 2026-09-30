@@ -216,11 +216,9 @@ class CloudStreamHub : MainAPI() {
         )
         val cachedLinks = com.cloudstream.tr.core.streaming.StreamCacheManager.get(cacheKey)
         if (!cachedLinks.isNullOrEmpty()) {
-<<<<<<< Updated upstream
-            for (link in cachedLinks) callback(link)
-=======
-            for (link in cachedLinks) { callback(link) }
->>>>>>> Stashed changes
+            for (link in cachedLinks) {
+                callback(link)
+            }
             if (payload.imdbId != null) {
                 com.cloudstream.tr.core.resolvers.SubtitlesResolver.resolveTurkishSubtitles(
                     imdbId = payload.imdbId,
@@ -343,13 +341,7 @@ class CloudStreamHub : MainAPI() {
 
                     if (targetLinkData != null) {
                         val channel = Channel<ExtractorLink>(capacity = Channel.UNLIMITED)
-<<<<<<< Updated upstream
-                        val seenUrls = java.util.Collections.newSetFromMap(
-                            ConcurrentHashMap<String, Boolean>()
-                        )
-=======
                         val seenUrls = Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
->>>>>>> Stashed changes
                         var rawLinksReceived = 0
                         var duplicatesDropped = 0
                         var channelOverflowDropped = 0
@@ -467,11 +459,9 @@ class CloudStreamHub : MainAPI() {
 
         if (collectedLinks.isNotEmpty()) {
             val sortedLinks = com.cloudstream.tr.core.model.StreamPrioritySorter.sortByPriority(collectedLinks)
-<<<<<<< Updated upstream
-            for (link in sortedLinks) callback(link)
-=======
-            for (link in sortedLinks) { callback(link) }
->>>>>>> Stashed changes
+            for (link in sortedLinks) {
+                callback(link)
+            }
             com.cloudstream.tr.core.streaming.StreamCacheManager.put(cacheKey, sortedLinks)
         }
 

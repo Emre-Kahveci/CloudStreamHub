@@ -238,7 +238,7 @@ class FullHDFilmizlesene : MainAPI() {
                 val rtt = rot13(encoded)
                 val padLen = (4 - rtt.length % 4) % 4
                 val padded = rtt + "=".repeat(padLen)
-                val decoded = android.util.Base64.decode(padded, android.util.Base64.DEFAULT)
+                val decoded = com.cloudstream.tr.core.utils.Base64Utils.decode(padded)
                 String(decoded, Charsets.UTF_8)
             } catch (e: Exception) {
                 null

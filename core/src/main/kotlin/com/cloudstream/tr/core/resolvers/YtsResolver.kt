@@ -48,11 +48,8 @@ data class YtsTorrent(
 object YtsResolver {
     private val mirrors = listOf(
         "https://en.yts.lu",
-<<<<<<< Updated upstream
-=======
         "https://yts.bz",
         "https://yts.lt",
->>>>>>> Stashed changes
         "https://yts.mx",
         "https://web.yts.gg",
         "https://yts.do"

@@ -14,7 +14,7 @@ open class CloseLoadExtractor : ExtractorApi() {
             val padLen = (4 - str.length % 4) % 4
             val padded = str + "=".repeat(padLen)
             return try {
-                val bytes = android.util.Base64.decode(padded, android.util.Base64.DEFAULT)
+                val bytes = com.cloudstream.tr.core.utils.Base64Utils.decode(padded)
                 String(bytes, Charsets.ISO_8859_1)
             } catch (_: Throwable) {
                 ""

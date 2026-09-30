@@ -24,6 +24,12 @@ object FourKhubResolver {
 
     private var activeDomains: List<String>? = null
 
+    private fun normalizeSearchResultUrl(href: String, domain: String): String = when {
+        href.startsWith("//") -> "https:$href"
+        href.startsWith("/") -> "$domain$href"
+        else -> href
+    }
+
     private suspend fun getBaseDomains(): List<String> {
         activeDomains?.let { return it }
 
@@ -60,17 +66,9 @@ object FourKhubResolver {
                 for (entry in entries) {
                     val linkTag = if (entry.tagName() == "a") entry else entry.selectFirst("h2 a, a[rel='bookmark'], a")
                     val itemTitle = linkTag?.text() ?: ""
-                    val itemHref = linkTag?.attr("href") ?: ""
-
-<<<<<<< Updated upstream
-                    if (itemHref.isBlank()) continue
-=======
-            for (entry in entries) {
-                val linkTag = if (entry.tagName() == "a") entry else entry.selectFirst("h2 a, a[rel='bookmark'], a")
-                val itemTitle = linkTag?.text() ?: ""
-                val rawHref = linkTag?.attr("href") ?: ""
-                val itemHref = if (rawHref.startsWith("/")) "$domain$rawHref" else rawHref
->>>>>>> Stashed changes
+                    val rawHref = linkTag?.attr("href") ?: ""
+                    if (rawHref.isBlank()) continue
+                    val itemHref = normalizeSearchResultUrl(rawHref, domain)
 
                     // Check title match
                     val isTitleMatch = itemTitle.contains(cleanTitle, ignoreCase = true) ||
@@ -86,7 +84,8 @@ object FourKhubResolver {
 
                 if (matchedUrl == null) {
                     // Fallback to first search result if available
-                    matchedUrl = searchDoc.select("h2.entry-title a, article a").firstOrNull()?.attr("href")
+                    val rawHref = searchDoc.select("h2.entry-title a, article a").firstOrNull()?.attr("href")
+                    matchedUrl = rawHref?.let { normalizeSearchResultUrl(it, domain) }
                 }
 
                 val targetPageUrl = matchedUrl?.takeIf { it.isNotBlank() } ?: continue

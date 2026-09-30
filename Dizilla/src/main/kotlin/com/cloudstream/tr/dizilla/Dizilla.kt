@@ -29,7 +29,7 @@ class Dizilla : MainAPI() {
             val iv = ByteArray(16)
             val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
             cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
-            val decoded = android.util.Base64.decode(base64Cipher.trim(), android.util.Base64.DEFAULT)
+            val decoded = com.cloudstream.tr.core.utils.Base64Utils.decode(base64Cipher.trim())
             return String(cipher.doFinal(decoded), Charsets.UTF_8)
         }
     }
