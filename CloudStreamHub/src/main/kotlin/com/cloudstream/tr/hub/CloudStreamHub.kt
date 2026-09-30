@@ -11,8 +11,11 @@ import com.cloudstream.tr.core.diagnostics.DiagnosticStage
 import com.cloudstream.tr.core.model.ProviderModels
 import com.cloudstream.tr.core.network.StreamValidator
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
 import java.util.Collections
@@ -204,7 +207,34 @@ class CloudStreamHub : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val payload = AggregatorLinkPayload.fromUrlData(data) ?: return false
-        var linksFound = false
+        val linksFound = java.util.concurrent.atomic.AtomicBoolean(false)
+        val linkCallbackLock = Any()
+        val collectedLinks = mutableListOf<ExtractorLink>()
+        val seenLinkUrls = mutableSetOf<String>()
+        val interceptedCallback: (ExtractorLink) -> Unit = { link ->
+            synchronized(linkCallbackLock) {
+                val url = link.url.trim()
+                if (url.isNotBlank() && seenLinkUrls.add(url)) {
+                    collectedLinks.add(link)
+                    linksFound.set(true)
+                    callback(link)
+                }
+            }
+        }
+
+        suspend fun fetchSubtitlesInBackground() {
+            val imdbId = payload.imdbId ?: return
+            CoroutineScope(currentCoroutineContext()).launch(Dispatchers.IO) {
+                com.cloudstream.tr.core.resolvers.SubtitlesResolver.resolveTurkishSubtitles(
+                    imdbId = imdbId,
+                    isMovie = payload.isMovie,
+                    season = payload.season,
+                    episode = payload.episode,
+                    title = payload.title,
+                    callback = subtitleCallback
+                )
+            }
+        }
 
         // 0. Zero-Latency Stream Cache Check (instant links)
         val cacheKey = com.cloudstream.tr.core.streaming.StreamCacheManager.buildKey(
@@ -219,35 +249,12 @@ class CloudStreamHub : MainAPI() {
             for (link in cachedLinks) {
                 callback(link)
             }
-            if (payload.imdbId != null) {
-                com.cloudstream.tr.core.resolvers.SubtitlesResolver.resolveTurkishSubtitles(
-                    imdbId = payload.imdbId,
-                    isMovie = payload.isMovie,
-                    season = payload.season,
-                    episode = payload.episode,
-                    title = payload.title,
-                    callback = subtitleCallback
-                )
-            }
+            fetchSubtitlesInBackground()
             return true
         }
 
-        val collectedLinks = mutableListOf<ExtractorLink>()
-        val interceptedCallback: (ExtractorLink) -> Unit = { link ->
-            collectedLinks.add(link)
-            linksFound = true
-        }
-
         // 1. Automated Turkish Subtitles via OpenSubtitles
-        if (payload.imdbId != null) {
-            com.cloudstream.tr.core.resolvers.SubtitlesResolver.resolveTurkishSubtitles(
-                imdbId = payload.imdbId,
-                isMovie = payload.isMovie,
-                season = payload.season,
-                episode = payload.episode,
-                callback = subtitleCallback
-            )
-        }
+        fetchSubtitlesInBackground()
 
         // 2. High-speed Direct DDL CDN (4KHDHub Hub-Cloud, V-Cloud, FSL Server)
         try {
@@ -294,7 +301,7 @@ class CloudStreamHub : MainAPI() {
                 category = DiagnosticCategory.SOURCE_DISCOVERY,
                 message = "No registered Turkish providers available for aggregation. Please install individual provider plugins."
             )
-            return false
+            return linksFound.get()
         }
 
         val resolved = BoundedParallelResolver.resolveProgressive(
@@ -303,21 +310,22 @@ class CloudStreamHub : MainAPI() {
             provider = name,
             resolver = { provider, emitLink ->
                 try {
-                    val searchList = provider.search(payload.title) ?: emptyList()
-                    if (searchList.isEmpty()) return@resolveProgressive
-
                     val targetTitles = listOfNotNull(payload.title, payload.originalTitle).distinct()
-                    val matched = HubMatchingEngine.findConfidentMatch(
-                        candidates = searchList,
+                    val searchQueries = targetTitles
+                        .filter { it.isNotBlank() }
+                        .distinctBy { it.trim().lowercase() }
+                    val matched = HubMatchingEngine.findConfidentMatchFromSearches(
+                        searchQueries = searchQueries,
                         targetTitles = targetTitles,
                         targetYear = payload.year,
-                        isMovie = payload.isMovie
+                        isMovie = payload.isMovie,
+                        search = { query -> provider.search(query) }
                     ) ?: run {
                         DiagnosticLogger.log(
                             provider = provider.name,
                             stage = DiagnosticStage.SEARCH,
                             category = DiagnosticCategory.SOURCE_DISCOVERY,
-                            message = "No confident match for '${payload.title}' (${payload.year ?: "N/A"}). First result rejected to prevent wrong playback."
+                            message = "No confident match for '${payload.title}' or '${payload.originalTitle}' (${payload.year ?: "N/A"}). Arbitrary first results rejected to prevent wrong playback."
                         )
                         return@resolveProgressive
                     }
@@ -458,13 +466,10 @@ class CloudStreamHub : MainAPI() {
         )
 
         if (collectedLinks.isNotEmpty()) {
-            val sortedLinks = com.cloudstream.tr.core.model.StreamPrioritySorter.sortByPriority(collectedLinks)
-            for (link in sortedLinks) {
-                callback(link)
-            }
+            val sortedLinks = com.cloudstream.tr.core.model.StreamPrioritySorter.sortByPriority(collectedLinks.toList())
             com.cloudstream.tr.core.streaming.StreamCacheManager.put(cacheKey, sortedLinks)
         }
 
-        return linksFound || resolved > 0
+        return linksFound.get() || resolved > 0
     }
 }

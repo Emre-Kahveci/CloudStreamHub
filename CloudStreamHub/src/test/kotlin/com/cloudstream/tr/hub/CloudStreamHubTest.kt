@@ -6,6 +6,8 @@ import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.utils.AppUtils
+import kotlinx.coroutines.CancellationException
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -15,6 +17,30 @@ import kotlinx.coroutines.launch
 
 class CloudStreamHubTest {
     private val hub = CloudStreamHub()
+
+    @Test
+    fun testBundledProvidersAreAvailableToAggregator() {
+        val providerNames = CloudStreamProviderRegistryAdapter
+            .getRegisteredTurkishProviders(excludeName = hub.name)
+            .map { it.name }
+            .toSet()
+
+        val bundledProviders = setOf(
+            "FilmMakinesi",
+            "HDFilmCehennemi",
+            "SinemaCX",
+            "SezonlukDizi",
+            "KultFilmler",
+            "Dizilla",
+            "DiziYou",
+            "HDFilmDelisi",
+            "JetFilmIzle",
+            "DiziKorea",
+            "YesilCamTv"
+        )
+
+        assertTrue("All bundled providers should be registered", providerNames.containsAll(bundledProviders))
+    }
 
     @Test
     fun testParseTmdbPage() {
@@ -58,6 +84,102 @@ class CloudStreamHubTest {
         // Test rejecting completely unrelated title (NEVER returns first result!)
         val match2 = HubMatchingEngine.findConfidentMatch(listOf(cand1, cand2, cand3), listOf("Matrix"), 1999, isMovie = true)
         assertNull("Unrelated title must NOT match first candidate!", match2)
+    }
+
+    @Test
+    fun testOriginalTitleSearchRunsOnlyAfterLocalizedSearchHasNoConfidentMatch() = kotlinx.coroutines.test.runTest {
+        val originalTitleMatch = hub.newMovieSearchResponse("Original Title", "https://site.com/original", TvType.Movie) {
+            this.year = 2020
+        }
+        val searchedQueries = mutableListOf<String>()
+
+        val matched = HubMatchingEngine.findConfidentMatchFromSearches(
+            searchQueries = listOf("Localized Title", "Original Title"),
+            targetTitles = listOf("Localized Title", "Original Title"),
+            targetYear = 2020,
+            isMovie = true,
+            search = { query ->
+                searchedQueries.add(query)
+                if (query == "Localized Title") {
+                    listOf(hub.newMovieSearchResponse("Unrelated Result", "https://site.com/unrelated", TvType.Movie) {
+                        this.year = 2020
+                    })
+                } else {
+                    listOf(originalTitleMatch)
+                }
+            }
+        )
+
+        assertEquals(listOf("Localized Title", "Original Title"), searchedQueries)
+        assertEquals("Original Title", matched?.name)
+    }
+
+    @Test
+    fun testConfidentLocalizedSearchSkipsOriginalTitleQuery() = kotlinx.coroutines.test.runTest {
+        val localizedMatch = hub.newMovieSearchResponse("Localized Title", "https://site.com/localized", TvType.Movie) {
+            this.year = 2020
+        }
+        val searchedQueries = mutableListOf<String>()
+
+        val matched = HubMatchingEngine.findConfidentMatchFromSearches(
+            searchQueries = listOf("Localized Title", "Original Title"),
+            targetTitles = listOf("Localized Title", "Original Title"),
+            targetYear = 2020,
+            isMovie = true,
+            search = { query ->
+                searchedQueries.add(query)
+                listOf(localizedMatch)
+            }
+        )
+
+        assertEquals(listOf("Localized Title"), searchedQueries)
+        assertEquals("Localized Title", matched?.name)
+    }
+
+    @Test
+    fun testOriginalTitleSearchFallbackContinuesAfterLocalizedSearchFailure() = kotlinx.coroutines.test.runTest {
+        val originalTitleMatch = hub.newMovieSearchResponse("Original Title", "https://site.com/original", TvType.Movie) {
+            this.year = 2020
+        }
+        val searchedQueries = mutableListOf<String>()
+
+        val matched = HubMatchingEngine.findConfidentMatchFromSearches(
+            searchQueries = listOf("Localized Title", "Original Title"),
+            targetTitles = listOf("Localized Title", "Original Title"),
+            targetYear = 2020,
+            isMovie = true,
+            search = { query ->
+                searchedQueries.add(query)
+                if (query == "Localized Title") throw IllegalStateException("localized search unavailable")
+                listOf(originalTitleMatch)
+            }
+        )
+
+        assertEquals(listOf("Localized Title", "Original Title"), searchedQueries)
+        assertEquals("Original Title", matched?.name)
+    }
+
+    @Test
+    fun testConfidentSearchFallbackPropagatesCancellation() = kotlinx.coroutines.test.runTest {
+        val cancellation = CancellationException("search cancelled")
+        val searchedQueries = mutableListOf<String>()
+
+        try {
+            HubMatchingEngine.findConfidentMatchFromSearches(
+                searchQueries = listOf("Localized Title", "Original Title"),
+                targetTitles = listOf("Localized Title", "Original Title"),
+                isMovie = true,
+                search = { query ->
+                    searchedQueries.add(query)
+                    throw cancellation
+                }
+            )
+            throw AssertionError("Search cancellation must propagate")
+        } catch (caught: CancellationException) {
+            assertSame(cancellation, caught)
+        }
+
+        assertEquals(listOf("Localized Title"), searchedQueries)
     }
 
     @Test

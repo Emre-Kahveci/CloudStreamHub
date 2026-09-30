@@ -6,10 +6,41 @@ import com.lagradost.cloudstream3.MovieSearchResponse
 import com.lagradost.cloudstream3.SearchResponse
 import com.lagradost.cloudstream3.TvSeriesSearchResponse
 import com.lagradost.cloudstream3.TvType
+import kotlinx.coroutines.CancellationException
 import kotlin.math.abs
 import kotlin.math.max
 
 object HubMatchingEngine {
+
+    /**
+     * Searches titles in priority order and returns the first confident match.
+     * Search failures and unconfident result lists are skipped without selecting an arbitrary result.
+     */
+    suspend fun findConfidentMatchFromSearches(
+        searchQueries: List<String>,
+        targetTitles: List<String>,
+        targetYear: Int? = null,
+        isMovie: Boolean? = null,
+        search: suspend (String) -> List<SearchResponse>?
+    ): SearchResponse? {
+        for (query in searchQueries.distinct()) {
+            val candidates = try {
+                search(query).orEmpty()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                continue
+            }
+            val match = findConfidentMatch(
+                candidates = candidates,
+                targetTitles = targetTitles,
+                targetYear = targetYear,
+                isMovie = isMovie
+            )
+            if (match != null) return match
+        }
+        return null
+    }
 
     /**
      * Calculates Jaccard token overlap similarity between two normalized strings.
