@@ -99,7 +99,7 @@ class YTS : MainAPI() {
         var linksFound = false
         if (data.isNotBlank()) {
             val links = YtsResolver.resolve(imdbId = data, isMovie = true)
-            links.forEach { link ->
+            for (link in links) {
                 callback(link)
                 linksFound = true
             }

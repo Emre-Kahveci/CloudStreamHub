@@ -1,6 +1,5 @@
 package com.cloudstream.tr.turkanime
 
-import java.util.Base64
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
@@ -112,10 +111,10 @@ class TurkAnime : MainAPI() {
                 cookies = mapOf("yasOnay" to "1")
             ).document
 
-            bolumlerDoc.select("div#bolum-list li").forEach { it ->
-                val epLinkEl = it.selectFirst("a[href*='/video/']") ?: return@forEach
-                val epHref = fixUrlNull(epLinkEl.attr("href")) ?: return@forEach
-                val epName = it.selectFirst("span.bolumAdi")?.text()?.trim() ?: epLinkEl.text().trim()
+            for (episodeElement in bolumlerDoc.select("div#bolum-list li")) {
+                val epLinkEl = episodeElement.selectFirst("a[href*='/video/']") ?: continue
+                val epHref = fixUrlNull(epLinkEl.attr("href")) ?: continue
+                val epName = episodeElement.selectFirst("span.bolumAdi")?.text()?.trim() ?: epLinkEl.text().trim()
                 val epTitle = epLinkEl.attr("title").trim()
                 val epNum = Regex("(\\d+)\\.\\s*Bölüm").find(epTitle)?.groupValues?.get(1)?.toIntOrNull()
                     ?: Regex("-?(\\d+)-bolum").find(epHref)?.groupValues?.get(1)?.toIntOrNull() ?: 1
@@ -176,10 +175,10 @@ class TurkAnime : MainAPI() {
     private fun iframe2AesLink(iframe: String): String? {
         return try {
             val aesDataRaw = iframe.substringAfter("embed/#/url/").substringBefore("?status")
-            val aesJson = String(Base64.getDecoder().decode(aesDataRaw), Charsets.UTF_8)
+            val aesJson = String(android.util.Base64.decode(aesDataRaw, android.util.Base64.DEFAULT), Charsets.UTF_8)
             val payload = AppUtils.tryParseJson<CryptoJsPayload>(aesJson) ?: return null
 
-            val ct = Base64.getDecoder().decode(payload.ct ?: return null)
+            val ct = android.util.Base64.decode(payload.ct ?: return null, android.util.Base64.DEFAULT)
             val salt = hexStringToByteArray(payload.s ?: return null)
             val passphrase = "710^8A@3@>T2}#zN5xK?kR7KNKb@-A!LzYL5~M1qU0UfdWsZoBm4UUat%}ueUv6E--*hDPPbH7K2bp9^3o41hw,khL:}Kx8080@M".toByteArray(Charsets.UTF_8)
 

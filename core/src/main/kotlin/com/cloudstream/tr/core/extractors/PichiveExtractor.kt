@@ -41,7 +41,7 @@ open class PichiveExtractor : ExtractorApi() {
             val openPlayerMatch = Regex("""openPlayer\s*\(\s*['"]([^'"]+)['"]""").find(playerResp)
             val playlistToken = openPlayerMatch?.groupValues?.get(1)
 
-            Regex("""\{\s*["']file["']\s*:\s*["']([^"']+)["'].*?["']lang["']\s*:\s*["']([^"']+)["']""").findAll(playerResp).forEach { sm ->
+            for (sm in Regex("""\{\s*["']file["']\s*:\s*["']([^"']+)["'].*?["']lang["']\s*:\s*["']([^"']+)["']""").findAll(playerResp)) {
                 val subFile = sm.groupValues[1].replace("""\/""", "/")
                 val subLang = sm.groupValues[2]
                 subtitleCallback(
@@ -63,9 +63,9 @@ open class PichiveExtractor : ExtractorApi() {
                     )
                 ).parsedSafe<PichiveResponse>()
 
-                pichiveJson?.playlist?.forEach { pl ->
-                    pl.sources?.forEach { s ->
-                        val fileUrl = s.file ?: return@forEach
+                for (pl in pichiveJson?.playlist.orEmpty()) {
+                    for (s in pl.sources.orEmpty()) {
+                        val fileUrl = s.file ?: continue
                         callback(
                             newExtractorLink(
                                 source = name,

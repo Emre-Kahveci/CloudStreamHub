@@ -215,7 +215,7 @@ class CloudStreamHub : MainAPI() {
         )
         val cachedLinks = com.cloudstream.tr.core.streaming.StreamCacheManager.get(cacheKey)
         if (!cachedLinks.isNullOrEmpty()) {
-            cachedLinks.forEach { callback(it) }
+            for (link in cachedLinks) callback(link)
             if (payload.imdbId != null) {
                 com.cloudstream.tr.core.resolvers.SubtitlesResolver.resolveTurkishSubtitles(
                     imdbId = payload.imdbId,
@@ -255,7 +255,7 @@ class CloudStreamHub : MainAPI() {
                 season = payload.season,
                 episode = payload.episode
             )
-            fourKLinks.forEach { link ->
+            for (link in fourKLinks) {
                 interceptedCallback(link)
             }
         } catch (_: Exception) {}
@@ -268,7 +268,7 @@ class CloudStreamHub : MainAPI() {
                 season = payload.season,
                 episode = payload.episode
             )
-            torrentioLinks.forEach { link ->
+            for (link in torrentioLinks) {
                 interceptedCallback(link)
             }
 
@@ -277,7 +277,7 @@ class CloudStreamHub : MainAPI() {
                     imdbId = payload.imdbId,
                     isMovie = true
                 )
-                ytsLinks.forEach { link ->
+                for (link in ytsLinks) {
                     interceptedCallback(link)
                 }
             }
@@ -338,7 +338,9 @@ class CloudStreamHub : MainAPI() {
 
                     if (targetLinkData != null) {
                         val channel = Channel<ExtractorLink>(capacity = Channel.UNLIMITED)
-                        val seenUrls = ConcurrentHashMap.newKeySet<String>()
+                        val seenUrls = java.util.Collections.newSetFromMap(
+                            ConcurrentHashMap<String, Boolean>()
+                        )
                         var rawLinksReceived = 0
                         var duplicatesDropped = 0
                         var channelOverflowDropped = 0
@@ -456,7 +458,7 @@ class CloudStreamHub : MainAPI() {
 
         if (collectedLinks.isNotEmpty()) {
             val sortedLinks = com.cloudstream.tr.core.model.StreamPrioritySorter.sortByPriority(collectedLinks)
-            sortedLinks.forEach { callback(it) }
+            for (link in sortedLinks) callback(link)
             com.cloudstream.tr.core.streaming.StreamCacheManager.put(cacheKey, sortedLinks)
         }
 

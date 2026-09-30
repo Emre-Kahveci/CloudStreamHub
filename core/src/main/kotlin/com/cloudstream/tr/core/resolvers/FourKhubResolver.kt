@@ -22,22 +22,19 @@ object FourKhubResolver {
         "https://4khdhub.com"
     )
 
-    private var activeDomain: String? = null
+    private var activeDomains: List<String>? = null
 
-    private suspend fun getBaseDomain(): String {
-        activeDomain?.let { return it }
+    private suspend fun getBaseDomains(): List<String> {
+        activeDomains?.let { return it }
 
+        var remoteDomain: String? = null
         try {
             val cfg = app.get(DOMAINS_CONFIG_URL, timeout = 5).parsedSafe<RemoteDomainsConfig>()
-            val remoteDomain = cfg?.fourKhub?.takeIf { it.isNotBlank() }
-            if (remoteDomain != null) {
-                activeDomain = remoteDomain.trimEnd('/')
-                return activeDomain!!
-            }
+            remoteDomain = cfg?.fourKhub?.takeIf { it.isNotBlank() }?.trimEnd('/')
         } catch (_: Exception) {}
 
-        activeDomain = defaultDomains.first()
-        return activeDomain!!
+        activeDomains = listOfNotNull(defaultDomains.first(), remoteDomain, defaultDomains.last()).distinct()
+        return activeDomains!!
     }
 
     suspend fun resolve(
@@ -50,147 +47,148 @@ object FourKhubResolver {
         if (title.isBlank()) return emptyList()
 
         val cleanTitle = title.replace(Regex("""[^\w\s]"""), " ").replace(Regex("""\s+"""), " ").trim()
-        val domain = getBaseDomain()
+        for (domain in getBaseDomains()) {
+            try {
+                val encodedQuery = URLEncoder.encode(cleanTitle, "UTF-8")
+                val searchUrl = "$domain/?s=$encodedQuery"
+                val searchDoc = Jsoup.parse(app.get(searchUrl, timeout = 10).text)
 
-        try {
-            val encodedQuery = URLEncoder.encode(cleanTitle, "UTF-8")
-            val searchUrl = "$domain/?s=$encodedQuery"
-            val searchDoc = Jsoup.parse(app.get(searchUrl, timeout = 10).text)
+                // Extract articles / entries
+                val entries = searchDoc.select("article, div.post-item, div.entry-content, h2.entry-title a, a[href*='-movie-'], a[href*='-series-']")
+                var matchedUrl: String? = null
 
-            // Extract articles / entries
-            val entries = searchDoc.select("article, div.post-item, div.entry-content, h2.entry-title a, a[href*='-movie-'], a[href*='-series-']")
-            var matchedUrl: String? = null
+                for (entry in entries) {
+                    val linkTag = if (entry.tagName() == "a") entry else entry.selectFirst("h2 a, a[rel='bookmark'], a")
+                    val itemTitle = linkTag?.text() ?: ""
+                    val itemHref = linkTag?.attr("href") ?: ""
 
-            for (entry in entries) {
-                val linkTag = if (entry.tagName() == "a") entry else entry.selectFirst("h2 a, a[rel='bookmark'], a")
-                val itemTitle = linkTag?.text() ?: ""
-                val itemHref = linkTag?.attr("href") ?: ""
+                    if (itemHref.isBlank()) continue
 
-                if (itemHref.isBlank()) continue
+                    // Check title match
+                    val isTitleMatch = itemTitle.contains(cleanTitle, ignoreCase = true) ||
+                            cleanTitle.split(" ").all { word -> itemTitle.contains(word, ignoreCase = true) }
 
-                // Check title match
-                val isTitleMatch = itemTitle.contains(cleanTitle, ignoreCase = true) ||
-                        cleanTitle.split(" ").all { word -> itemTitle.contains(word, ignoreCase = true) }
+                    val isYearMatch = year == null || itemTitle.contains(year.toString())
 
-                val isYearMatch = year == null || itemTitle.contains(year.toString())
-
-                if (isTitleMatch && isYearMatch) {
-                    matchedUrl = itemHref
-                    break
-                }
-            }
-
-            if (matchedUrl == null) {
-                // Fallback to first search result if available
-                matchedUrl = searchDoc.select("h2.entry-title a, article a").firstOrNull()?.attr("href")
-            }
-
-            val targetPageUrl = matchedUrl?.takeIf { it.isNotBlank() } ?: return emptyList()
-            val detailDoc = Jsoup.parse(app.get(targetPageUrl, timeout = 10).text)
-
-            // Extract HubCloud / HubDrive / download links
-            val downloadHrefs = detailDoc.select("a[href*='hubcloud'], a[href*='hubdrive'], a[href*='greenmotors.club'], div.download-item a, a.btn")
-                .map { it.attr("href") }
-                .filter { it.isNotBlank() && (it.contains("hubcloud") || it.contains("hubdrive") || it.contains("drive") || it.contains("greenmotors")) }
-                .distinct()
-
-            if (downloadHrefs.isEmpty()) return emptyList()
-
-            val links = mutableListOf<ExtractorLink>()
-
-            for (hubUrl in downloadHrefs.take(4)) {
-                try {
-                    var hubPageHtml = app.get(hubUrl, timeout = 10).text
-                    var hubDoc = Jsoup.parse(hubPageHtml)
-
-                    if (hubUrl.contains("greenmotors.club")) {
-                        val nextUrl = hubDoc.select("a[href*='hubcloud'], a[href*='hubdrive']").firstOrNull()?.attr("href") ?: hubDoc.select("a.btn, a[rel='nofollow']").firstOrNull()?.attr("href")
-                        if (nextUrl != null && nextUrl.isNotBlank()) {
-                            hubPageHtml = app.get(nextUrl, timeout = 10).text
-                            hubDoc = Jsoup.parse(hubPageHtml)
-                        }
+                    if (isTitleMatch && isYearMatch) {
+                        matchedUrl = itemHref
+                        break
                     }
+                }
 
-                    // Find download buttons: FSL Server, Download File (HubCloud), V-Cloud
-                    val buttons = hubDoc.select("div.card-body a.btn, a.btn")
-                    val headerText = hubDoc.select("div.card-header, h1, title").text()
+                if (matchedUrl == null) {
+                    // Fallback to first search result if available
+                    matchedUrl = searchDoc.select("h2.entry-title a, article a").firstOrNull()?.attr("href")
+                }
 
-                    for (btn in buttons) {
-                        val btnText = btn.text()
-                        val btnHref = btn.attr("href")
-                        if (btnHref.isBlank() || !btnHref.startsWith("http")) continue
+                val targetPageUrl = matchedUrl?.takeIf { it.isNotBlank() } ?: continue
+                val detailDoc = Jsoup.parse(app.get(targetPageUrl, timeout = 10).text)
 
-                        val isFsl = btnText.contains("FSL Server", ignoreCase = true)
-                        val isHubCloud = btnText.contains("Download", ignoreCase = true) || btnText.contains("HubCloud", ignoreCase = true)
-                        val isVCloud = btnText.contains("V-Cloud", ignoreCase = true) || btnText.contains("VCloud", ignoreCase = true)
+                // Extract HubCloud / HubDrive / download links
+                val downloadHrefs = detailDoc.select("a[href*='hubcloud'], a[href*='hubdrive'], a[href*='greenmotors.club'], div.download-item a, a.btn")
+                    .map { it.attr("href") }
+                    .filter { it.isNotBlank() && (it.contains("hubcloud") || it.contains("hubdrive") || it.contains("drive") || it.contains("greenmotors")) }
+                    .distinct()
 
-                        if (!isFsl && !isHubCloud && !isVCloud) continue
+                if (downloadHrefs.isEmpty()) continue
 
-                        val serverType = when {
-                            isFsl -> "FSL Server"
-                            isVCloud -> "V-Cloud"
-                            else -> "Hub-Cloud"
+                val links = mutableListOf<ExtractorLink>()
+
+                for (hubUrl in downloadHrefs.take(4)) {
+                    try {
+                        var hubPageHtml = app.get(hubUrl, timeout = 10).text
+                        var hubDoc = Jsoup.parse(hubPageHtml)
+
+                        if (hubUrl.contains("greenmotors.club")) {
+                            val nextUrl = hubDoc.select("a[href*='hubcloud'], a[href*='hubdrive']").firstOrNull()?.attr("href") ?: hubDoc.select("a.btn, a[rel='nofollow']").firstOrNull()?.attr("href")
+                            if (nextUrl != null && nextUrl.isNotBlank()) {
+                                hubPageHtml = app.get(nextUrl, timeout = 10).text
+                                hubDoc = Jsoup.parse(hubPageHtml)
+                            }
                         }
 
-                        // Technology and resolution tags
-                        val fullInfo = "$headerText $btnText"
-                        val is4K = fullInfo.contains("4K", ignoreCase = true) || fullInfo.contains("2160p", ignoreCase = true)
-                        val is1080p = fullInfo.contains("1080p", ignoreCase = true)
-                        val isAtmos = fullInfo.contains("Atmos", ignoreCase = true)
-                        val isDD = fullInfo.contains("DD5", ignoreCase = true) || fullInfo.contains("DD 5", ignoreCase = true) || fullInfo.contains("DD 7", ignoreCase = true) || fullInfo.contains("5.1", ignoreCase = true)
-                        val isHevc = fullInfo.contains("HEVC", ignoreCase = true) || fullInfo.contains("x265", ignoreCase = true)
-                        val isBluRay = fullInfo.contains("BluRay", ignoreCase = true) || fullInfo.contains("Blu-Ray", ignoreCase = true)
+                        // Find download buttons: FSL Server, Download File (HubCloud), V-Cloud
+                        val buttons = hubDoc.select("div.card-body a.btn, a.btn")
+                        val headerText = hubDoc.select("div.card-header, h1, title").text()
 
-                        var techTags = ""
-                        if (isHevc) techTags += " HEVC"
-                        if (isBluRay) techTags += " Blu-Ray"
-                        if (isAtmos) techTags += " Atmos"
-                        if (isDD && !isAtmos) techTags += " DD 5.1"
+                        for (btn in buttons) {
+                            val btnText = btn.text()
+                            val btnHref = btn.attr("href")
+                            if (btnHref.isBlank() || !btnHref.startsWith("http")) continue
 
-                        val qualityLabel = when {
-                            is4K -> "4K"
-                            is1080p -> "1080p"
-                            else -> "HD"
-                        }
+                            val isFsl = btnText.contains("FSL Server", ignoreCase = true)
+                            val isHubCloud = btnText.contains("Download", ignoreCase = true) || btnText.contains("HubCloud", ignoreCase = true)
+                            val isVCloud = btnText.contains("V-Cloud", ignoreCase = true) || btnText.contains("VCloud", ignoreCase = true)
 
-                        val mappedQuality = when (qualityLabel) {
-                            "4K" -> Qualities.P2160.value
-                            "1080p" -> Qualities.P1080.value
-                            else -> Qualities.P720.value
-                        }
+                            if (!isFsl && !isHubCloud && !isVCloud) continue
 
-                        val displayName = "⚡ 4KHDHub $serverType [$qualityLabel$techTags]".trim()
+                            val serverType = when {
+                                isFsl -> "FSL Server"
+                                isVCloud -> "V-Cloud"
+                                else -> "Hub-Cloud"
+                            }
 
-                        links.add(
-                            ExtractorLink(
-                                source = "4KHDHub",
-                                name = displayName,
-                                url = btnHref,
-                                referer = hubUrl,
-                                quality = mappedQuality,
-                                type = ExtractorLinkType.VIDEO
+                            // Technology and resolution tags
+                            val fullInfo = "$headerText $btnText"
+                            val is4K = fullInfo.contains("4K", ignoreCase = true) || fullInfo.contains("2160p", ignoreCase = true)
+                            val is1080p = fullInfo.contains("1080p", ignoreCase = true)
+                            val isAtmos = fullInfo.contains("Atmos", ignoreCase = true)
+                            val isDD = fullInfo.contains("DD5", ignoreCase = true) || fullInfo.contains("DD 5", ignoreCase = true) || fullInfo.contains("DD 7", ignoreCase = true) || fullInfo.contains("5.1", ignoreCase = true)
+                            val isHevc = fullInfo.contains("HEVC", ignoreCase = true) || fullInfo.contains("x265", ignoreCase = true)
+                            val isBluRay = fullInfo.contains("BluRay", ignoreCase = true) || fullInfo.contains("Blu-Ray", ignoreCase = true)
+
+                            var techTags = ""
+                            if (isHevc) techTags += " HEVC"
+                            if (isBluRay) techTags += " Blu-Ray"
+                            if (isAtmos) techTags += " Atmos"
+                            if (isDD && !isAtmos) techTags += " DD 5.1"
+
+                            val qualityLabel = when {
+                                is4K -> "4K"
+                                is1080p -> "1080p"
+                                else -> "HD"
+                            }
+
+                            val mappedQuality = when (qualityLabel) {
+                                "4K" -> Qualities.P2160.value
+                                "1080p" -> Qualities.P1080.value
+                                else -> Qualities.P720.value
+                            }
+
+                            val displayName = "⚡ 4KHDHub $serverType [$qualityLabel$techTags]".trim()
+
+                            links.add(
+                                ExtractorLink(
+                                    source = "4KHDHub",
+                                    name = displayName,
+                                    url = btnHref,
+                                    referer = hubUrl,
+                                    quality = mappedQuality,
+                                    type = ExtractorLinkType.VIDEO
+                                )
                             )
+                        }
+                    } catch (e: Exception) {
+                        DiagnosticLogger.log(
+                            provider = "FourKhubResolver",
+                            stage = DiagnosticStage.LOAD,
+                            category = DiagnosticCategory.EXTRACTOR,
+                            message = "Error resolving HubCloud page $hubUrl: ${e.message}"
                         )
                     }
-                } catch (e: Exception) {
-                    DiagnosticLogger.log(
-                        provider = "FourKhubResolver",
-                        stage = DiagnosticStage.LOAD,
-                        category = DiagnosticCategory.EXTRACTOR,
-                        message = "Error resolving HubCloud page $hubUrl: ${e.message}"
-                    )
                 }
-            }
 
-            return links
-        } catch (e: Exception) {
-            DiagnosticLogger.log(
-                provider = "FourKhubResolver",
-                stage = DiagnosticStage.SEARCH,
-                category = DiagnosticCategory.NETWORK,
-                message = "Failed to search 4KHDHub for $cleanTitle: ${e.message}"
-            )
-            return emptyList()
+                if (links.isNotEmpty()) return links
+            } catch (e: Exception) {
+                DiagnosticLogger.log(
+                    provider = "FourKhubResolver",
+                    stage = DiagnosticStage.SEARCH,
+                    category = DiagnosticCategory.NETWORK,
+                    message = "Failed to search 4KHDHub at $domain for $cleanTitle: ${e.message}"
+                )
+            }
         }
+
+        return emptyList()
     }
 }

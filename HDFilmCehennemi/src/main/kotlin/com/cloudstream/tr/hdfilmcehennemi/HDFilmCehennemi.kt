@@ -53,7 +53,7 @@ class HDFilmCehennemi : MainAPI() {
 
     fun parseHomePage(doc: Document): List<SearchResponse> {
         val items = mutableListOf<SearchResponse>()
-        doc.select("a.poster, a.card, div.poster, div.card").forEach { el ->
+        for (el in doc.select("a.poster, a.card, div.poster, div.card")) {
             parseSearchElement(el)?.let { items.add(it) }
         }
         return items.distinctBy { it.url }
@@ -105,7 +105,7 @@ class HDFilmCehennemi : MainAPI() {
             ).parsed<SearchApiResponse>()
 
             val searchResponses = mutableListOf<SearchResponse>()
-            res.results?.forEach { rawHtml ->
+            for (rawHtml in res.results.orEmpty()) {
                 val doc = Jsoup.parse(rawHtml)
                 doc.selectFirst("a.search-result")?.let { a ->
                     val url = fixUrlNull(a.attr("href")) ?: return@let
@@ -162,8 +162,8 @@ class HDFilmCehennemi : MainAPI() {
 
         if (isTv) {
             val episodes = mutableListOf<Episode>()
-            doc.select("div.seasons-tab-content a.mini-poster, div.seasons a[href*='bolum']").forEach { a ->
-                val epHref = fixUrlNull(a.attr("href")) ?: return@forEach
+            for (a in doc.select("div.seasons-tab-content a.mini-poster, div.seasons a[href*='bolum']")) {
+                val epHref = fixUrlNull(a.attr("href")) ?: continue
                 val epTitle = a.selectFirst(".mini-poster-title")?.text()?.trim() ?: a.text().trim()
 
                 // e.g. 1. Sezon 1. Bölüm
@@ -213,7 +213,7 @@ class HDFilmCehennemi : MainAPI() {
 
         // 1. Direct iframes or rapidrame embeds
         val iframes = mutableListOf<String>()
-        doc.select("iframe").forEach { iframe ->
+        for (iframe in doc.select("iframe")) {
             val src = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
             if (src.isNotEmpty() && !src.contains("youtube.com") && !src.contains("youtu.be")) {
                 fixUrlNull(src)?.let { iframes.add(it) }

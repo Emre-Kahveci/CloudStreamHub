@@ -8,7 +8,6 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import java.util.Base64
 import java.util.regex.Pattern
 
 data class AutocompleteItem(
@@ -193,7 +192,7 @@ class FullHDFilmizlesene : MainAPI() {
         val iframes = mutableListOf<String>()
 
         // 1. Direct iframe tags
-        doc.select("iframe").forEach { iframe ->
+        for (iframe in doc.select("iframe")) {
             val src = iframe.attr("data-src").ifEmpty { iframe.attr("src") }
             if (src.isNotEmpty() && !src.contains("youtube.com") && !src.contains("youtu.be")) {
                 fixUrlNull(src)?.let { iframes.add(it) }
@@ -239,7 +238,7 @@ class FullHDFilmizlesene : MainAPI() {
                 val rtt = rot13(encoded)
                 val padLen = (4 - rtt.length % 4) % 4
                 val padded = rtt + "=".repeat(padLen)
-                val decoded = Base64.getDecoder().decode(padded)
+                val decoded = android.util.Base64.decode(padded, android.util.Base64.DEFAULT)
                 String(decoded, Charsets.UTF_8)
             } catch (e: Exception) {
                 null

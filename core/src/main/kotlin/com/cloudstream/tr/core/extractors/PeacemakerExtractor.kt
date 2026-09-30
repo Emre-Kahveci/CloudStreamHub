@@ -45,8 +45,8 @@ open class PeacemakerExtractor : ExtractorApi() {
                 )
             ).parsedSafe<PeacemakerResponse>()
 
-            resp?.videoSources?.forEach { vs ->
-                val streamUrl = vs.file ?: return@forEach
+            for (vs in resp?.videoSources.orEmpty()) {
+                val streamUrl = vs.file ?: continue
                 val preflight = com.cloudstream.tr.core.network.StreamValidator.validateStream(
                     url = streamUrl,
                     headers = mapOf("Referer" to "https://peacemakerst.com/"),

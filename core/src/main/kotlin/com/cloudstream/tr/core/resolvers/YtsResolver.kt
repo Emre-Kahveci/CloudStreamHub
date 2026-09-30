@@ -47,6 +47,7 @@ data class YtsTorrent(
 
 object YtsResolver {
     private val mirrors = listOf(
+        "https://en.yts.lu",
         "https://yts.mx",
         "https://web.yts.gg",
         "https://yts.bz",
@@ -67,7 +68,7 @@ object YtsResolver {
                 val torrents = movie.torrents ?: continue
                 val movieTitle = movie.title ?: "Movie"
 
-                return torrents.mapNotNull { t ->
+                val links = torrents.mapNotNull { t ->
                     val hash = t.hash?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
                     val encodedTitle = URLEncoder.encode(movieTitle, "UTF-8")
                     // Removed &index=0 per instructions
@@ -100,6 +101,7 @@ object YtsResolver {
                         this.quality = mappedQuality
                     }
                 }
+                if (links.isNotEmpty()) return links
             } catch (e: Exception) {
                 DiagnosticLogger.log(
                     provider = "YTS",

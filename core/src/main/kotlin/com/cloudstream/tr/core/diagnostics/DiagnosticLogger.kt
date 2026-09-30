@@ -62,7 +62,7 @@ object DiagnosticLogger {
 
     fun log(event: DiagnosticEvent) {
         synchronized(listeners) {
-            listeners.forEach { it(event) }
+            for (listener in listeners) listener(event)
         }
     }
 

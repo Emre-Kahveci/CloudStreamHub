@@ -34,7 +34,9 @@ object BoundedParallelResolver {
         val semaphore = Semaphore(maxConcurrency.coerceAtLeast(1))
         val linksEmitted = AtomicInteger(0)
         val hasFoundDirectStream = AtomicBoolean(false)
-        val seenUrls = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
+        val seenUrls = java.util.Collections.newSetFromMap(
+            java.util.concurrent.ConcurrentHashMap<String, Boolean>()
+        )
 
         val jobs = candidates.map { candidate ->
             launch {

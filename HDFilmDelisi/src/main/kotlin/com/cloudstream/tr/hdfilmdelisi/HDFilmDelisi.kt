@@ -90,7 +90,7 @@ class HDFilmDelisi : MainAPI() {
 
         // 1. Direct HTML elements
         val elements = document.select("a[href*='/film/']")
-        elements.forEach { el ->
+        for (el in elements) {
             toSearchResult(el)?.let { results.add(it) }
         }
 

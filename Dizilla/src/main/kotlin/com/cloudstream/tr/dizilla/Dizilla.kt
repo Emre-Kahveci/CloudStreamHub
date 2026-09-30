@@ -9,7 +9,6 @@ import com.lagradost.cloudstream3.utils.*
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.net.URLEncoder
-import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -30,7 +29,7 @@ class Dizilla : MainAPI() {
             val iv = ByteArray(16)
             val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
             cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(key, "AES"), IvParameterSpec(iv))
-            val decoded = Base64.getDecoder().decode(base64Cipher.trim())
+            val decoded = android.util.Base64.decode(base64Cipher.trim(), android.util.Base64.DEFAULT)
             return String(cipher.doFinal(decoded), Charsets.UTF_8)
         }
     }
@@ -127,9 +126,9 @@ class Dizilla : MainAPI() {
             }
 
             val parsedList = AppUtils.tryParseJson<List<SearchResultItem>>(jsonText)
-            parsedList?.forEach { item ->
-                val title = item.name?.ifBlank { null } ?: item.title ?: return@forEach
-                val slug = item.slug ?: return@forEach
+            for (item in parsedList.orEmpty()) {
+                val title = item.name?.ifBlank { null } ?: item.title ?: continue
+                val slug = item.slug ?: continue
                 val href = if (slug.startsWith("http")) slug else "${mainUrl}/${slug.removePrefix("/")}"
                 val poster = item.posterUrl ?: item.faceUrl
 
@@ -203,8 +202,8 @@ class Dizilla : MainAPI() {
         }
 
         if (episodes.isEmpty()) {
-            doc.select("a[href*='-sezon-']").forEach { a ->
-                val epHref = fixUrlNull(a.attr("href")) ?: return@forEach
+            for (a in doc.select("a[href*='-sezon-']")) {
+                val epHref = fixUrlNull(a.attr("href")) ?: continue
                 val epText = a.text().trim()
                 val sMatch = Regex("""(\d+)\.\s*Sezon""").find(epText) ?: Regex("""(\d+)-sezon""").find(epHref)
                 val eMatch = Regex("""(\d+)\.\s*B[öo]l[üu]m""").find(epText) ?: Regex("""(\d+)-bolum""").find(epHref)

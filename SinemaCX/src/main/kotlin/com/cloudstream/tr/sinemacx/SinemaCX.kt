@@ -8,7 +8,6 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.*
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
-import java.util.Base64
 
 class SinemaCX : MainAPI() {
     override var mainUrl = "https://sinemacc.com"
@@ -24,7 +23,7 @@ class SinemaCX : MainAPI() {
             return fixUrlNull(trimmed)
         }
         return try {
-            val decoded = String(Base64.getDecoder().decode(trimmed), Charsets.UTF_8).trim()
+            val decoded = String(android.util.Base64.decode(trimmed, android.util.Base64.DEFAULT), Charsets.UTF_8).trim()
             if (decoded.startsWith("http://") || decoded.startsWith("https://")) {
                 decoded
             } else {
@@ -191,7 +190,7 @@ class SinemaCX : MainAPI() {
 
         val allIframes = mutableListOf<String>()
         for (pageDoc in pagesToCheck) {
-            pageDoc.select("iframe, [data-vsrc]").forEach { iframe ->
+            for (iframe in pageDoc.select("iframe, [data-vsrc]")) {
                 val rawSrc = iframe.attr("data-vsrc").ifEmpty { iframe.attr("data-src").ifEmpty { iframe.attr("src") } }
                 if (rawSrc.isNotBlank() && !rawSrc.contains("youtube", ignoreCase = true)) {
                     val resolved = decodeIframeUrl(rawSrc)

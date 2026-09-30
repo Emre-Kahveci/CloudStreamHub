@@ -10,7 +10,6 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import com.lagradost.cloudstream3.utils.newExtractorLink
-import java.util.Base64
 import java.util.regex.Pattern
 
 open class RapidrameExtractor : ExtractorApi() {
@@ -55,7 +54,7 @@ open class RapidrameExtractor : ExtractorApi() {
                     if (missing != 0) {
                         padded += "=".repeat(4 - missing)
                     }
-                    val decodedBytes = Base64.getDecoder().decode(padded)
+                    val decodedBytes = android.util.Base64.decode(padded, android.util.Base64.DEFAULT)
                     kspgo = String(decodedBytes, Charsets.ISO_8859_1)
                 } else if (x7ed6 == 'v') {
                     kspgo = kspgo.reversed()
@@ -162,7 +161,7 @@ open class RapidrameExtractor : ExtractorApi() {
 
             // 4. Subtitles
             val tracksRegex = Regex("""\{"file":"(https?:[^"]+\.vtt)"[^}]+?"label":"([^"]+)"""")
-            tracksRegex.findAll(rawHtml).forEach { match ->
+            for (match in tracksRegex.findAll(rawHtml)) {
                 val subUrl = match.groupValues[1].replace("""\/""", "/")
                 val label = match.groupValues[2]
                 subtitleCallback(

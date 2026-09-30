@@ -49,7 +49,7 @@ class FilmMakinesi : MainAPI() {
 
     fun parseHomePage(doc: Document): List<SearchResponse> {
         val items = mutableListOf<SearchResponse>()
-        doc.select("a.item, a.slide, div.item-relative a.item").forEach { el ->
+        for (el in doc.select("a.item, a.slide, div.item-relative a.item")) {
             parseSearchElement(el)?.let { items.add(it) }
         }
         return items.distinctBy { it.url }
@@ -133,8 +133,8 @@ class FilmMakinesi : MainAPI() {
 
         if (isTv) {
             val episodes = mutableListOf<Episode>()
-            doc.select("a[href*='bolum'], div.episodes a").forEach { a ->
-                val epHref = fixUrlNull(a.attr("href")) ?: return@forEach
+            for (a in doc.select("a[href*='bolum'], div.episodes a")) {
+                val epHref = fixUrlNull(a.attr("href")) ?: continue
                 val epTitle = a.text().trim()
 
                 val sMatch = Regex("""(\d+)\.\s*Sezon""").find(epTitle)
