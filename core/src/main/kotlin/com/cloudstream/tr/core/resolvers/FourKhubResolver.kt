@@ -62,7 +62,15 @@ object FourKhubResolver {
                     val itemTitle = linkTag?.text() ?: ""
                     val itemHref = linkTag?.attr("href") ?: ""
 
+<<<<<<< Updated upstream
                     if (itemHref.isBlank()) continue
+=======
+            for (entry in entries) {
+                val linkTag = if (entry.tagName() == "a") entry else entry.selectFirst("h2 a, a[rel='bookmark'], a")
+                val itemTitle = linkTag?.text() ?: ""
+                val rawHref = linkTag?.attr("href") ?: ""
+                val itemHref = if (rawHref.startsWith("/")) "$domain$rawHref" else rawHref
+>>>>>>> Stashed changes
 
                     // Check title match
                     val isTitleMatch = itemTitle.contains(cleanTitle, ignoreCase = true) ||

@@ -35,7 +35,11 @@ open class RapidVidExtractor : ExtractorApi() {
                 val rev = token.reversed()
                 val padLen = (4 - rev.length % 4) % 4
                 val padded = rev + "=".repeat(padLen)
+<<<<<<< Updated upstream
                 val decodedBytes = android.util.Base64.decode(padded, android.util.Base64.DEFAULT)
+=======
+                val decodedBytes = com.cloudstream.tr.core.utils.Base64Utils.decode(padded)
+>>>>>>> Stashed changes
                 val decodedStr = String(decodedBytes, Charsets.ISO_8859_1)
                 val key = "K9L"
                 val sb = StringBuilder()
@@ -47,7 +51,11 @@ open class RapidVidExtractor : ExtractorApi() {
                 val inner = sb.toString()
                 val innerPad = (4 - inner.length % 4) % 4
                 val innerPadded = inner + "=".repeat(innerPad)
+<<<<<<< Updated upstream
                 String(android.util.Base64.decode(innerPadded, android.util.Base64.DEFAULT), Charsets.UTF_8)
+=======
+                String(com.cloudstream.tr.core.utils.Base64Utils.decode(innerPadded), Charsets.UTF_8)
+>>>>>>> Stashed changes
             } catch (e: Exception) {
                 ""
             }

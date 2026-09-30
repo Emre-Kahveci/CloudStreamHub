@@ -1,35 +1,34 @@
 ---
 name: implement-approved-plan
-description: Delegate implementation of the approved plan to the implementation subagent, then automatically run the internal verifier before independent OpenCode review.
+description: Implement an explicitly approved CloudStreamHub plan or task contract with Codex subagents, then verify and independently review the result.
 ---
 
 # Implement Approved Plan
 
-The default/main Antigravity agent must not implement the approved plan itself.
+Use when the user explicitly references an approved plan, implementation contract, or `.ai-workflow/APPROVED_PLAN.md`.
 
 ## Pre-flight
 
-Verify:
+Confirm the referenced plan exists, is non-empty, and still matches the current repository.
 
-1. `.ai-workflow/APPROVED_PLAN.md` exists and is non-empty.
-2. `AGENTS.md` exists.
-3. The current workspace is the intended repository.
+If it is stale or contradictory, report the concrete conflict rather than inventing a replacement architecture.
 
-## Step 1 — Implementation
+## Implementation
 
-Invoke subagent `approved-plan-implementer` with workspace `inherit`.
+Delegate to `implementer`.
 
-Task intent:
+The plan is a scope boundary, not permission for unrelated cleanup.
 
-> Implement the approved repository plan. Treat `AGENTS.md`, `.ai-workflow/REQUEST_SPEC.md`, and `.ai-workflow/APPROVED_PLAN.md` as the contract. Inspect the actual repository before editing. Implement only approved scope. Do not report completion merely because code was written: run required verification, inspect the final diff and untracked files, and continue fixing until mandatory implementation gates pass or a genuine blocker exists.
+## Verification
 
-If implementation is BLOCKED, stop.
+After implementation returns COMPLETED, delegate to `verifier`.
 
-## Step 2 — Mandatory internal verification
+Do not treat historical review-ledger labels as automatic failures.
 
-After implementation reports COMPLETED, invoke `implementation-verifier` with workspace `inherit`.
+## Independent review
 
-Do not perform independent review in the parent agent.
+If verification passes and the change is non-trivial, delegate to `reviewer`.
 
-- If verifier returns FAIL: tell the user internal verification failed and surface the exact failures. Do not direct them to OpenCode `/review` yet.
-- If verifier returns PASS: direct the workflow to OpenCode `/review`.
+If blocking current findings exist, send only that finite finding set to `fixer`, then re-run verification.
+
+Do not require the user to switch agents manually.

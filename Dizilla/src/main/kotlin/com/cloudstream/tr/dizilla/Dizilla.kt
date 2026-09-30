@@ -79,12 +79,12 @@ class Dizilla : MainAPI() {
         }
 
         if (items.isEmpty()) {
-            doc.select("div.serie-card, div.episode-card, a[href*='/dizi/']").forEach { el ->
-                val link = if (el.tagName() == "a") el else el.selectFirst("a") ?: return@forEach
-                val href = fixUrlNull(link.attr("href")) ?: return@forEach
+            for (el in doc.select("div.serie-card, div.episode-card, a[href*='/dizi/']")) {
+                val link = if (el.tagName() == "a") el else el.selectFirst("a") ?: continue
+                val href = fixUrlNull(link.attr("href")) ?: continue
                 val title = el.selectFirst(".title, h2, h3")?.text()?.ifBlank { null }
                     ?: link.attr("title").ifBlank { null }
-                    ?: return@forEach
+                    ?: continue
                 val poster = fixUrlNull(el.selectFirst("img")?.attr("src") ?: el.selectFirst("img")?.attr("data-src"))
                 items.add(
                     newTvSeriesSearchResponse(title.trim(), href, TvType.TvSeries) {
@@ -141,10 +141,10 @@ class Dizilla : MainAPI() {
         } catch (e: Exception) {
             try {
                 val doc = app.get("${mainUrl}/arama?q=${URLEncoder.encode(query, "UTF-8")}").document
-                doc.select("div.serie-card, a[href*='/dizi/']").forEach { el ->
-                    val a = if (el.tagName() == "a") el else el.selectFirst("a") ?: return@forEach
-                    val href = fixUrlNull(a.attr("href")) ?: return@forEach
-                    val title = a.attr("title").ifBlank { el.selectFirst("h2, h3")?.text() } ?: return@forEach
+                for (el in doc.select("div.serie-card, a[href*='/dizi/']")) {
+                    val a = if (el.tagName() == "a") el else el.selectFirst("a") ?: continue
+                    val href = fixUrlNull(a.attr("href")) ?: continue
+                    val title = a.attr("title").ifBlank { el.selectFirst("h2, h3")?.text() } ?: continue
                     val poster = fixUrlNull(el.selectFirst("img")?.attr("src"))
                     items.add(
                         newTvSeriesSearchResponse(title.trim(), href, TvType.TvSeries) {
@@ -291,7 +291,7 @@ class Dizilla : MainAPI() {
             }
         }
 
-        doc.select("iframe").forEach { iframe ->
+        for (iframe in doc.select("iframe")) {
             val src = iframe.attr("src").ifEmpty { iframe.attr("data-src") }
             if (src.isNotBlank()) {
                 val fullUrl = if (src.startsWith("http")) src else if (src.startsWith("//")) "https:$src" else "${mainUrl}/$src"

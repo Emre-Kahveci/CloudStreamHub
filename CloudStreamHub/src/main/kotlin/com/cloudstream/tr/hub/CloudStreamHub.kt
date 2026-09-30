@@ -15,6 +15,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
+import java.util.Collections
 
 class CloudStreamHub : MainAPI() {
     override var mainUrl = "https://api.themoviedb.org/3"
@@ -158,7 +159,7 @@ class CloudStreamHub : MainAPI() {
             val episodes = mutableListOf<Episode>()
             val seasons = resp.seasons?.filter { (it.seasonNumber ?: 0) > 0 } ?: emptyList()
 
-            seasons.forEach { season ->
+            for (season in seasons) {
                 val sNum = season.seasonNumber ?: 1
                 val epCount = season.episodeCount ?: 0
                 for (ep in 1..epCount) {
@@ -215,7 +216,11 @@ class CloudStreamHub : MainAPI() {
         )
         val cachedLinks = com.cloudstream.tr.core.streaming.StreamCacheManager.get(cacheKey)
         if (!cachedLinks.isNullOrEmpty()) {
+<<<<<<< Updated upstream
             for (link in cachedLinks) callback(link)
+=======
+            for (link in cachedLinks) { callback(link) }
+>>>>>>> Stashed changes
             if (payload.imdbId != null) {
                 com.cloudstream.tr.core.resolvers.SubtitlesResolver.resolveTurkishSubtitles(
                     imdbId = payload.imdbId,
@@ -338,9 +343,13 @@ class CloudStreamHub : MainAPI() {
 
                     if (targetLinkData != null) {
                         val channel = Channel<ExtractorLink>(capacity = Channel.UNLIMITED)
+<<<<<<< Updated upstream
                         val seenUrls = java.util.Collections.newSetFromMap(
                             ConcurrentHashMap<String, Boolean>()
                         )
+=======
+                        val seenUrls = Collections.newSetFromMap(ConcurrentHashMap<String, Boolean>())
+>>>>>>> Stashed changes
                         var rawLinksReceived = 0
                         var duplicatesDropped = 0
                         var channelOverflowDropped = 0
@@ -458,7 +467,11 @@ class CloudStreamHub : MainAPI() {
 
         if (collectedLinks.isNotEmpty()) {
             val sortedLinks = com.cloudstream.tr.core.model.StreamPrioritySorter.sortByPriority(collectedLinks)
+<<<<<<< Updated upstream
             for (link in sortedLinks) callback(link)
+=======
+            for (link in sortedLinks) { callback(link) }
+>>>>>>> Stashed changes
             com.cloudstream.tr.core.streaming.StreamCacheManager.put(cacheKey, sortedLinks)
         }
 

@@ -101,7 +101,7 @@ class FilmMakinesi : MainAPI() {
             ).document
 
             val searchResponses = mutableListOf<SearchResponse>()
-            doc.select("a.item, div.item-relative a.item").forEach { a ->
+            for (a in doc.select("a.item, div.item-relative a.item")) {
                 parseSearchElement(a)?.let { searchResponses.add(it) }
             }
             ProviderModels.dedupSearchResults(searchResponses)
@@ -182,7 +182,7 @@ class FilmMakinesi : MainAPI() {
         val doc = app.get(data, headers = mapOf("User-Agent" to userAgent, "Referer" to "${mainUrl}/")).document
 
         val iframes = mutableListOf<String>()
-        doc.select("iframe, [data-video_url], [data-frame], .partlar a, .parts a, li[data-frame], button[data-url]").forEach { el ->
+        for (el in doc.select("iframe, [data-video_url], [data-frame], .partlar a, .parts a, li[data-frame], button[data-url]")) {
             val src = el.attr("data-video_url").ifEmpty {
                 el.attr("data-frame").ifEmpty {
                     el.attr("data-src").ifEmpty {
@@ -218,3 +218,5 @@ class FilmMakinesi : MainAPI() {
         return found || count > 0
     }
 }
+
+

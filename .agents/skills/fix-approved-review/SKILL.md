@@ -1,38 +1,26 @@
 ---
 name: fix-approved-review
-description: Execute the finite approved correction contract with the fixer subagent, then run the finite internal verifier.
+description: Fix a finite set of current, verified CloudStreamHub review findings, then re-run independent verification without expanding the correction scope.
 ---
 
 # Fix Approved Review Findings
 
-Keep correction work out of the default/main Antigravity agent.
+Use only when there is a finite, current correction set approved by the user or produced by the active review workflow.
 
-## Pre-flight
+## Correction
 
-Require:
+Delegate the finding set to `fixer`.
 
-1. `.ai-workflow/APPROVED_PLAN.md`
-2. `.ai-workflow/REVIEW_HISTORY.md`
-3. `.ai-workflow/CORRECTION_PLAN.md`
-4. intended repository workspace
+The fixer must re-confirm each finding, repair the root cause/invariant across only the necessary affected surfaces, and avoid unrelated cleanup.
 
-The correction plan is a finite contract. Do not expand it during execution.
+## Verification
 
-## Step 1 — Correction
+After correction, delegate to `verifier`.
 
-Invoke `verified-review-fixer` with workspace `inherit`.
+If AUTO_REQUIRED gates pass and remaining checks are genuinely manual/environment-dependent, do not keep the loop open solely because historical ledgers still contain old statuses.
 
-Task intent:
+## Closure
 
-> Execute only the ACTIVE finite correction contract in `.ai-workflow/CORRECTION_PLAN.md`. Fix root causes across the necessary affected surfaces, not only the originally reported line. Run AUTO_REQUIRED gates. Do not treat MANUAL_REQUIRED/live/device checks as automatic blockers. Do not invent additional cleanup or new review scope.
+Use `reviewer` again only when the correction materially changes behavior or when the previous finding was BLOCKER/HIGH.
 
-If correction is BLOCKED, stop and report the concrete blocker.
-
-## Step 2 — Internal verification
-
-Invoke `implementation-verifier` with workspace `inherit`.
-
-The verifier must decide current truth from source/diff/tests/contract, not stale ledger status labels.
-
-- FAIL: surface concrete current blockers and do not proceed to independent review.
-- PASS: direct the user to OpenCode `/review`.
+Do not create an endless correction cycle for LOW/style/advisory observations.

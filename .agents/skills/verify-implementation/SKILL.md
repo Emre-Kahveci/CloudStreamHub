@@ -1,22 +1,24 @@
 ---
 name: verify-implementation
-description: Run the read-only implementation-verifier subagent as a finite internal gate before independent OpenCode review.
+description: Run CloudStreamHub's independent verification gate against the current working tree, acceptance criteria, tests, repository validators, and provider/playback evidence.
 ---
 
 # Verify Implementation
 
-Invoke `implementation-verifier` with workspace `inherit`.
+Delegate to `verifier`.
 
-Task intent:
+The verifier must classify gates as:
 
-> Verify the CURRENT working tree against the ACTIVE approved implementation/correction contract. Treat historical review-ledger statuses as history, not as automatic failures. Classify gates as AUTO_REQUIRED, MANUAL_REQUIRED, or OPTIONAL_DIAGNOSTIC. PASS requires all AUTO_REQUIRED gates and contracted fixes to be valid; genuine manual/live/environment-dependent checks may remain UNVERIFIED_MANUAL without blocking PASS. Write `.ai-workflow/VERIFICATION_REPORT.md`. Do not edit product code or contracts.
+- `AUTO_REQUIRED`
+- `MANUAL_REQUIRED`
+- `OPTIONAL_DIAGNOSTIC`
 
-If verification returns FAIL:
+AUTO_REQUIRED must pass.
 
-- surface only the concrete current blockers;
-- do not send the user to OpenCode `/review` yet.
+A genuine manual/device/live/environment-dependent gate may remain `UNVERIFIED_MANUAL` without forcing failure.
 
-If verification returns PASS:
+Historical `.ai-workflow` statuses are not current truth unless the present task explicitly makes them active.
 
-- tell the user to run OpenCode `/review` for independent review;
-- do not require the historical ledger to already say VERIFIED_FIXED.
+For provider/playback claims, verify the same technical layer being claimed. Build, HTTP, iframe, or embed success alone is not playback proof.
+
+Return the verifier's `VERIFICATION_STATUS` plus concise evidence and blockers.

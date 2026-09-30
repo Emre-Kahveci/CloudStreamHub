@@ -1,130 +1,308 @@
-# Shared Repository Engineering Rules
+# CloudStreamHub — Codex Engineering Contract
 
-This file is intentionally shared by both OpenCode and Google Antigravity.
+This repository is maintained with Codex as the primary software-engineering assistant.
 
-## Roles
+The user should be able to describe the desired outcome normally. The primary Codex agent is responsible for inspecting the repository, choosing the appropriate workflow, delegating to specialized subagents when useful, implementing the requested change, verifying it, reviewing it, and reporting the result. Do not require the user to manually select a subagent for routine work.
 
-The repository uses a separation-of-duties workflow:
+## 1. Project mission
 
-- **ChatGPT / OpenCode Architect**: investigate, analyze, challenge assumptions, and produce implementation-ready plans. It must not modify product source code.
-- **Gemini / Google Antigravity Implementer**: implement only an approved plan, run relevant verification, and report deviations.
-- **ChatGPT / OpenCode Reviewer**: independently review the actual working-tree changes. It must not modify product source code.
-- **Gemini / Google Antigravity Fixer**: fix only verified review findings that have been handed off.
+CloudStreamHub is a Turkish CloudStream extension repository. The engineering goal is not merely to make providers compile: enabled providers must remain structurally valid, publishable, maintainable, and—when playback is in scope—capable of reaching truthful playback evidence.
 
-Do not blur these roles unless the user explicitly changes the workflow.
+Prefer small, evidence-based changes over broad rewrites.
 
-## Repository First
+Repository truth beats assumptions, stale notes, old review ledgers, and remembered behavior.
 
-Before making or recommending a material change:
+## 2. Repository map and invariants
 
-1. Inspect the existing repository structure and conventions.
-2. Trace the relevant execution path instead of guessing from filenames.
-3. Identify existing tests, public contracts, persistence behavior, configuration, migrations, and integration boundaries that may be affected.
-4. Prefer existing abstractions and patterns unless the approved plan explicitly requires a change.
-5. Distinguish verified repository facts from assumptions.
+Important surfaces include:
 
-## Scope Discipline
+- Provider modules: top-level directories containing `build.gradle.kts`.
+- Shared Kotlin code: `core/src/main/kotlin`.
+- Shared tests: `core/src/test/kotlin` where applicable.
+- Provider registry: `config/providers.json`.
+- Domain/runtime resolution: `config/domains.json`.
+- Repository validators and health tooling: `tools/`.
+- CI validation/build/publish workflows: `.github/workflows/`.
+- Generated plugin metadata: `build/plugins.json`.
+- Built extension artifacts: `*.cs3`.
+- Published distribution: `builds` branch.
+- Repository manifest: `repo.json`.
 
-- Implement only the approved scope.
-- Do not silently redesign adjacent modules.
-- Do not perform opportunistic cleanup unrelated to the task.
-- Preserve public behavior and compatibility unless the approved plan explicitly changes them.
-- Keep changes minimal, reviewable, and reversible.
-- If the approved plan conflicts with the repository's actual state, stop and report the conflict rather than improvising a new architecture.
+`settings.gradle.kts` auto-discovers provider modules. Do not maintain a second hard-coded provider list unless an existing repository contract requires it.
 
-## Source Safety
+When provider inventory changes, preserve consistency across the enabled provider registry, generated `plugins.json`, and built `.cs3` artifacts.
 
-Never automatically run destructive or remote Git operations, including:
+Do not directly hand-edit generated artifacts when the documented build process can regenerate them.
+
+## 3. Default execution lifecycle
+
+For a material task, use this lifecycle unless the task clearly needs a smaller subset:
+
+`DISCOVER → TRACE → REPRODUCE → CLASSIFY → ROOT CAUSE → PLAN → IMPLEMENT → TEST → VERIFY → REVIEW → DOCUMENT`
+
+Meaning:
+
+1. **DISCOVER** — inspect the relevant repository structure, active configuration, tests, and conventions.
+2. **TRACE** — trace the real execution path. Do not infer behavior from filenames alone.
+3. **REPRODUCE** — reproduce the defect or establish a concrete failing condition when feasible.
+4. **CLASSIFY** — identify the failing layer before editing.
+5. **ROOT CAUSE** — state the invariant that is broken.
+6. **PLAN** — choose the smallest complete fix.
+7. **IMPLEMENT** — make only the changes required by the requested outcome.
+8. **TEST** — run narrow tests first.
+9. **VERIFY** — run the required repository gates and inspect the working tree.
+10. **REVIEW** — independently challenge the final diff for regressions and incomplete fixes.
+11. **DOCUMENT** — update durable project documentation only when behavior/contracts changed.
+
+Do not stop at “code written” or “build succeeds.”
+
+## 4. Automatic subagent routing
+
+The primary agent owns orchestration.
+
+Use specialized subagents automatically when they materially improve quality:
+
+- `repo_mapper` — read-only architecture/repository exploration and change-impact mapping.
+- `provider_debugger` — read-only CloudStream provider, extractor, network, manifest, and playback-path diagnosis.
+- `implementer` — scoped code changes after the relevant behavior and boundaries are understood.
+- `verifier` — independent verification against requested acceptance criteria and repository gates.
+- `reviewer` — independent final review of the actual working-tree diff.
+- `fixer` — correction of verified review findings without expanding scope.
+
+Delegation rules:
+
+- Small, obvious, low-risk edits may be handled directly by the primary agent.
+- For ambiguous or cross-cutting work, inspect with `repo_mapper` before implementation.
+- For provider/playback failures, use `provider_debugger` before changing code unless the root cause is already directly proven.
+- Do not run multiple write-capable agents against the same files concurrently.
+- After a material implementation, verification should be performed by `verifier`, not by relying only on the implementer's self-report.
+- For non-trivial changes, run `reviewer` after verification.
+- If review finds a real blocking defect, delegate the finite correction set to `fixer`, then re-run verification.
+- Do not create an endless review/fix loop for style, polish, LOW-severity suggestions, or historical findings that are no longer reproducible.
+
+Subagents must inspect actual source and return evidence. The primary agent remains responsible for the final integrated answer.
+
+## 5. CloudStream provider truth model
+
+For provider work, reason about the complete chain:
+
+`provider discovery/search → load() → episode/movie data → loadLinks() → extractor/resolver → candidate media URL → headers/cookies/referrer → manifest/file → media segments → player`
+
+A successful build, HTTP 200, HTML page load, iframe discovery, embed URL, or extractor callback alone is **not** sufficient evidence that playback works.
+
+Classify failures by layer before fixing. Typical layers include:
+
+- provider discovery / registration
+- current domain resolution
+- search/main-page parsing
+- detail-page parsing
+- episode/movie identifier construction
+- `loadLinks`
+- embed extraction
+- anti-bot / request headers / cookies / referer
+- HLS/DASH/file URL resolution
+- manifest retrieval
+- media segment retrieval
+- player compatibility
+
+Do not assume a Media3/player error is a codec issue until URL type, redirects, headers, manifest, and segment access have been checked.
+
+When reporting provider state, prefer evidence-based states such as:
+
+- `IMPLEMENTED_WORKING`
+- `DEGRADED`
+- `BLOCKED_WITH_EVIDENCE`
+- `DEAD_WITH_EVIDENCE`
+
+Do not present “eligible”, “probably fixed”, or “builds successfully” as equivalent to working playback.
+
+## 6. Provider implementation discipline
+
+Before modifying a provider:
+
+- Inspect its module `build.gradle.kts`.
+- Read the provider implementation and any custom extractors it depends on.
+- Check shared helpers in `core/` before adding duplicate utilities.
+- Check `config/providers.json` and `config/domains.json`.
+- Check relevant health/tooling behavior when metadata or domain logic changes.
+- Search for tests that already encode the expected behavior.
+- Prefer dynamic runtime domain resolution and existing repository abstractions.
+
+When adding or replacing a provider:
+
+- Keep the implementation isolated to the minimum required module/shared helper surfaces.
+- Do not copy large upstream code blocks without checking provenance and license compatibility.
+- Prefer public, reproducible source behavior.
+- Do not add credential theft, secret extraction, DRM circumvention, or private-account bypass logic.
+- Do not hard-code short-lived tokens, cookies, or user credentials.
+- Preserve the repository's domain allowlisting and runtime-resolution model.
+
+## 7. Health monitoring semantics
+
+Health tooling must report the layer it actually verified.
+
+Treat structural/provider health and real playback health as different evidence classes.
+
+- L0–L5-style checks may establish reachability, parsing, embed discovery, or intermediate resolution.
+- L6–L8-style evidence is reserved for later playback-path validation such as media URL/manifest/segment truth.
+
+Do not upgrade an issue to “playback working” from weaker evidence.
+
+For automated issue management:
+
+- Treat issue identity as `provider + problem_type` where the repository tooling does so.
+- Avoid repetitive comments when state did not materially change.
+- Recovery must correspond to the tier/problem that originally failed.
+- Disabled providers must not create noisy active-domain/provider-health churn.
+- Closing an issue requires evidence that the relevant failing condition recovered, not merely that another lower tier passed.
+
+## 8. Verification gates
+
+Use the narrowest relevant test first, then expand.
+
+Common local Windows commands:
+
+```powershell
+python tools/validate_repo.py
+.\gradlew.bat testDebugUnitTest --parallel --continue
+.\gradlew.bat make makePluginsJson
+python tools/validate_repo.py --verify-artifacts
+```
+
+CI/Linux equivalents use `./gradlew`.
+
+When provider behavior or live resolution is in scope, select the relevant repository tooling rather than inventing ad-hoc success criteria, for example:
+
+```powershell
+python tools/live_provider_smoke.py
+python tools/provider_health.py
+python tools/generate_playback_matrix.py
+python tools/playback_verifier.py
+```
+
+Do not blindly run every live/network tool for unrelated changes.
+
+If a provider module changed, account for the version-bump invariant enforced by `tools/verify_version_bumps.py`.
+
+Before declaring a material task complete:
+
+1. `git status --short`
+2. inspect the relevant `git diff`
+3. confirm no unrelated generated or untracked files were introduced
+4. map requested acceptance criteria to concrete evidence
+5. report any check that could not run and why
+
+### Gate classes
+
+Classify verification work as:
+
+- `AUTO_REQUIRED` — deterministic repository-local validation that must pass.
+- `MANUAL_REQUIRED` — device/UI/manual playback/external environment checks that cannot be reproduced reliably in the current environment.
+- `OPTIONAL_DIAGNOSTIC` — useful investigation that is not a blocking acceptance gate.
+
+A genuine `MANUAL_REQUIRED` check may remain unverified without converting a valid automated result into failure. Never claim that the manual check passed.
+
+## 9. Review standard
+
+Review the resulting behavior, not just syntax.
+
+Use `git diff HEAD` as an entry point, then inspect surrounding code when semantics require it.
+
+Prioritize:
+
+- correctness and regression risk
+- provider/extractor contract breakage
+- false-positive health reporting
+- invalid or stale domain behavior
+- concurrency/cancellation/resource lifetime
+- header/cookie/referer propagation
+- exception handling that masks failure
+- test assertions that do not prove the requested behavior
+- accidental provider inventory drift
+- generated artifact drift
+- secrets or unsafe logging
+
+A review finding must include concrete evidence, impact, and a viable correction direction.
+
+Do not reopen a completed correction cycle for purely stylistic preferences.
+
+## 10. Scope and code quality
+
+- Implement the requested outcome, not adjacent wish-list cleanup.
+- Prefer existing abstractions over duplicate helpers.
+- Do not introduce a new dependency when the repository can already solve the problem cleanly.
+- Preserve public behavior unless the user explicitly asks to change it.
+- Keep patches reviewable and reversible.
+- Fix root causes/invariants rather than only the first observed symptom.
+- When a root cause affects multiple equivalent surfaces, fix the necessary set consistently.
+- Add or strengthen tests when behavior changes and automation can prove it.
+- Do not weaken validation to make a failing change pass.
+
+## 11. Git and external side effects
+
+Default behavior is local and reversible.
+
+Never run these without an explicit user request:
 
 - `git push`
+- force push
 - `git reset --hard`
-- `git clean -fd`
-- `git clean -fdx`
-- destructive rebase/history rewriting
+- destructive `git clean`
+- destructive history rewrite
 - forced branch deletion
+- release/publish/deploy actions
+- GitHub issue/PR mutations
 
-Do not create commits unless the user explicitly asks for a commit.
+Do not create a commit unless the user explicitly asks.
 
-Do not modify secrets, credentials, `.env` files, certificates, signing assets, production deployment credentials, or private keys unless the task explicitly requires it and the user has approved that scope.
+Read-only Git inspection is encouraged.
 
-## Implementation Quality
+If the user asks for a commit, inspect the diff first and commit only the intended files.
 
-For implementation work:
+## 12. Secrets and sensitive material
 
-1. Read `.ai-workflow/APPROVED_PLAN.md` before touching source code.
-2. Verify that the plan still matches the current working tree.
-3. Implement in small coherent steps.
-4. Add or update tests when behavior changes or the approved plan requires them.
-5. Run the narrowest relevant verification first, then broader verification when appropriate.
-6. Inspect the resulting diff before declaring completion.
-7. Report any deviation from the approved plan explicitly.
+Do not modify or expose:
 
-Implementation is not complete merely because code was written.
+- `.env` secrets
+- API tokens
+- cookies containing account credentials
+- signing keys/certificates
+- private keys
+- production credentials
 
-## Review Quality
+unless the user's task explicitly requires a safe, authorized change.
 
-For code review:
+Never print secrets into logs or reports.
 
-- Use `git diff HEAD` as the **entry point**, not the boundary of the review.
-- Inspect untracked files reported by `git status --short`.
-- Read enough surrounding source to understand every material change.
-- Follow callers, callees, interfaces, persistence paths, migrations, and tests when their semantics matter.
-- Do not re-read unrelated parts of the repository without a concrete reason.
-- Challenge implementation claims against the actual source and diff.
-- Prioritize correctness, regressions, data integrity, API compatibility, concurrency, security, resource lifetime, error handling, and test quality.
+## 13. Legacy workflow files
 
-## Testing
+The repository may contain historical Antigravity/OpenCode coordination files under `.ai-workflow/` and legacy Antigravity agent definitions under `.agents/agents/`.
 
-Use the repository's existing test/build/lint tooling. Do not invent a new test framework just for the task.
+They are **not automatically authoritative** for a new Codex task.
 
-When verification cannot run, report:
+Only treat an `.ai-workflow/*` file as an active contract when the current user request explicitly references it or the active Codex skill requires it.
 
-- the exact command that was attempted or should be run,
-- why it could not run,
-- what remains unverified.
+Historical `REVIEW_HISTORY.md`, old `CORRECTION_PLAN.md`, or stale `OPEN` labels are evidence of past work, not proof of a current defect.
 
-## Handoff Files
+Codex project agents live under `.codex/agents/`.
+Codex project skills are intentionally kept under `.agents/skills/`, which Codex supports for repository-scoped skill discovery.
 
-The workflow uses these files:
+## 14. Communication
 
-- `.ai-workflow/APPROVED_PLAN.md` — approved implementation contract from ChatGPT/OpenCode to Gemini/Antigravity.
-- `.ai-workflow/REVIEW_FINDINGS.md` — verified review findings from ChatGPT/OpenCode to Gemini/Antigravity.
+The user prefers outcome-oriented work.
 
-Treat them as coordination artifacts. Do not change their meaning silently.
+During execution:
 
-## Antigravity delegation boundary
+- give concise progress updates for long tasks;
+- surface a concrete blocker as soon as it is proven;
+- do not ask the user to choose an agent for routine workflows;
+- do not ask for information already present in the repository;
+- distinguish verified facts from inference.
 
-When this repository is opened in Antigravity, keep the normal/default agent as the primary conversation agent.
+Final reports should contain:
 
-- For an intent to implement `.ai-workflow/APPROVED_PLAN.md`, use the workspace skill `implement-approved-plan`. The default agent must delegate to the `approved-plan-implementer` subagent and must not implement the plan itself.
-- For an intent to fix `.ai-workflow/REVIEW_FINDINGS.md`, use the workspace skill `fix-approved-review`. The default agent must delegate to the `verified-review-fixer` subagent and must not perform the corrections itself.
-- `approved-plan-implementer` and `verified-review-fixer` are subagents only (`mainAgent: false`). Never ask the user to select them as the primary agent.
-- After implementation or fixes, independent review belongs to OpenCode/ChatGPT; Antigravity must not substitute its own final approval.
-
-## Workspace Access Policy (OpenCode)
-
-Inside the active repository/worktree, planning and review agents may freely read, list, search, inspect Git metadata, and run repository-local analysis commands including Python/PowerShell/shell/static-analysis commands without asking for permission.
-
-Outside the active repository/worktree, access requires user approval. Do not inspect unrelated repositories, credentials, SSH material, browser data, or unrelated user/system files.
-
-Repository-local shell freedom does not override role boundaries: architect/reviewer remain read-only and destructive Git/push operations remain prohibited.
-
-## Completion Gate
-
-Writing code is not completion.
-
-Implementation or correction must pass its mandatory internal verification gate before independent review. A failing mandatory command means the work is not ready for review.
-
-Fixes must address the root cause/invariant and all affected surfaces, not only the originally reported line.
-
-## Finite Verification and Review Closure (V4.1)
-
-The review loop must be finite.
-
-- `REVIEW_HISTORY.md` is historical state. An old `OPEN` label alone is never proof that current code is broken.
-- Verification gates must be classified as `AUTO_REQUIRED`, `MANUAL_REQUIRED`, or `OPTIONAL_DIAGNOSTIC`.
-- `AUTO_REQUIRED` gates must pass before internal verification PASS.
-- Genuine device/UI/live-network/external-environment checks may be `MANUAL_REQUIRED`; being unexecuted does not by itself block internal PASS.
-- A correction pass operates from one finite ACTIVE `CORRECTION_PLAN.md`. Do not silently add unrelated cleanup or newly imagined requirements during execution.
-- After correction + internal PASS, independent final review reopens the loop only for real blocking regressions, failed approved acceptance criteria, security/data-integrity/contract defects, or materially incorrect/incomplete behavior.
-- Non-blocking LOW findings, cleanup/style suggestions, and advisory follow-ups must not create an endless correction loop.
+- what changed
+- why
+- verification performed
+- important remaining uncertainty
+- one clear next action only when a next action is actually required

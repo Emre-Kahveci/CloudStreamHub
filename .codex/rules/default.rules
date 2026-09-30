@@ -1,0 +1,126 @@
+# CloudStreamHub Codex command policy.
+# These rules govern commands Codex requests to run outside the sandbox.
+# Project-local rules load only when the project .codex layer is trusted.
+
+# --- Safe read-only Git inspection ---
+
+prefix_rule(
+    pattern = ["git", ["status", "diff", "log", "show", "rev-parse"]],
+    decision = "allow",
+    justification = "Read-only Git inspection is part of the normal repository verification workflow.",
+    match = [
+        "git status --short",
+        "git diff HEAD",
+        "git log -5 --oneline",
+        "git show HEAD",
+        "git rev-parse --show-toplevel",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "branch"],
+    decision = "allow",
+    justification = "Listing/inspecting branches is safe; destructive branch deletion is blocked separately.",
+    match = [
+        "git branch",
+        "git branch --show-current",
+        "git branch -vv",
+    ],
+)
+
+# --- Destructive / remote Git actions ---
+
+prefix_rule(
+    pattern = ["git", "push"],
+    decision = "forbidden",
+    justification = "Remote pushes require an explicit user-controlled action. Prepare the local result and ask the user to request a push explicitly.",
+    match = [
+        "git push",
+        "git push origin main",
+        "git push --force",
+        "git push --force-with-lease",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Hard reset can destroy uncommitted work. Use non-destructive inspection or a user-approved recovery procedure.",
+    match = [
+        "git reset --hard",
+        "git reset --hard HEAD~1",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "clean", ["-fd", "-fdx", "-xdf", "-fxd"]],
+    decision = "forbidden",
+    justification = "Destructive git clean can permanently delete untracked files. Inspect with git clean -nd/-ndx first and require explicit user direction for deletion.",
+    match = [
+        "git clean -fd",
+        "git clean -fdx",
+        "git clean -xdf",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "branch", "-D"],
+    decision = "forbidden",
+    justification = "Forced branch deletion is destructive. Use a normal safe branch operation or require an explicit user decision.",
+    match = [
+        "git branch -D temp",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "rebase"],
+    decision = "prompt",
+    justification = "Rebase can rewrite history; require an approval before running it outside the sandbox.",
+    match = [
+        "git rebase main",
+        "git rebase -i HEAD~3",
+    ],
+)
+
+prefix_rule(
+    pattern = ["git", "commit"],
+    decision = "prompt",
+    justification = "The project contract requires an explicit user request before creating commits.",
+    match = [
+        "git commit -m test",
+        "git commit --amend",
+    ],
+)
+
+# --- GitHub mutations ---
+
+prefix_rule(
+    pattern = ["gh", "pr", ["create", "merge", "close"]],
+    decision = "prompt",
+    justification = "Pull request mutations are external side effects and require approval.",
+    match = [
+        "gh pr create --fill",
+        "gh pr merge 12",
+        "gh pr close 12",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "issue", ["create", "close", "edit"]],
+    decision = "prompt",
+    justification = "Issue mutations are external side effects and require approval.",
+    match = [
+        "gh issue create --title bug",
+        "gh issue close 12",
+        "gh issue edit 12 --add-label bug",
+    ],
+)
+
+prefix_rule(
+    pattern = ["gh", "workflow", "run"],
+    decision = "prompt",
+    justification = "Manually triggering a remote GitHub Actions workflow is an external side effect.",
+    match = [
+        "gh workflow run build.yml",
+    ],
+)

@@ -48,7 +48,11 @@ class CloseLoadExtractor : CoreCloseLoadExtractor() {
                     if (missing != 0) {
                         padded += "=".repeat(4 - missing)
                     }
+<<<<<<< Updated upstream
                     val decodedBytes = android.util.Base64.decode(padded, android.util.Base64.DEFAULT)
+=======
+                    val decodedBytes = com.cloudstream.tr.core.utils.Base64Utils.decode(padded)
+>>>>>>> Stashed changes
                     kspgo = String(decodedBytes, Charsets.ISO_8859_1)
                 } else if (x7ed6 == 'v') {
                     kspgo = kspgo.reversed()

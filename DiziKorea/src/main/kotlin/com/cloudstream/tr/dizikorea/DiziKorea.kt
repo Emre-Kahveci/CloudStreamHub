@@ -195,7 +195,7 @@ class DiziKorea : MainAPI() {
         val document = app.get(data, headers = mapOf("User-Agent" to userAgent)).document
         val iframes = mutableListOf<String>()
 
-        document.select("iframe[data-src], iframe[src], [data-src], [data-embed]").forEach {
+        for (it in document.select("iframe[data-src], iframe[src], [data-src], [data-embed]")) {
             val src = fixUrlNull(
                 it.attr("data-src").ifBlank {
                     it.attr("src").ifBlank {

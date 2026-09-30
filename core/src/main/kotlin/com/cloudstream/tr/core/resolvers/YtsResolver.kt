@@ -48,9 +48,13 @@ data class YtsTorrent(
 object YtsResolver {
     private val mirrors = listOf(
         "https://en.yts.lu",
+<<<<<<< Updated upstream
+=======
+        "https://yts.bz",
+        "https://yts.lt",
+>>>>>>> Stashed changes
         "https://yts.mx",
         "https://web.yts.gg",
-        "https://yts.bz",
         "https://yts.do"
     )
 
@@ -60,7 +64,7 @@ object YtsResolver {
         for (mirror in mirrors) {
             try {
                 val targetUrl = "$mirror/api/v2/list_movies.json?query_term=$imdbId"
-                val response = app.get(targetUrl, timeout = 5).parsedSafe<YtsResponse>()
+                val response = app.get(targetUrl, timeout = 4).parsedSafe<YtsResponse>()
                 val movies = response?.data?.movies
                 if (movies.isNullOrEmpty()) continue
 
@@ -71,8 +75,7 @@ object YtsResolver {
                 val links = torrents.mapNotNull { t ->
                     val hash = t.hash?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
                     val encodedTitle = URLEncoder.encode(movieTitle, "UTF-8")
-                    // Removed &index=0 per instructions
-                    val magnet = "magnet:?xt=urn:btih:$hash&dn=$encodedTitle${TorrentTrackers.asMagnetParam}"
+                    val magnet = "magnet:?xt=urn:btih:$hash&dn=$encodedTitle&index=0${TorrentTrackers.asMagnetParam}"
 
                     val qStr = t.quality ?: "Unknown"
                     val codecStr = t.videoCodec?.let { " $it" } ?: ""

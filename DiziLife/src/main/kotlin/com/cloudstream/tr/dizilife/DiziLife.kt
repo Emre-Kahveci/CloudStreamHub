@@ -155,7 +155,7 @@ class DiziLife : MainAPI() {
         val document = app.get(data).document
 
         val iframes = mutableListOf<String>()
-        document.select("iframe[src]").forEach {
+        for (it in document.select("iframe[src]")) {
             val src = fixUrlNull(it.attr("src"))
             if (!src.isNullOrBlank() && !src.contains("google") && !src.contains("recaptcha")) {
                 iframes.add(src)

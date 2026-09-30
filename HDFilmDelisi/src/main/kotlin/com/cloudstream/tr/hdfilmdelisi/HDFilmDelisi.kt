@@ -182,7 +182,7 @@ class HDFilmDelisi : MainAPI() {
         }
 
         // 2. Direct iframes
-        document.select("iframe[src]").forEach {
+        for (it in document.select("iframe[src]")) {
             val src = fixUrlNull(it.attr("src"))
             if (!src.isNullOrBlank() && !src.contains("google") && !src.contains("recaptcha")) {
                 embedUrls.add(src)
@@ -235,3 +235,6 @@ class HDFilmDelisi : MainAPI() {
         return found || count > 0
     }
 }
+
+
+

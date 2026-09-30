@@ -51,7 +51,7 @@ object TorrentioResolver {
                     return@mapNotNull null
                 }
 
-                val seedMatch = Regex("""[\U0001F464\U0001F465\uD83D\uDC64\uD83D\uDC65👤👥]\s*(\d+)""").find(rawTitle)
+                val seedMatch = Regex("""[\uD83D\uDC64\uD83D\uDC65👤👥]\s*(\d+)""").find(rawTitle)
                 val seedCount = seedMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
                 if (!hasDebrid && seedCount < 3) return@mapNotNull null
 
@@ -92,8 +92,8 @@ object TorrentioResolver {
                 else if (is51) tags += " [5.1]"
 
                 val seedStr = " ($seedCount seeds)"
-                val prefixStr = if (hasDebrid) "🚀 Debrid " else ""
-                val displayName = "$prefixStr$resolution$tags ${if (size.isNotBlank()) "[$size]" else ""}$seedStr".trim()
+                val prefixStr = if (hasDebrid) "🚀 Debrid " else "Torrentio • "
+                val displayName = "$prefixStr$resolution$tags ${if (size.isNotBlank()) "[$size] " else ""}$seedStr".trim()
 
                 if (stream.url != null && !stream.url.startsWith("magnet:")) {
                     return@mapNotNull com.lagradost.cloudstream3.utils.newExtractorLink(
@@ -112,8 +112,8 @@ object TorrentioResolver {
                 val cleanTitle = stream.behaviorHints?.filename?.takeIf { it.isNotBlank() } ?: sanitizedTitle
                 val encodedTitle = URLEncoder.encode(cleanTitle, "UTF-8")
 
-                // standard BEP-0009 compliant magnet URL without index parameter
-                val magnetUrl = "magnet:?xt=urn:btih:$hash&dn=$encodedTitle${TorrentTrackers.asMagnetParam}"
+                val fileIndex = stream.fileIdx ?: 0
+                val magnetUrl = "magnet:?xt=urn:btih:$hash&dn=$encodedTitle&index=$fileIndex${TorrentTrackers.asMagnetParam}"
 
                 com.lagradost.cloudstream3.utils.newExtractorLink(
                     source = "Torrentio",

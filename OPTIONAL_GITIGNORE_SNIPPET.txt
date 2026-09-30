@@ -1,2 +1,0 @@
-# Add this to your existing .gitignore ONLY if you do not want plan/review handoff files committed:
-.ai-workflow/
