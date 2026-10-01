@@ -21,7 +21,7 @@ class CloudStreamHubTest {
     @Test
     fun testBundledProvidersAreAvailableToAggregator() {
         val providerNames = CloudStreamProviderRegistryAdapter
-            .getRegisteredTurkishProviders(excludeName = hub.name)
+            .getRegisteredProviders(excludeName = hub.name)
             .map { it.name }
             .toSet()
 

@@ -207,17 +207,52 @@ class CloudStreamHub : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val payload = AggregatorLinkPayload.fromUrlData(data) ?: return false
+        val torrentSourcesEnabled = com.cloudstream.tr.core.resolvers.DebridConfig.enableTorrentSources
+        val debridEnabled = com.cloudstream.tr.core.resolvers.DebridConfig.isDebridEnabled
         val linksFound = java.util.concurrent.atomic.AtomicBoolean(false)
         val linkCallbackLock = Any()
         val collectedLinks = mutableListOf<ExtractorLink>()
         val seenLinkUrls = mutableSetOf<String>()
+        val emittedSourcesBeforeFederationComplete = mutableSetOf<String>()
+        val deferredLinksBySource = linkedMapOf<String, java.util.ArrayDeque<ExtractorLink>>()
+        var federationComplete = false
         val interceptedCallback: (ExtractorLink) -> Unit = { link ->
             synchronized(linkCallbackLock) {
                 val url = link.url.trim()
-                if (url.isNotBlank() && seenLinkUrls.add(url)) {
+                val isTorrentLink = link.type == ExtractorLinkType.MAGNET ||
+                    link.type == ExtractorLinkType.TORRENT ||
+                    url.startsWith("magnet:", ignoreCase = true)
+                val isTorrentio = link.source.equals("Torrentio", ignoreCase = true)
+                val isYts = link.source.equals("YTS", ignoreCase = true)
+                val sourceAllowed = when {
+                    isYts -> torrentSourcesEnabled
+                    isTorrentio -> torrentSourcesEnabled || (debridEnabled && !isTorrentLink)
+                    isTorrentLink -> torrentSourcesEnabled
+                    else -> true
+                }
+                if (sourceAllowed && url.isNotBlank() && seenLinkUrls.add(url)) {
                     collectedLinks.add(link)
                     linksFound.set(true)
-                    callback(link)
+                    val sourceKey = link.source.trim().lowercase()
+                    if (federationComplete || sourceKey.isBlank() || emittedSourcesBeforeFederationComplete.add(sourceKey)) {
+                        callback(link)
+                    } else {
+                        deferredLinksBySource.getOrPut(sourceKey) { java.util.ArrayDeque() }.addLast(link)
+                    }
+                }
+            }
+        }
+
+        fun flushDeferredLinks() {
+            synchronized(linkCallbackLock) {
+                federationComplete = true
+                while (deferredLinksBySource.isNotEmpty()) {
+                    val iterator = deferredLinksBySource.entries.iterator()
+                    while (iterator.hasNext()) {
+                        val queue = iterator.next().value
+                        callback(queue.removeFirst())
+                        if (queue.isEmpty()) iterator.remove()
+                    }
                 }
             }
         }
@@ -243,14 +278,42 @@ class CloudStreamHub : MainAPI() {
             isMovie = payload.isMovie,
             season = payload.season,
             episode = payload.episode
-        )
+        ) + (payload.tmdbId?.let { "_tmdb_$it" } ?: "")
+
+        fun flushCollectedLinks() {
+            if (collectedLinks.isEmpty()) return
+
+            val linksForCache = collectedLinks.toList().map { link ->
+                val baseName = link.name.removePrefix("[⚡ Smart Play] ")
+                if (baseName == link.name) {
+                    link
+                } else {
+                    ExtractorLink(
+                        source = link.source,
+                        name = baseName,
+                        url = link.url,
+                        referer = link.referer,
+                        quality = link.quality,
+                        type = link.type,
+                        headers = link.headers,
+                        extractorData = link.extractorData
+                    )
+                }
+            }
+            val deterministicLinks = linksForCache.sortedWith(
+                compareBy<ExtractorLink> { it.source.lowercase() }
+                    .thenBy { it.name.lowercase() }
+                    .thenBy { it.url }
+            )
+            val sortedLinks = com.cloudstream.tr.core.model.StreamPrioritySorter.sortByPriority(deterministicLinks)
+            com.cloudstream.tr.core.streaming.StreamCacheManager.put(cacheKey, sortedLinks)
+        }
+
         val cachedLinks = com.cloudstream.tr.core.streaming.StreamCacheManager.get(cacheKey)
         if (!cachedLinks.isNullOrEmpty()) {
             for (link in cachedLinks) {
-                callback(link)
+                interceptedCallback(link)
             }
-            fetchSubtitlesInBackground()
-            return true
         }
 
         // 1. Automated Turkish Subtitles via OpenSubtitles
@@ -293,14 +356,21 @@ class CloudStreamHub : MainAPI() {
             }
         }
 
-        val providers = CloudStreamProviderRegistryAdapter.getRegisteredTurkishProviders(excludeName = this.name)
+        val discoveredProviders = CloudStreamProviderRegistryAdapter.getRegisteredProviders(excludeName = this.name)
+        val providers = if (payload.isMovie) {
+            discoveredProviders.filter { TvType.Movie in it.supportedTypes }
+        } else {
+            discoveredProviders
+        }
         if (providers.isEmpty()) {
+            flushDeferredLinks()
             DiagnosticLogger.log(
                 provider = name,
                 stage = DiagnosticStage.LOAD,
                 category = DiagnosticCategory.SOURCE_DISCOVERY,
-                message = "No registered Turkish providers available for aggregation. Please install individual provider plugins."
+                message = "No eligible providers available from the CloudStream registry or CloudStreamHub bundle."
             )
+            flushCollectedLinks()
             return linksFound.get()
         }
 
@@ -325,12 +395,26 @@ class CloudStreamHub : MainAPI() {
                             provider = provider.name,
                             stage = DiagnosticStage.SEARCH,
                             category = DiagnosticCategory.SOURCE_DISCOVERY,
-                            message = "No confident match for '${payload.title}' or '${payload.originalTitle}' (${payload.year ?: "N/A"}). Arbitrary first results rejected to prevent wrong playback."
+                            message = "Federation result: no confident match for '${payload.title}' or '${payload.originalTitle}' (${payload.year ?: "N/A"}); queries=${searchQueries.size}; arbitrary first results rejected."
                         )
                         return@resolveProgressive
                     }
 
-                    val loadRes = provider.load(matched.url) ?: return@resolveProgressive
+                    DiagnosticLogger.log(
+                        provider = provider.name,
+                        stage = DiagnosticStage.SEARCH,
+                        category = DiagnosticCategory.SOURCE_DISCOVERY,
+                        message = "Federation result: confident ${matched.type} match '${matched.name}'; loading provider result."
+                    )
+                    val loadRes = provider.load(matched.url) ?: run {
+                        DiagnosticLogger.log(
+                            provider = provider.name,
+                            stage = DiagnosticStage.LOAD,
+                            category = DiagnosticCategory.SOURCE_DISCOVERY,
+                            message = "Federation result: matched '${matched.name}', but provider.load returned no response."
+                        )
+                        return@resolveProgressive
+                    }
                     val targetLinkData: String? = if (payload.isMovie) {
                         (loadRes as? MovieLoadResponse)?.dataUrl?.takeIf { it.isNotBlank() } ?: matched.url
                     } else {
@@ -370,7 +454,11 @@ class CloudStreamHub : MainAPI() {
                                         continue
                                     }
 
-                                    if (rawUrl.startsWith("magnet:") || rawLink.type == com.lagradost.cloudstream3.utils.ExtractorLinkType.MAGNET) {
+                                    if (
+                                        rawUrl.startsWith("magnet:") ||
+                                        rawLink.type == com.lagradost.cloudstream3.utils.ExtractorLinkType.MAGNET ||
+                                        rawLink.type == com.lagradost.cloudstream3.utils.ExtractorLinkType.TORRENT
+                                    ) {
                                         emitLink(rawLink)
                                         linksEmitted++
                                         continue
@@ -438,15 +526,20 @@ class CloudStreamHub : MainAPI() {
 
                             consumerJob.join()
 
-                            if (channelOverflowDropped > 0) {
-                                DiagnosticLogger.log(
-                                    provider = provider.name,
-                                    stage = DiagnosticStage.STREAM_PREFLIGHT,
-                                    category = DiagnosticCategory.NETWORK,
-                                    message = "Provider '${provider.name}' completed with dropped links: $channelOverflowDropped dropped due to capacity overflow. Metrics: received=$rawLinksReceived, duplicatesDropped=$duplicatesDropped, valid=$preflightValid, invalid=$preflightInvalid, indeterminate=$preflightIndeterminate, emitted=$linksEmitted"
-                                )
-                            }
+                            DiagnosticLogger.log(
+                                provider = provider.name,
+                                stage = DiagnosticStage.STREAM_PREFLIGHT,
+                                category = if (linksEmitted > 0) DiagnosticCategory.SOURCE_DISCOVERY else DiagnosticCategory.NETWORK,
+                                message = "Federation result: matched='${matched.name}', raw=$rawLinksReceived, providerEmitted=$linksEmitted (before hub dedupe and source-policy filtering), valid=$preflightValid, indeterminate=$preflightIndeterminate, invalid=$preflightInvalid, duplicates=$duplicatesDropped, dropped=$channelOverflowDropped. Preflight does not confirm sustained playback."
+                            )
                         }
+                    } else {
+                        DiagnosticLogger.log(
+                            provider = provider.name,
+                            stage = if (payload.isMovie) DiagnosticStage.LOAD else DiagnosticStage.EPISODE_DISCOVERY,
+                            category = DiagnosticCategory.SOURCE_DISCOVERY,
+                            message = "Federation result: matched '${matched.name}', but no movie or requested episode link data was available."
+                        )
                     }
                 } catch (e: CancellationException) {
                     throw e
@@ -465,10 +558,8 @@ class CloudStreamHub : MainAPI() {
             }
         )
 
-        if (collectedLinks.isNotEmpty()) {
-            val sortedLinks = com.cloudstream.tr.core.model.StreamPrioritySorter.sortByPriority(collectedLinks.toList())
-            com.cloudstream.tr.core.streaming.StreamCacheManager.put(cacheKey, sortedLinks)
-        }
+        flushDeferredLinks()
+        flushCollectedLinks()
 
         return linksFound.get() || resolved > 0
     }

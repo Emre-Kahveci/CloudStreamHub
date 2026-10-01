@@ -3,12 +3,14 @@ package com.cloudstream.tr.core.resolvers
 import com.cloudstream.tr.core.diagnostics.DiagnosticCategory
 import com.cloudstream.tr.core.diagnostics.DiagnosticLogger
 import com.cloudstream.tr.core.diagnostics.DiagnosticStage
+import com.cloudstream.tr.core.network.StreamValidator
+import com.cloudstream.tr.core.network.ValidationStatus
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.utils.ExtractorLink
-import com.lagradost.cloudstream3.utils.ExtractorLinkType
 import com.lagradost.cloudstream3.utils.Qualities
 import org.jsoup.Jsoup
+import java.net.URI
 import java.net.URLEncoder
 
 data class RemoteDomainsConfig(
@@ -82,12 +84,6 @@ object FourKhubResolver {
                     }
                 }
 
-                if (matchedUrl == null) {
-                    // Fallback to first search result if available
-                    val rawHref = searchDoc.select("h2.entry-title a, article a").firstOrNull()?.attr("href")
-                    matchedUrl = rawHref?.let { normalizeSearchResultUrl(it, domain) }
-                }
-
                 val targetPageUrl = matchedUrl?.takeIf { it.isNotBlank() } ?: continue
                 val detailDoc = Jsoup.parse(app.get(targetPageUrl, timeout = 10).text)
 
@@ -105,11 +101,13 @@ object FourKhubResolver {
                     try {
                         var hubPageHtml = app.get(hubUrl, timeout = 10).text
                         var hubDoc = Jsoup.parse(hubPageHtml)
+                        var buttonPageUrl = hubUrl
 
                         if (hubUrl.contains("greenmotors.club")) {
                             val nextUrl = hubDoc.select("a[href*='hubcloud'], a[href*='hubdrive']").firstOrNull()?.attr("href") ?: hubDoc.select("a.btn, a[rel='nofollow']").firstOrNull()?.attr("href")
                             if (nextUrl != null && nextUrl.isNotBlank()) {
-                                hubPageHtml = app.get(nextUrl, timeout = 10).text
+                                buttonPageUrl = URI(hubUrl).resolve(nextUrl).toString()
+                                hubPageHtml = app.get(buttonPageUrl, timeout = 10).text
                                 hubDoc = Jsoup.parse(hubPageHtml)
                             }
                         }
@@ -163,15 +161,21 @@ object FourKhubResolver {
                             }
 
                             val displayName = "⚡ 4KHDHub $serverType [$qualityLabel$techTags]".trim()
+                            val preflight = StreamValidator.validateStream(
+                                url = btnHref,
+                                headers = mapOf("Referer" to buttonPageUrl),
+                                provider = "FourKhubResolver"
+                            )
+                            if (preflight.status != ValidationStatus.VALID || !preflight.hasMediaEvidence) continue
 
                             links.add(
                                 ExtractorLink(
                                     source = "4KHDHub",
                                     name = displayName,
                                     url = btnHref,
-                                    referer = hubUrl,
+                                    referer = buttonPageUrl,
                                     quality = mappedQuality,
-                                    type = ExtractorLinkType.VIDEO
+                                    type = preflight.streamType
                                 )
                             )
                         }

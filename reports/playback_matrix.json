@@ -1,15 +1,15 @@
 {
   "metadata": {
-    "generatedAt": "2026-09-27T16:45:12.124426+00:00",
-    "sourceCommitSha": "3f10dc37c7574ac51931207714c948db70d3e699",
-    "configHash": "a6b2133052b07846",
-    "providerCount": 30,
+    "generatedAt": "2026-10-01T00:28:22.114200+00:00",
+    "sourceCommitSha": "a240cc26f3aed995fd1f5b397c3592338a352c64",
+    "configHash": "b326e2e2e2c5b5d8",
+    "providerCount": 24,
     "cloudStreamVersion": "v4.8.0"
   },
   "summary": {
-    "totalActive": 30,
-    "mediaReachabilityVerified": 9,
-    "mediaReachabilityUnverified": 21,
+    "totalActive": 24,
+    "mediaReachabilityVerified": 8,
+    "mediaReachabilityUnverified": 16,
     "mediaReachabilityFailed": 0,
     "runtimePlaybackVerified": 0,
     "runtimePlaybackNotice": "ExoPlayer / Media3 device verification required for runtime playback status"
@@ -50,23 +50,6 @@
       ]
     },
     {
-      "provider": "DiziPal",
-      "domain": "FAIL",
-      "search": "SKIPPED",
-      "load": "SKIPPED",
-      "playerDiscovery": "SKIPPED",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Domain unreachable"
-      ]
-    },
-    {
       "provider": "FilmMakinesi",
       "domain": "PASS",
       "search": "PASS",
@@ -81,6 +64,23 @@
       "streamType": "HLS",
       "notes": [
         "Live dynamic probe verified via rapid.filmmakinesi.to"
+      ]
+    },
+    {
+      "provider": "4KHDHub",
+      "domain": "FAIL",
+      "search": "SKIPPED",
+      "load": "SKIPPED",
+      "playerDiscovery": "SKIPPED",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
+      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
+      "sourceHost": "none",
+      "streamType": "UNKNOWN",
+      "notes": [
+        "Domain unreachable"
       ]
     },
     {
@@ -186,23 +186,6 @@
       ]
     },
     {
-      "provider": "DiziMom",
-      "domain": "FAIL",
-      "search": "SKIPPED",
-      "load": "SKIPPED",
-      "playerDiscovery": "SKIPPED",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Domain unreachable"
-      ]
-    },
-    {
       "provider": "DiziYou",
       "domain": "PASS",
       "search": "PASS",
@@ -254,23 +237,6 @@
       ]
     },
     {
-      "provider": "FilmModu",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "FAIL_None",
-      "playerDiscovery": "SKIPPED",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Detail returned HTTP None"
-      ]
-    },
-    {
       "provider": "JetFilmIzle",
       "domain": "PASS",
       "search": "PASS",
@@ -288,71 +254,20 @@
       ]
     },
     {
-      "provider": "CizgiMax",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "FAIL_404",
-      "playerDiscovery": "SKIPPED",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Detail returned HTTP 404"
-      ]
-    },
-    {
-      "provider": "DDizi",
-      "domain": "PASS",
-      "search": "PASS",
-      "load": "FAIL_404",
-      "playerDiscovery": "SKIPPED",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Detail returned HTTP 404"
-      ]
-    },
-    {
-      "provider": "Sinewix",
-      "domain": "FAIL",
-      "search": "SKIPPED",
-      "load": "SKIPPED",
-      "playerDiscovery": "SKIPPED",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Domain unreachable"
-      ]
-    },
-    {
       "provider": "CloudStreamHub",
       "domain": "PASS",
-      "search": "PASS",
-      "load": "PASS",
-      "playerDiscovery": "PASS",
-      "extractorResolution": "PASS",
-      "mediaPreflight": "PASS",
-      "firstSegment": "PASS",
-      "mediaReachability": "PASS",
+      "search": "UNVERIFIED",
+      "load": "UNVERIFIED",
+      "playerDiscovery": "UNVERIFIED",
+      "extractorResolution": "UNVERIFIED",
+      "mediaPreflight": "UNVERIFIED",
+      "firstSegment": "UNVERIFIED",
+      "mediaReachability": "UNVERIFIED",
       "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "api.themoviedb.org+federation",
-      "streamType": "HLS",
+      "sourceHost": "api.themoviedb.org",
+      "streamType": "UNKNOWN",
       "notes": [
-        "Aggregator verified: TMDB catalog + multi-provider federation"
+        "TMDB trending endpoint is reachable; Hub search/load, provider federation, and media playback were not exercised by this probe"
       ]
     },
     {
@@ -441,23 +356,6 @@
       ]
     },
     {
-      "provider": "DiziLife",
-      "domain": "FAIL",
-      "search": "SKIPPED",
-      "load": "SKIPPED",
-      "playerDiscovery": "SKIPPED",
-      "extractorResolution": "UNVERIFIED",
-      "mediaPreflight": "UNVERIFIED",
-      "firstSegment": "UNVERIFIED",
-      "mediaReachability": "UNVERIFIED",
-      "runtimePlayback": "UNVERIFIED_BY_DEVICE",
-      "sourceHost": "none",
-      "streamType": "UNKNOWN",
-      "notes": [
-        "Domain unreachable"
-      ]
-    },
-    {
       "provider": "HDFilmDelisi",
       "domain": "PASS",
       "search": "PASS",
@@ -509,7 +407,7 @@
       ]
     },
     {
-      "provider": "FilmHane",
+      "provider": "YTS",
       "domain": "FAIL",
       "search": "SKIPPED",
       "load": "SKIPPED",

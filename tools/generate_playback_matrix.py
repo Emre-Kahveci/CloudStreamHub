@@ -43,7 +43,7 @@ def probe_provider_dynamically(name: str, p_cfg: Dict[str, Any], d_cfg: Dict[str
     known_detail = smoke.get("knownDetail")
     allowed_hosts = set(d_cfg.get("allowedHosts", []))
 
-    # 1. CloudStreamHub Aggregator Profile
+    # 1. CloudStreamHub catalog profile
     if name == "CloudStreamHub":
         try:
             tmdb_url = "https://api.themoviedb.org/3/trending/all/day?api_key=90ad3ec891e5923150283b99719d890f"
@@ -51,28 +51,29 @@ def probe_provider_dynamically(name: str, p_cfg: Dict[str, Any], d_cfg: Dict[str
             with urllib.request.urlopen(req, timeout=8) as r:
                 js = json.loads(r.read().decode("utf-8"))
                 if js.get("results"):
-                    # Federation check via active registered provider
-                    fed_embed = "https://player.filmizle.in/video/c5d736809766d46260d816d8dbc9eb44"
-                    l6, s_url, ext = verifier.verify_l6_extractor_resolution(fed_embed, referer="https://sinemacc.com/")
-                    if l6 == "PASS":
-                        l7, stype, m7 = verifier.verify_l7_media_preflight(s_url, referer=fed_embed)
-                        if l7 == "PASS":
-                            l8, m8 = verifier.verify_l8_first_segment(s_url, stype, referer=fed_embed)
-                            return {
-                                "l1": "PASS", "l3": "PASS", "l4": "PASS", "l5": "PASS",
-                                "l6": l6, "l7": l7, "l8": l8,
-                                "source_host": "api.themoviedb.org+federation",
-                                "stream_type": stype,
-                                "notes": ["Aggregator verified: TMDB catalog + multi-provider federation"]
-                            }
+                    return {
+                        "l1": "PASS", "l3": "UNVERIFIED", "l4": "UNVERIFIED", "l5": "UNVERIFIED",
+                        "l6": "UNVERIFIED", "l7": "UNVERIFIED", "l8": "UNVERIFIED",
+                        "source_host": "api.themoviedb.org",
+                        "stream_type": "UNKNOWN",
+                        "notes": ["TMDB trending endpoint is reachable; Hub search/load, provider federation, and media playback were not exercised by this probe"]
+                    }
         except Exception as e:
             return {
-                "l1": "FAIL", "l3": "FAIL", "l4": "FAIL", "l5": "FAIL",
-                "l6": "FAIL", "l7": "FAIL", "l8": "FAIL",
+                "l1": "UNVERIFIED", "l3": "UNVERIFIED", "l4": "UNVERIFIED", "l5": "UNVERIFIED",
+                "l6": "UNVERIFIED", "l7": "UNVERIFIED", "l8": "UNVERIFIED",
                 "source_host": "api.themoviedb.org",
                 "stream_type": "UNKNOWN",
-                "notes": [f"Aggregator TMDB/federation probe error: {e}"]
+                "notes": [f"TMDB trending probe failed; Hub search/load, provider federation, and media playback were not exercised: {e}"]
             }
+
+        return {
+            "l1": "PASS", "l3": "UNVERIFIED", "l4": "UNVERIFIED", "l5": "UNVERIFIED",
+            "l6": "UNVERIFIED", "l7": "UNVERIFIED", "l8": "UNVERIFIED",
+            "source_host": "api.themoviedb.org",
+            "stream_type": "UNKNOWN",
+            "notes": ["TMDB catalog returned no results; Hub provider federation and media playback were not exercised"]
+        }
 
     fetcher = ProviderFetcher(allowed_hosts=allowed_hosts, canonical=canonical, timeout=10)
 

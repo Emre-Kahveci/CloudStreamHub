@@ -21,7 +21,8 @@ data class PreflightResult(
     val statusCode: Int = 0,
     val failureReason: String? = null,
     val media3ErrorCode: Int? = null,
-    val latencyMs: Long = 0L
+    val latencyMs: Long = 0L,
+    val hasMediaEvidence: Boolean = false
 ) {
     val isValid: Boolean get() = status == ValidationStatus.VALID
 }
@@ -160,6 +161,15 @@ object StreamValidator {
         return ExtractorLinkType.VIDEO
     }
 
+    private fun hasExplicitMediaMetadata(contentType: String?): Boolean {
+        val ct = contentType?.substringBefore(';')?.trim()?.lowercase() ?: ""
+
+        return ct.startsWith("video/") ||
+            ct == "application/vnd.apple.mpegurl" ||
+            ct == "application/x-mpegurl" ||
+            ct == "application/dash+xml"
+    }
+
     /**
      * Determines if a response is an invalid media response (HTML error, bot challenge, JSON error).
      */
@@ -278,13 +288,15 @@ object StreamValidator {
 
                 val inferredFromBytes = inferTypeFromBytes(bytes)
                 val finalType = inferredFromBytes ?: inferTypeFromMetadata(ct, url)
+                val hasMediaEvidence = inferredFromBytes != null || hasExplicitMediaMetadata(ct)
 
                 PreflightResult(
                     status = ValidationStatus.VALID,
                     streamType = finalType,
                     detectedMime = ct,
                     statusCode = code,
-                    latencyMs = latency
+                    latencyMs = latency,
+                    hasMediaEvidence = hasMediaEvidence
                 )
             } ?: run {
                 // Timeout elapsed: Fail-closed with INDETERMINATE status (never emit blindly)

@@ -10,7 +10,6 @@ object CloudStreamProviderRegistryAdapter {
     private val knownProviderClasses = listOf(
         "com.cloudstream.tr.hdfilmcehennemi.HDFilmCehennemi",
         "com.cloudstream.tr.filmmakinesi.FilmMakinesi",
-        "com.cloudstream.tr.fullhdfilmizlesene.FullHDFilmizlesene",
         "com.cloudstream.tr.kultfilmler.KultFilmler",
         "com.cloudstream.tr.sinemacx.SinemaCX",
         "com.cloudstream.tr.hdfilmdelisi.HDFilmDelisi",
@@ -23,10 +22,9 @@ object CloudStreamProviderRegistryAdapter {
     )
 
     /**
-     * Dynamically queries CloudStream's internal APIHolder for registered Turkish providers.
-     * Also falls back to ClassLoader instantiation for known bundled providers when APIHolder is empty.
+     * Combines providers registered in CloudStream's APIHolder with known bundled providers.
      */
-    fun getRegisteredTurkishProviders(excludeName: String = "CloudStreamHub"): List<MainAPI> {
+    fun getRegisteredProviders(excludeName: String = "CloudStreamHub"): List<MainAPI> {
         val discovered = mutableListOf<MainAPI>()
 
         // 1. Try reflection on CloudStream APIHolder
@@ -85,38 +83,25 @@ object CloudStreamProviderRegistryAdapter {
             )
         }
 
-        // 2. Fallback to ClassLoader instantiation if APIHolder returned no providers
-        if (discovered.isEmpty()) {
-            try { discovered.add(com.cloudstream.tr.filmmakinesi.FilmMakinesi()) } catch (_: Throwable) {}
-            try { discovered.add(com.cloudstream.tr.hdfilmcehennemi.HDFilmCehennemi()) } catch (_: Throwable) {}
-            try { discovered.add(com.cloudstream.tr.sinemacx.SinemaCX()) } catch (_: Throwable) {}
-            try { discovered.add(com.cloudstream.tr.sezonlukdizi.SezonlukDizi()) } catch (_: Throwable) {}
-            try { discovered.add(com.cloudstream.tr.kultfilmler.KultFilmler()) } catch (_: Throwable) {}
-            try { discovered.add(com.cloudstream.tr.dizilla.Dizilla()) } catch (_: Throwable) {}
-            try { discovered.add(com.cloudstream.tr.diziyou.DiziYou()) } catch (_: Throwable) {}
-            try { discovered.add(com.cloudstream.tr.hdfilmdelisi.HDFilmDelisi()) } catch (_: Throwable) {}
-            try { discovered.add(com.cloudstream.tr.jetfilmizle.JetFilmIzle()) } catch (_: Throwable) {}
-            try { discovered.add(com.cloudstream.tr.dizikorea.DiziKorea()) } catch (_: Throwable) {}
-            try { discovered.add(com.cloudstream.tr.yesilcamtv.YesilCamTv()) } catch (_: Throwable) {}
-
-            for (className in knownProviderClasses) {
-                try {
-                    val clazz = Class.forName(className)
-                    val instance = clazz.getDeclaredConstructor().newInstance() as? MainAPI
-                    if (instance != null && discovered.none { it.name == instance.name }) {
-                        discovered.add(instance)
-                    }
-                } catch (_: Throwable) {}
-            }
+        // 2. Merge bundled providers even when APIHolder already has separately installed APIs.
+        // A non-empty APIHolder list must not hide providers packaged with CloudStreamHub.
+        for (className in knownProviderClasses) {
+            try {
+                val clazz = Class.forName(className)
+                val instance = clazz.getDeclaredConstructor().newInstance() as? MainAPI
+                if (instance != null && discovered.none { it.name == instance.name }) {
+                    discovered.add(instance)
+                }
+            } catch (_: Throwable) {}
         }
 
-        val filtered = discovered.distinctBy { it.name }.filter { (it.lang == "tr" || it.lang.isBlank()) && it.name != excludeName }
+        val filtered = discovered.distinctBy { it.name }.filter { it.name != excludeName }
         if (filtered.isEmpty()) {
             DiagnosticLogger.log(
                 provider = "CloudStreamHub",
                 stage = DiagnosticStage.LOAD,
                 category = DiagnosticCategory.SOURCE_DISCOVERY,
-                message = "No external Turkish providers registered in CloudStream. Ensure individual provider plugins are installed."
+                message = "No external providers found in CloudStream's registry or bundled modules."
             )
         }
         return filtered

@@ -2,12 +2,14 @@ package com.cloudstream.tr.hub
 
 import android.app.AlertDialog
 import android.content.Context
+import android.util.Log
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import com.cloudstream.tr.core.diagnostics.DiagnosticLogger
 import com.cloudstream.tr.core.resolvers.DebridConfig
 import com.lagradost.cloudstream3.plugins.BasePlugin
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
@@ -15,6 +17,7 @@ import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 @CloudstreamPlugin
 class CloudStreamHubPlugin : BasePlugin() {
     override fun load() {
+        HubFederationLogcatBridge.install()
         registerMainAPI(CloudStreamHub())
     }
 
@@ -46,7 +49,7 @@ class CloudStreamHubPlugin : BasePlugin() {
         }
 
         val torrentCheck = CheckBox(context).apply {
-            text = "P2P Torrent Kaynaklarını Göster (Torrentio/YTS)"
+            text = "P2P Torrent Kaynaklarını Göster (Torrentio/YTS ve diğer sağlayıcılar)"
             isChecked = DebridConfig.enableTorrentSources
             setPadding(0, 20, 0, 0)
         }
@@ -83,5 +86,35 @@ class CloudStreamHubPlugin : BasePlugin() {
             }
             .setNegativeButton("İptal", null)
             .show()
+    }
+}
+
+private object HubFederationLogcatBridge {
+    private var installed = false
+
+    fun install() {
+        synchronized(this) {
+            if (installed) return
+
+            DiagnosticLogger.addListener { event ->
+                if (event.message.startsWith("Federation result:")) {
+                    val message = event.message
+                    val result = when {
+                        "no confident match" in message -> "no-confident-match"
+                        "provider.load returned no response" in message -> "load-no-response"
+                        "no movie or requested episode link data" in message -> "no-link-data"
+                        "confident " in message -> "confident-match"
+                        else -> Regex(
+                            "raw=(\\d+), providerEmitted=(\\d+).*valid=(\\d+), indeterminate=(\\d+), invalid=(\\d+), duplicates=(\\d+), dropped=(\\d+)"
+                        ).find(message)?.let { match ->
+                            val (raw, emitted, valid, indeterminate, invalid, duplicates, dropped) = match.destructured
+                            "streams raw=$raw emitted=$emitted valid=$valid indeterminate=$indeterminate invalid=$invalid duplicates=$duplicates dropped=$dropped"
+                        } ?: "federation-result"
+                    }
+                    Log.i("CloudStreamHub", "${event.provider} [${event.stage}] $result")
+                }
+            }
+            installed = true
+        }
     }
 }
