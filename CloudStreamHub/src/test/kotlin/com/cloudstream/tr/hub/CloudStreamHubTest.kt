@@ -7,6 +7,7 @@ import com.lagradost.cloudstream3.SearchResponseList
 import com.lagradost.cloudstream3.TvSeriesSearchResponse
 import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.newMovieSearchResponse
+import com.lagradost.cloudstream3.newSearchResponseList
 import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.utils.AppUtils
 import kotlinx.coroutines.CancellationException
@@ -134,7 +135,7 @@ class CloudStreamHubTest {
             override suspend fun search(query: String, page: Int): SearchResponseList {
                 assertEquals("Saplantı", query)
                 requestedPage = page
-                return SearchResponseList(listOf(expected), false)
+                return newSearchResponseList(listOf(expected), hasNext = false)
             }
         }
 
@@ -158,7 +159,7 @@ class CloudStreamHubTest {
             override suspend fun search(query: String, page: Int): SearchResponseList {
                 pagedSearchCalled = true
                 assertEquals(1, page)
-                return SearchResponseList(listOf(expected), false)
+                return newSearchResponseList(listOf(expected), hasNext = false)
             }
         }
 
