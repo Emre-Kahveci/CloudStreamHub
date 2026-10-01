@@ -1,4 +1,4 @@
-version = 24
+version = 25
 
 cloudstream {
     authors     = listOf("CloudStreamTR", "Emre-Kahveci")
@@ -22,7 +22,8 @@ val bundledProviderModules = listOf(
     "HDFilmDelisi",
     "JetFilmIzle",
     "DiziKorea",
-    "YesilCamTv"
+    "YesilCamTv",
+    "FullHDFilmizlesene"
 )
 
 val copyBundledProviderSources = tasks.register<Copy>("copyBundledProviderSources") {

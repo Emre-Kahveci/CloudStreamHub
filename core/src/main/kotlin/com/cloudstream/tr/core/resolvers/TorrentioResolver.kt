@@ -29,11 +29,24 @@ data class TorrentioStream(
 )
 
 object TorrentioResolver {
+    internal fun keepTopThreePerQuality(links: List<ExtractorLink>): List<ExtractorLink> {
+        val qualityCounts = mutableMapOf<Int, Int>()
+        return links.filter { link ->
+            val count = qualityCounts.getOrDefault(link.quality, 0)
+            if (count >= 3) {
+                false
+            } else {
+                qualityCounts[link.quality] = count + 1
+                true
+            }
+        }
+    }
+
     suspend fun resolve(imdbId: String, isMovie: Boolean, season: Int? = null, episode: Int? = null): List<ExtractorLink> {
         if (imdbId.isBlank()) return emptyList()
         val type = if (isMovie) "movie" else "series"
         val idPath = if (isMovie) imdbId else "$imdbId:$season:$episode"
-        val options = "providers=yts,eztv,rarbg,1337x,thepiratebay,kickasstorrents,torrentgalaxy,magnetdl|qualityfilter=scr,cam|sort=qualitysize"
+        val options = "qualityfilter=scr,cam|sort=quality|limit=10"
         val prefix = DebridConfig.getActiveDebridPrefix()?.let { "$it|" } ?: ""
         val fullOptions = "$prefix$options"
         val url = "https://torrentio.strem.fun/$fullOptions/stream/$type/$idPath.json"
@@ -53,7 +66,8 @@ object TorrentioResolver {
 
                 val seedMatch = Regex("""[\uD83D\uDC64\uD83D\uDC65👤👥]\s*(\d+)""").find(rawTitle)
                 val seedCount = seedMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
-                if (!hasDebrid && seedCount < 3) return@mapNotNull null
+                val isDirectUrl = stream.url != null && !stream.url.startsWith("magnet:", ignoreCase = true)
+                if (!hasDebrid && !isDirectUrl && seedCount < 3) return@mapNotNull null
 
                 val sizeMatch = Regex("""\b(\d+(?:\.\d+)?\s*[GgMm]B)\b""").find(rawTitle)
                 val size = sizeMatch?.groupValues?.get(1) ?: ""
@@ -95,7 +109,7 @@ object TorrentioResolver {
                 val prefixStr = if (hasDebrid) "🚀 Debrid " else "Torrentio • "
                 val displayName = "$prefixStr$resolution$tags ${if (size.isNotBlank()) "[$size] " else ""}$seedStr".trim()
 
-                if (stream.url != null && !stream.url.startsWith("magnet:")) {
+                if (isDirectUrl) {
                     return@mapNotNull com.lagradost.cloudstream3.utils.newExtractorLink(
                         source = "Torrentio",
                         name = displayName,
@@ -123,7 +137,7 @@ object TorrentioResolver {
                 ) {
                     this.quality = mappedQuality
                 }
-            }
+            }.let(::keepTopThreePerQuality)
         } catch (e: Exception) {
             DiagnosticLogger.log(
                 provider = "Torrentio",

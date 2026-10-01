@@ -18,7 +18,8 @@ object CloudStreamProviderRegistryAdapter {
         "com.cloudstream.tr.diziyou.DiziYou",
         "com.cloudstream.tr.dizikorea.DiziKorea",
         "com.cloudstream.tr.dizilla.Dizilla",
-        "com.cloudstream.tr.jetfilmizle.JetFilmIzle"
+        "com.cloudstream.tr.jetfilmizle.JetFilmIzle",
+        "com.cloudstream.tr.fullhdfilmizlesene.FullHDFilmizlesene"
     )
 
     /**

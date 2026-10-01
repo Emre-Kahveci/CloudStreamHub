@@ -10,6 +10,9 @@ import com.lagradost.cloudstream3.newMovieSearchResponse
 import com.lagradost.cloudstream3.newSearchResponseList
 import com.lagradost.cloudstream3.newTvSeriesSearchResponse
 import com.lagradost.cloudstream3.utils.AppUtils
+import com.lagradost.cloudstream3.utils.ExtractorLink
+import com.lagradost.cloudstream3.utils.ExtractorLinkType
+import com.lagradost.cloudstream3.utils.Qualities
 import kotlinx.coroutines.CancellationException
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertEquals
@@ -21,6 +24,34 @@ import kotlinx.coroutines.launch
 
 class CloudStreamHubTest {
     private val hub = CloudStreamHub()
+
+    @Test
+    fun testTorrentioKeepsAtMostThreeLinksPerQuality() {
+        val qualities = listOf(
+            Qualities.P2160.value,
+            Qualities.P1080.value,
+            Qualities.P720.value
+        )
+        val links = qualities.flatMap { quality ->
+            (1..4).map { index ->
+                ExtractorLink(
+                    source = "Torrentio",
+                    name = "Option $index",
+                    url = "https://example.invalid/$quality/$index",
+                    referer = "",
+                    quality = quality,
+                    type = ExtractorLinkType.VIDEO
+                )
+            }
+        }
+
+        val retained = com.cloudstream.tr.core.resolvers.TorrentioResolver.keepTopThreePerQuality(links)
+
+        assertEquals(9, retained.size)
+        qualities.forEach { quality ->
+            assertEquals(3, retained.count { it.quality == quality })
+        }
+    }
 
     @Test
     fun testBundledProvidersAreAvailableToAggregator() {
@@ -40,7 +71,8 @@ class CloudStreamHubTest {
             "HDFilmDelisi",
             "JetFilmIzle",
             "DiziKorea",
-            "YesilCamTv"
+            "YesilCamTv",
+            "FullHDFilmizlesene"
         )
 
         assertTrue("All bundled providers should be registered", providerNames.containsAll(bundledProviders))
