@@ -1,6 +1,9 @@
 package com.cloudstream.tr.hub
 
+import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.MovieSearchResponse
+import com.lagradost.cloudstream3.SearchResponse
+import com.lagradost.cloudstream3.SearchResponseList
 import com.lagradost.cloudstream3.TvSeriesSearchResponse
 import com.lagradost.cloudstream3.TvType
 import com.lagradost.cloudstream3.newMovieSearchResponse
@@ -84,6 +87,96 @@ class CloudStreamHubTest {
         // Test rejecting completely unrelated title (NEVER returns first result!)
         val match2 = HubMatchingEngine.findConfidentMatch(listOf(cand1, cand2, cand3), listOf("Matrix"), 1999, isMovie = true)
         assertNull("Unrelated title must NOT match first candidate!", match2)
+    }
+
+    @Test
+    fun testFederatedProviderSearchPrefersQuickSearch() = kotlinx.coroutines.test.runTest {
+        val expected = hub.newMovieSearchResponse("Saplantı", "https://site.com/saplantı", TvType.Movie)
+        var quickSearchCalled = false
+        var pagedSearchCalled = false
+        val provider = object : MainAPI() {
+            override var name = "QuickSearchProvider"
+            override var mainUrl = "https://site.com"
+            override val supportedTypes = setOf(TvType.Movie)
+
+            override suspend fun quickSearch(query: String): List<SearchResponse> {
+                quickSearchCalled = true
+                assertEquals("Saplantı", query)
+                return listOf(expected)
+            }
+
+            override suspend fun search(query: String, page: Int): SearchResponseList {
+                pagedSearchCalled = true
+                throw AssertionError("Paged search should not be used when quickSearch is implemented")
+            }
+        }
+
+        val results = HubMatchingEngine.searchProvider(provider, "Saplantı")
+
+        assertEquals(listOf(expected), results)
+        assertTrue(quickSearchCalled)
+        assertTrue(!pagedSearchCalled)
+    }
+
+    @Test
+    fun testFederatedProviderSearchFallsBackToFirstPagedSearchPage() = kotlinx.coroutines.test.runTest {
+        val expected = hub.newMovieSearchResponse("Saplantı", "https://site.com/saplantı", TvType.Movie)
+        var requestedPage: Int? = null
+        val provider = object : MainAPI() {
+            override var name = "PagedSearchProvider"
+            override var mainUrl = "https://site.com"
+            override val supportedTypes = setOf(TvType.Movie)
+
+            override suspend fun quickSearch(query: String): List<SearchResponse>? {
+                throw NotImplementedError("quickSearch is not implemented")
+            }
+
+            override suspend fun search(query: String, page: Int): SearchResponseList {
+                assertEquals("Saplantı", query)
+                requestedPage = page
+                return SearchResponseList(listOf(expected), false)
+            }
+        }
+
+        val results = HubMatchingEngine.searchProvider(provider, "Saplantı")
+
+        assertEquals(listOf(expected), results)
+        assertEquals(1, requestedPage)
+    }
+
+    @Test
+    fun testFederatedProviderSearchFallsBackWhenQuickSearchReturnsNull() = kotlinx.coroutines.test.runTest {
+        val expected = hub.newMovieSearchResponse("Saplantı", "https://site.com/saplantı", TvType.Movie)
+        var pagedSearchCalled = false
+        val provider = object : MainAPI() {
+            override var name = "NullableQuickSearchProvider"
+            override var mainUrl = "https://site.com"
+            override val supportedTypes = setOf(TvType.Movie)
+
+            override suspend fun quickSearch(query: String): List<SearchResponse>? = null
+
+            override suspend fun search(query: String, page: Int): SearchResponseList {
+                pagedSearchCalled = true
+                assertEquals(1, page)
+                return SearchResponseList(listOf(expected), false)
+            }
+        }
+
+        val results = HubMatchingEngine.searchProvider(provider, "Saplantı")
+
+        assertEquals(listOf(expected), results)
+        assertTrue(pagedSearchCalled)
+    }
+
+    @Test
+    fun testFederatedProviderSearchSkipsProviderWhenBothSearchMethodsAreUnsupported() = kotlinx.coroutines.test.runTest {
+        val provider = object : MainAPI() {
+            override var name = "UnsupportedSearchProvider"
+            override var mainUrl = "https://site.com"
+            override val supportedTypes = setOf(TvType.Movie)
+        }
+
+        assertTrue(HubMatchingEngine.searchProvider(provider, "Saplantı").isNullOrEmpty())
     }
 
     @Test
@@ -195,6 +288,97 @@ class CloudStreamHubTest {
         // Large year mismatch penalty
         val mismatch = HubMatchingEngine.findConfidentMatch(listOf(cand), listOf("Dune: Part Two"), 1984, isMovie = true)
         assertNull("Decade-mismatched year must be rejected", mismatch)
+    }
+
+    @Test
+    fun testHubMatchingEngineMatchesWholeTitlePhraseAndRejectsWrongYear() {
+        val matchingYear = hub.newMovieSearchResponse(
+            "Saplantı - Obsession izle",
+            "https://site.com/obsession-2026",
+            TvType.Movie
+        ) {
+            this.year = 2026
+        }
+        val wrongYear = hub.newMovieSearchResponse(
+            "Saplantı - Obsession izle",
+            "https://site.com/obsession-2024",
+            TvType.Movie
+        ) {
+            this.year = 2024
+        }
+        val yearMissing = hub.newMovieSearchResponse(
+            "Saplantı - Obsession izle",
+            "https://site.com/obsession-no-year",
+            TvType.Movie
+        )
+
+        val match = HubMatchingEngine.findConfidentMatch(
+            candidates = listOf(matchingYear),
+            targetTitles = listOf("Saplantı"),
+            targetYear = 2026,
+            isMovie = true
+        )
+        val mismatch = HubMatchingEngine.findConfidentMatch(
+            candidates = listOf(wrongYear),
+            targetTitles = listOf("Saplantı"),
+            targetYear = 2026,
+            isMovie = true
+        )
+        val matchWithoutProviderYear = HubMatchingEngine.findConfidentMatch(
+            candidates = listOf(yearMissing),
+            targetTitles = listOf("Saplantı"),
+            targetYear = 2026,
+            isMovie = true
+        )
+
+        assertEquals("Saplantı - Obsession izle", match?.name)
+        assertEquals("Saplantı - Obsession izle", matchWithoutProviderYear?.name)
+        assertNull("Wrong-year title must remain rejected", mismatch)
+    }
+
+    @Test
+    fun testHubMatchingEngineRejectsShorterOrVeryShortContainedTitles() {
+        val lionKing = hub.newMovieSearchResponse("The Lion King", "https://site.com/lion-king", TvType.Movie)
+        val itChapterTwo = hub.newMovieSearchResponse("It Chapter Two", "https://site.com/it-chapter-two", TvType.Movie)
+        val matrixReloaded = hub.newMovieSearchResponse("The Matrix Reloaded", "https://site.com/matrix-reloaded", TvType.Movie)
+        val matrixReloadedWithAlias = hub.newMovieSearchResponse(
+            "The Matrix Reloaded - The Matrix",
+            "https://site.com/matrix-reloaded-alias",
+            TvType.Movie
+        )
+        val matrixOriginal = hub.newMovieSearchResponse("The Matrix", "https://site.com/matrix", TvType.Movie)
+
+        val shortContainedTitle = HubMatchingEngine.findConfidentMatch(
+            candidates = listOf(lionKing),
+            targetTitles = listOf("Lion"),
+            isMovie = true
+        )
+        val veryShortContainedTitle = HubMatchingEngine.findConfidentMatch(
+            candidates = listOf(itChapterTwo),
+            targetTitles = listOf("It"),
+            isMovie = true
+        )
+        val sequelWithoutYear = HubMatchingEngine.findConfidentMatch(
+            candidates = listOf(matrixReloaded),
+            targetTitles = listOf("Matrix"),
+            isMovie = true
+        )
+        val sequelWithOriginalAliasWithoutYear = HubMatchingEngine.findConfidentMatch(
+            candidates = listOf(matrixReloadedWithAlias),
+            targetTitles = listOf("The Matrix"),
+            isMovie = true
+        )
+        val originalForSequelQueryWithoutYear = HubMatchingEngine.findConfidentMatch(
+            candidates = listOf(matrixOriginal),
+            targetTitles = listOf("The Matrix Reloaded"),
+            isMovie = true
+        )
+
+        assertNull("A shorter candidate phrase must not receive a strong containment score", shortContainedTitle)
+        assertNull("A short single-word title must not receive a strong containment score", veryShortContainedTitle)
+        assertNull("A sequel without year metadata must not match the original title", sequelWithoutYear)
+        assertNull("A sequel must not match via a repeated original-title alias", sequelWithOriginalAliasWithoutYear)
+        assertNull("An original film must not match a sequel query", originalForSequelQueryWithoutYear)
     }
 
     @Test

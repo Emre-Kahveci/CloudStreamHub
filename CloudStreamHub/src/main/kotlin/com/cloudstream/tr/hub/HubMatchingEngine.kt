@@ -3,6 +3,7 @@ package com.cloudstream.tr.hub
 import com.cloudstream.tr.core.model.ProviderModels
 import com.lagradost.cloudstream3.AnimeSearchResponse
 import com.lagradost.cloudstream3.MovieSearchResponse
+import com.lagradost.cloudstream3.MainAPI
 import com.lagradost.cloudstream3.SearchResponse
 import com.lagradost.cloudstream3.TvSeriesSearchResponse
 import com.lagradost.cloudstream3.TvType
@@ -11,6 +12,25 @@ import kotlin.math.abs
 import kotlin.math.max
 
 object HubMatchingEngine {
+
+    /**
+     * Uses the provider's quick-search contract, falling back to the first paged-search result
+     * when quickSearch is unsupported or returns no result list.
+     */
+    suspend fun searchProvider(provider: MainAPI, query: String): List<SearchResponse>? {
+        val quickResults = try {
+            provider.quickSearch(query)
+        } catch (_: NotImplementedError) {
+            null
+        }
+        if (quickResults != null) return quickResults
+
+        return try {
+            provider.search(query, 1)?.items
+        } catch (_: NotImplementedError) {
+            emptyList()
+        }
+    }
 
     /**
      * Searches titles in priority order and returns the first confident match.
@@ -82,7 +102,9 @@ object HubMatchingEngine {
                 // 1. Title match
                 if (normName == normTarget) {
                     score += 0.85
-                } else if (normName.contains(normTarget) || normTarget.contains(normName)) {
+                } else if (hasDelimitedTitleAlias(item.name, normTarget)) {
+                    score += 0.75
+                } else if (normName.contains(normTarget)) {
                     val ratio = normTarget.length.toDouble() / max(normName.length, 1)
                     score += (0.65 * ratio).coerceIn(0.40, 0.75)
                 } else {
@@ -140,5 +162,12 @@ object HubMatchingEngine {
         }
 
         return if (highestScore >= minConfidence) bestCandidate else null
+    }
+
+    private fun hasDelimitedTitleAlias(title: String, phrase: String): Boolean {
+        if (phrase.isBlank() || (!phrase.contains(' ') && phrase.length < 6)) return false
+        val segments = title.split(Regex("\\s[-–—|/]\\s"))
+            .map(ProviderModels::normalizeTitle)
+        return segments.any { it == phrase } && segments.none { it.startsWith("$phrase ") }
     }
 }

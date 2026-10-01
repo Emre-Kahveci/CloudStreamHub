@@ -113,3 +113,5 @@ legacy_plugins_decoded.json
 Thumbs.db
 desktop.ini
 $RECYCLE.BIN/
+
+.*

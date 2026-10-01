@@ -389,7 +389,7 @@ class CloudStreamHub : MainAPI() {
                         targetTitles = targetTitles,
                         targetYear = payload.year,
                         isMovie = payload.isMovie,
-                        search = { query -> provider.search(query) }
+                        search = { query -> HubMatchingEngine.searchProvider(provider, query) }
                     ) ?: run {
                         DiagnosticLogger.log(
                             provider = provider.name,
